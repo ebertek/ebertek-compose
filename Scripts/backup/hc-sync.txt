@@ -1,0 +1,3 @@
+HOST=example.com
+PORT=22
+USER=user

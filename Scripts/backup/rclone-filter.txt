@@ -1,0 +1,30 @@
+# exclude Synology garbage
+- \#recycle/**
+- \#snapshot/**
+- @eaDir/**
+- @tmp/**
+# exclude macOS garbage
+- /.Trashes/**
+- /.fseventsd/**
+- /.Spotlight-V100/**
+- /.DocumentRevisions-V100/**
+- /.TemporaryItems/**
+- .AppleDouble/**
+- __MACOSX/**
+- .DS_Store
+- Icon
+- Icon\r
+# exclude Windows garbage
+- /$RECYCLE.BIN/**
+- /System Volume Information/**
+- /found.???/**
+- desktop.ini
+- Thumbs.db
+- ehthumbs.db
+# exclude other garbage
+##- .picasa.ini
+##- *.thm
+##- *.lrv
+##- *.pe4
+# include everything else
++ *
