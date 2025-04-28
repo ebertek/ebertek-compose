@@ -1,0 +1,48 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg
+
+networks:
+  macvlan1:
+    driver: macvlan
+    driver_opts:
+      parent: ovs_bond0
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 10.4.20.0/23
+          aux_addresses:
+            host: 10.4.21.1
+          gateway: 10.4.20.1
+          ip_range: 10.4.21.0/24
+    name: macvlan1
+
+services:
+  watchtower:
+    container_name: watchtower
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 100M
+    environment:
+      TZ: Europe/Stockholm
+      WATCHTOWER_CLEANUP: true
+      # WATCHTOWER_ROLLING_RESTART: true
+      DOCKER_CONFIG: /config
+    hostname: watchtower
+    image: "docker.io/containrrr/watchtower:latest"
+    mac_address: "0e:be:00:da:00:47"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.47
+    privileged: true
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/volume1/docker/watchtower:/config"
+...

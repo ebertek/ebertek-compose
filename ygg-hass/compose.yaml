@@ -1,0 +1,150 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-hass
+
+networks:
+  macvlan1:
+    external: true
+
+x-env: &env
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search: int.tnt.photo
+  environment:
+    TZ: Europe/Stockholm
+  restart: "no"
+  stop_grace_period: 10m
+
+services:
+  matter-server:
+    <<: *env
+    cap_add:
+      - NET_ADMIN
+    command: >
+      --storage-path /data
+      --paa-root-cert-dir /data/credentials
+      --bluetooth-adapter 0
+      --log-level-sdk progress
+      --primary-interface eth0
+    container_name: matter-server
+    hostname: matter-server
+    image: "ghcr.io/home-assistant-libs/python-matter-server:stable"
+    mac_address: "0e:be:00:da:00:66"
+    networks:
+      macvlan1:
+        aliases:
+          - core-matter-server
+        # driver_opts:
+        #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
+        ipv4_address: 10.4.21.66
+    security_opt:
+      - "apparmor:unconfined"
+    volumes:
+      - "/volume1/docker/hass/matter-server:/data"
+      - "/run/dbus:/run/dbus:ro"
+
+  mosquitto:
+    <<: *env
+    container_name: mosquitto
+    hostname: mosquitto
+    image: "docker.io/eclipse-mosquitto:latest"
+    mac_address: "0e:be:00:da:00:67"
+    networks:
+      macvlan1:
+        aliases:
+          - core-mosquitto
+          - mosquitto.int.tnt.photo
+          - mosquitto.ext.tnt.photo
+        ipv4_address: 10.4.21.67
+    volumes:
+      - "/volume1/docker/hass/mosquitto/config:/mosquitto/config"
+      - "/volume1/docker/hass/mosquitto/data:/mosquitto/data"
+      - "/volume1/docker/hass/mosquitto/log:/mosquitto/log"
+
+  ps5-mqtt:
+    <<: *env
+    container_name: ps5-mqtt
+    depends_on:
+      - mosquitto
+    entrypoint: /app/run-standalone.sh
+    environment:
+      CONFIG_PATH: /config/options.json
+      DEBUG: "@ha:ps5:*"
+    healthcheck:
+      interval: 5m00s
+      retries: 2
+      start_period: 30s
+      test: ls -l /proc/*/exe | grep node
+      timeout: 10s
+    hostname: ps5-mqtt
+    image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
+    mac_address: "0e:be:00:da:00:68"
+    networks:
+      macvlan1:
+        aliases:
+          - df2164f9-ps5-mqtt
+        ipv4_address: 10.4.21.68
+    stop_signal: SIGKILL
+    volumes:
+      - "/volume1/docker/hass/ps5-mqtt:/config"
+
+  zigbee2mqtt:
+    <<: *env
+    container_name: zigbee2mqtt
+    depends_on:
+      - mosquitto
+    group_add:
+      - dialout
+    hostname: zigbee2mqtt
+    image: "docker.io/koenkk/zigbee2mqtt:latest"
+    mac_address: "0e:be:00:da:00:69"
+    networks:
+      macvlan1:
+        aliases:
+          - 45df7312-zigbee2mqtt
+        ipv4_address: 10.4.21.69
+    volumes:
+      - "/volume1/docker/hass/zigbee2mqtt:/app/data"
+      - "/run/udev:/run/udev:ro"
+
+  hass:
+    <<: *env
+    container_name: hass
+    hostname: hass
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    mac_address: "0e:be:00:da:00:70"
+    networks:
+      macvlan1:
+        aliases:
+          - hass.int.tnt.photo
+          - hass.ext.tnt.photo
+          - homeassistant.int.tnt.photo
+          - homeassistant.ext.tnt.photo
+        ipv4_address: 10.4.21.70
+    privileged: true
+    volumes:
+      - "/volume1/docker/hass/config:/config"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/run/dbus:/run/dbus:ro"
+
+  esphome:
+    <<: *env
+    container_name: esphome
+    env_file: esphome.txt
+    hostname: esphome
+    image: "ghcr.io/esphome/esphome:stable"
+    mac_address: "0e:be:00:da:00:71"
+    networks:
+      macvlan1:
+        aliases:
+          - 5c53de3b-esphome
+        ipv4_address: 10.4.21.71
+    privileged: true
+    stop_signal: SIGINT
+    volumes:
+      - "/volume1/docker/hass/esphome:/config"
+      - "/etc/localtime:/etc/localtime:ro"
+...

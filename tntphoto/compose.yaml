@@ -1,0 +1,111 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: tntphoto
+
+services:
+  mariadb:
+    command: "--default-authentication-plugin=mysql_native_password"
+    container_name: mariadb
+    env_file: mariadb.txt
+    environment:
+      TZ: Europe/Stockholm
+      MARIADB_AUTO_UPGRADE: 1
+    healthcheck:
+      interval: 1m
+      retries: 3
+      start_interval: 10s
+      start_period: 1m
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 5s
+    hostname: mariadb
+    image: "docker.io/mariadb:latest"
+    networks:
+      - wp_net
+    ports:
+      - "127.0.0.1:3306:3306"
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - "/mnt/data/tntphoto_mariadb_data/_data:/var/lib/mysql"
+
+  wordpress:
+    command:
+      - sh
+      - -c
+      - |
+        apk add icu-dev
+        docker-php-ext-install pdo pdo_mysql intl
+        php-fpm
+    container_name: wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file: wordpress.txt
+    environment:
+      PUID: 82
+      PGID: 82
+      TZ: Europe/Stockholm
+      WORDPRESS_DB_HOST: "mariadb:3306"
+    healthcheck:
+      interval: 3m
+      retries: 5
+      start_period: 20s
+      test: ["CMD-SHELL", "netstat -ltn | grep 9000"]
+      timeout: 10s
+    hostname: wordpress
+    image: "docker.io/wordpress:php8.3-fpm-alpine"
+    networks:
+      - wp_net
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
+      - "/mnt/data/tntphoto_php_config/_data:/usr/local/etc/php/conf.d"
+      - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
+
+  nginx:
+    container_name: nginx
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    environment:
+      PUID: 101
+      PGID: 101
+      TZ: Europe/Stockholm
+    healthcheck:
+      interval: 3m
+      retries: 5
+      start_period: 20s
+      test: ["CMD-SHELL", "nc -z localhost 443 || exit 1"]
+      timeout: 10s
+    hostname: nginx
+    image: "docker.io/nginx:alpine"
+    networks:
+      wp_net:
+        aliases:
+          - tnt.photo
+          - www.tnt.photo
+          - x.tnt.photo
+          - ebertek.com
+          - www.ebertek.com
+          - melindaban.com
+          - www.melindaban.com
+          - lindi-david.se
+          - www.lindi-david.se
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    volumes:
+      - "/mnt/data/tntphoto_nginx_config/_data:/etc/nginx"
+      - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
+      - "/mnt/data/tntphoto_certbot_config/_data:/etc/nginx/ssl:ro"
+      - "/mnt/data/tntphoto_certbot_data/_data:/var/www/certbot"
+      - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
+
+networks:
+  wp_net: {}
+...

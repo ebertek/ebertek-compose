@@ -1,0 +1,62 @@
+---
+name: Lint
+permissions: read-all
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  compose-config:
+    name: "compose.yaml - docker compose config"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          find . -name 'compose.yaml' -print0 \
+            | while IFS= read -r -d '' file; do
+              echo "Validating $file"
+              docker compose -f "$file" config
+            done
+
+  compose-yamllint:
+    name: "compose.yaml - yamllint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: "**/compose.yaml"
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 80
+                level: warning
+
+  dockerfile-hadolint:
+    name: "Dockerfile - hadolint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "./ygg-home/discordpy.Dockerfile"
+
+  py-ruff:
+    name: ".py - ruff"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+
+  sh-shellcheck:
+    name: ".sh - shellcheck"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "./Scripts"

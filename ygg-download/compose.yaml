@@ -1,0 +1,96 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-download
+
+networks:
+  macvlan1:
+    external: true
+
+services:
+  gluetun:
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    cpu_count: 1
+    container_name: gluetun
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 250M
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    dns:
+      - 10.64.0.1
+      - 1.1.1.1
+    dns_search: int.tnt.photo
+    env_file: gluetun.txt
+    environment:
+      PUID: 1028
+      PGID: 100
+      TZ: Europe/Stockholm
+      SERVER_HOSTNAMES: se-got-wg-003
+      UPDATER_PERIOD: 24h
+      VPN_SERVICE_PROVIDER: mullvad
+      VPN_TYPE: wireguard
+      WIREGUARD_ADDRESSES: "10.67.208.69/32,fc00:bbbb:bbbb:bb01::4:d044/128"
+      WIREGUARD_ENDPOINT_PORT: 443
+    healthcheck:
+      interval: 5s
+      retries: 1
+      start_period: 30s  # default was 10s
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      timeout: 5s
+    hostname: gluetun
+    image: "docker.io/qmcgaw/gluetun:latest"
+    mac_address: "0e:be:00:da:00:39"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.39
+    privileged: true
+    restart: "no"
+    stop_grace_period: 1m
+    sysctls:
+      net.ipv4.conf.all.src_valid_mark: 1
+      net.ipv6.conf.all.disable_ipv6: 0
+    volumes:
+      - "/volume1/docker/gluetun:/gluetun"
+      - "/lib/modules:/lib/modules:ro"
+
+  download:
+    container_name: download
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 250M
+    dns_search: int.tnt.photo
+    environment:
+      PUID: 1028
+      PGID: 100
+      TZ: Europe/Stockholm
+      TORRENTING_PORT: 56213
+      WEBUI_PORT: 8080
+    healthcheck:
+      interval: 30s
+      retries: 1
+      start_period: 10s
+      test: ping -c 2 gluetun || kill 1
+      timeout: 2s
+    image: "lscr.io/linuxserver/qbittorrent:latest"
+    labels:
+      com.centurylinklabs.watchtower.depends-on: gluetun
+    network_mode: "container:gluetun"
+    restart: "no"
+    stop_grace_period: 1m
+    volumes:
+      - "/volume1/Downloads:/downloads"
+      - "/volume1/docker/qbittorrent:/config"
+      - "/volume1/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
+...

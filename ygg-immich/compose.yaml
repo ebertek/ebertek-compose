@@ -1,0 +1,159 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+# https://github.com/immich-app/immich/commits/main/docker/docker-compose.yml
+# https://github.com/immich-app/immich/commits/main/docker/example.env
+---
+# version: "3.9"
+name: ygg-immich
+
+networks:
+  macvlan1:
+    external: true
+
+x-env: &env
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search: int.tnt.photo
+  environment:
+    DB_DATABASE_NAME: immich
+    DB_HOSTNAME: database
+    REDIS_HOSTNAME: redis
+    TZ: Europe/Stockholm
+  labels:
+    com.centurylinklabs.watchtower.monitor-only: true
+  restart: "no"
+  stop_grace_period: 1m
+
+services:
+  immich:
+    <<: *env
+    container_name: immich
+    depends_on:
+      - redis
+      - database
+    deploy:
+      resources:
+        limits:
+          # cpus: "4"
+          memory: 1500M
+    devices:
+      - /dev/dri:/dev/dri
+    env_file: db.txt
+    environment:
+      NO_COLOR: true
+    healthcheck:
+      disable: true
+    hostname: immich
+    image: ghcr.io/immich-app/immich-server:release
+    mac_address: "0e:be:00:da:00:48"
+    networks:
+      macvlan1:
+        aliases:
+          - immich.int.tnt.photo
+          - immich.ext.tnt.photo
+        ipv4_address: 10.4.21.48
+    user: 1028:100
+    volumes:
+      - /volume1/photo/Pictures:/mnt/media/Pictures:ro
+      - /volume1/docker/immich/upload:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+
+  immich-machine-learning:
+    <<: *env
+    container_name: immich-machine-learning
+    deploy:
+      resources:
+        limits:
+          # cpus: "4"
+          memory: 1500M
+    device_cgroup_rules:
+      - 'c 189:* rmw'
+    devices:
+      - /dev/dri:/dev/dri
+    env_file: db.txt
+    environment:
+      NO_COLOR: true
+    healthcheck:
+      disable: true
+    hostname: immich-machine-learning
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    mac_address: "0e:be:00:da:00:49"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.49
+    user: 1028:100
+    volumes:
+      - /volume1/docker/immich/cache:/cache
+      - /dev/bus/usb:/dev/bus/usb
+
+  redis:
+    <<: *env
+    container_name: redis
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 2000M
+    env_file: db.txt
+    healthcheck:
+      test: redis-cli ping || exit 1
+    hostname: redis
+    image: docker.io/valkey/valkey:8-bookworm@sha256:42cba146593a5ea9a622002c1b7cba5da7be248650cbb64ecb9c6c33d29794b1  # yamllint disable-line
+    mac_address: "0e:be:00:da:00:50"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.50
+    sysctls:
+      net.core.somaxconn: 512
+    # user: 1028:100
+    volumes:
+      - /volume1/docker/immich/redis:/data
+
+  database:
+    <<: *env
+    command:
+      [
+        'postgres',
+        '-c',
+        'shared_preload_libraries=vectors.so',
+        '-c',
+        'search_path="$$user", public, vectors',
+        '-c',
+        'logging_collector=on',
+        '-c',
+        'max_wal_size=2GB',
+        '-c',
+        'shared_buffers=512MB',
+        '-c',
+        'wal_compression=on',
+      ]
+    container_name: database
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 1500M
+    env_file:
+      - db.txt
+      - pg.txt
+    environment:
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    healthcheck:
+      test: pg_isready --dbname='immich' --username='postgres' || exit 1; Chksum="$$(psql --dbname='immich' --username='postgres' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1  # yamllint disable-line
+      interval: 5m
+      # start_interval: 30s
+      start_period: 5m
+    hostname: database
+    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0  # yamllint disable-line
+    mac_address: "0e:be:00:da:00:51"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.51
+    # user: 1028:100
+    volumes:
+      - /volume1/docker/immich/postgres:/var/lib/postgresql/data
+...

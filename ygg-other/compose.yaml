@@ -1,0 +1,160 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-other
+
+networks:
+  macvlan1:
+    external: true
+
+x-env: &env
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search: int.tnt.photo
+  environment:
+    TZ: Europe/Stockholm
+  restart: "no"
+  stop_grace_period: 2m
+
+services:
+  irc:
+    <<: *env
+    cap_add:
+      - NET_BIND_SERVICE
+    container_name: irc
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    environment:
+      PUID: 1028
+      PGID: 100
+    hostname: irc
+    image: "ghcr.io/thelounge/thelounge:latest"
+    mac_address: "0e:be:00:da:00:45"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.45
+    # sysctls:
+    #   net.ipv4.ip_unprivileged_port_start: 0
+    volumes:
+      - "/volume1/docker/irc:/var/opt/thelounge"
+      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/letsencrypt/privkey.pem"
+      - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/letsencrypt/fullchain.pem"
+
+  vw:
+    <<: *env
+    cap_add:
+      - NET_BIND_SERVICE
+    container_name: vw
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 250M
+    env_file: vw.txt
+    environment:
+      PUID: 1028
+      PGID: 100
+      DOMAIN: "https://vw.ext.tnt.photo"
+      PUSH_ENABLED: true
+      PUSH_RELAY_URI: "https://api.bitwarden.eu"
+      PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
+      SIGNUPS_ALLOWED: true
+      TRASH_AUTO_DELETE_DAYS: 30
+      WEBSOCKET_ENABLED: true
+    hostname: vw
+    image: "docker.io/vaultwarden/server:testing"
+    mac_address: "0e:be:00:da:00:46"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.46
+    # sysctls:
+    #   net.ipv4.ip_unprivileged_port_start: 80
+    volumes:
+      - "/volume1/docker/vw:/data"
+
+  acmesh:
+    <<: *env
+    command: daemon
+    container_name: acmesh
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 100M
+    env_file: acmesh.txt
+    environment:
+      PUID: 1028
+      PGID: 100
+    hostname: acmesh
+    image: "docker.io/neilpang/acme.sh:latest"
+    mac_address: "0e:be:00:da:00:36"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.36
+    stdin_open: true
+    tty: true
+    volumes:
+      - "/volume1/docker/acmesh:/acme.sh"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  smtp:
+    <<: *env
+    container_name: smtp
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 100M
+    env_file: smtp.txt
+    environment:
+      POSTCONF_compatibility_level: 2
+      POSTCONF_message_size_limit: 20480000
+      RELAY_DOMAINS: tnt.photo int.tnt.photo ext.tnt.photo
+      RELAY_HOST: "[smtp.gmail.com]:587"
+      RELAY_MODE: ALLOW_AUTH_NODOMAIN
+      RELAY_MYDOMAIN: tnt.photo
+      RELAY_MYHOSTNAME: smtp.int.tnt.photo
+      RELAY_MYNETWORKS: 10.4.20.0/23
+      RELAY_POSTMASTER: "postmaster@tnt.photo"
+      RELAY_STRICT_SENDER_MYDOMAIN: false
+      RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
+      RELAY_TLS_VERIFY: encrypt
+      RELAY_USE_TLS: "yes"
+    hostname: smtp
+    image: "turgon37/smtp-relay:latest"
+    mac_address: "0e:be:00:da:00:60"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.60
+    volumes:
+      - "/volume1/docker/smtp/data:/data"
+      - "/volume1/docker/smtp/spool:/var/spool/postfix"
+      - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
+
+  dbeaver:
+    <<: *env
+    container_name: dbeaver
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: dbeaver
+    image: "dbeaver/cloudbeaver:latest"
+    mac_address: "0e:be:00:da:00:43"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.43
+    volumes:
+      - "/volume1/docker/dbeaver:/opt/cloudbeaver/workspace"
+...

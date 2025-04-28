@@ -1,0 +1,46 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+services:
+  bind9:
+    container_name: bind9
+    environment:
+      PUID: 100
+      PGID: 101
+      TZ: Europe/Stockholm
+    healthcheck:
+      test: "bash -c 'exec 6<> /dev/tcp/localhost/53'"
+      interval: 5m
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    hostname: bind9
+    image: "docker.io/ubuntu/bind9:latest"
+    network_mode: bridge
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "127.0.0.1:953:953/tcp"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    volumes:
+      - "/mnt/data/ebertek_bind9_data/_data/etc/bind:/etc/bind"
+      - "/mnt/data/ebertek_bind9_data/_data/var/cache/bind:/var/cache/bind"
+      - "/mnt/data/ebertek_bind9_data/_data/var/lib/bind:/var/lib/bind"
+      - "/mnt/data/ebertek_bind9_data/_data/var/log:/var/log"
+      - "/usr/share/zoneinfo:/usr/share/zoneinfo:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+
+  watchtower:
+    environment:
+      TZ: Europe/Stockholm
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_ROLLING_RESTART: true
+    image: "docker.io/containrrr/watchtower:latest"
+    restart: unless-stopped
+    stop_grace_period: 1m
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+...

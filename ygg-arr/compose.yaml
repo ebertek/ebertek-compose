@@ -1,0 +1,248 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-arr
+
+networks:
+  macvlan1:
+    external: true
+
+x-arr: &arr
+  environment:
+    PUID: 1028
+    PGID: 100
+    UMASK: 002
+  extra_hosts:
+    - "download.int.tnt.photo:10.4.21.39"
+
+x-env: &env
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search: int.tnt.photo
+  environment:
+    TZ: Europe/Stockholm
+  restart: "no"
+  stop_grace_period: 2m
+
+secrets:
+  postgres-passwd:
+    file: postgres-passwd.txt
+  postgres-user:
+    file: postgres-user.txt
+
+services:
+  pg:
+    <<: *env
+    container_name: pg
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 1000M
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+    healthcheck:
+      interval: 1s
+      retries: 10
+      start_period: 15s
+      test: ["CMD-SHELL", "pg_isready"]
+      timeout: 5s
+    hostname: pg
+    image: "postgres:14"
+    mac_address: "0e:be:00:da:00:42"
+    networks:
+      macvlan1:
+        aliases:
+          - pg.int.tnt.photo
+        ipv4_address: 10.4.21.42
+    secrets:
+      - postgres-passwd
+      - postgres-user
+    shm_size: 128mb
+    user: "999:999"
+    volumes:
+      - "/volume1/docker/pg:/var/lib/postgresql/data"
+
+  prowlarr:
+    <<: [*arr, *env]
+    container_name: prowlarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+      radarr:
+        condition: service_started
+      sonarr:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: prowlarr
+    image: ghcr.io/hotio/prowlarr
+    mac_address: "0e:be:00:da:00:54"
+    networks:
+      macvlan1:
+        aliases:
+          - prowlarr.int.tnt.photo
+        ipv4_address: 10.4.21.54
+    volumes:
+      - "/volume1/docker/prowlarr:/config"
+
+  radarr:
+    <<: [*arr, *env]
+    container_name: radarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: radarr
+    image: ghcr.io/hotio/radarr
+    mac_address: "0e:be:00:da:00:55"
+    networks:
+      macvlan1:
+        aliases:
+          - radarr.int.tnt.photo
+        ipv4_address: 10.4.21.55
+    volumes:
+      - "/volume1/docker/radarr:/config"
+      - "/volume1/Downloads:/downloads"
+
+  sonarr:
+    <<: [*arr, *env]
+    container_name: sonarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: sonarr
+    image: ghcr.io/hotio/sonarr
+    mac_address: "0e:be:00:da:00:56"
+    networks:
+      macvlan1:
+        aliases:
+          - sonarr.int.tnt.photo
+        ipv4_address: 10.4.21.56
+    volumes:
+      - "/volume1/docker/sonarr:/config"
+      - "/volume1/Downloads:/downloads"
+
+  bazarr:
+    <<: [*arr, *env]
+    container_name: bazarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    environment:
+      WEBUI_PORTS: 6767/tcp,6767/udp
+    hostname: lidarr
+    image: ghcr.io/hotio/bazarr
+    mac_address: "0e:be:00:da:00:57"
+    networks:
+      macvlan1:
+        aliases:
+          - bazarr.int.tnt.photo
+        ipv4_address: 10.4.21.57
+    volumes:
+      - "/volume1/docker/bazarr:/config"
+      - "/volume1/Downloads:/downloads"
+
+  lidarr:
+    <<: [*arr, *env]
+    container_name: lidarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: lidarr
+    image: ghcr.io/hotio/lidarr
+    mac_address: "0e:be:00:da:00:58"
+    networks:
+      macvlan1:
+        aliases:
+          - lidarr.int.tnt.photo
+        ipv4_address: 10.4.21.58
+    volumes:
+      - "/volume1/docker/lidarr:/config"
+      - "/volume1/Downloads:/downloads"
+
+  requestrr:
+    <<: [*arr, *env]
+    container_name: requestrr
+    cpu_count: 1
+    depends_on:
+      radarr:
+        condition: service_started
+      sonarr:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    hostname: requestrr
+    image: ghcr.io/hotio/requestrr
+    mac_address: "0e:be:00:da:00:61"
+    networks:
+      macvlan1:
+        aliases:
+          - requestrr.int.tnt.photo
+        ipv4_address: 10.4.21.61
+    volumes:
+      - "/volume1/docker/requestrr:/config"
+
+  recyclarr:
+    <<: [*arr, *env]
+    container_name: recyclarr
+    cpu_count: 1
+    depends_on:
+      radarr:
+        condition: service_started
+      sonarr:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 500M
+    environment:
+      RECYCLARR_CREATE_CONFIG: true
+    hostname: recyclarr
+    image: ghcr.io/recyclarr/recyclarr
+    mac_address: "0e:be:00:da:00:62"
+    networks:
+      macvlan1:
+        aliases:
+          - recyclarr.int.tnt.photo
+        ipv4_address: 10.4.21.62
+    security_opt: ["no-new-privileges:true"]
+    user: "1028:100"
+    volumes:
+      - "/volume1/docker/recyclarr:/config"
+...
