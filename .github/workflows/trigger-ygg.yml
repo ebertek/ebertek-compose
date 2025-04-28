@@ -1,0 +1,17 @@
+name: Trigger ygg-compose sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch to ygg-compose
+        run: |
+          curl -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+            -d '{"event_type": "trigger-sync"}'
