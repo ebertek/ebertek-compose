@@ -4,64 +4,65 @@ A collection of Docker Compose files for various self-hosted services.
 ## Services
 
 ### [ebertek/](ebertek/)
-- **bind9**: DNS server.
-- **watchtower**: Automatic Docker container updater.
+- **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
+- **[watchtower](https://hub.docker.com/r/containrrr/watchtower)**: Automatic Docker container base image updates.
 
 ### [tntphoto/](tntphoto/)
-- **mariadb**: Database server for WordPress.
-- **wordpress**: WordPress application.
-- **nginx**: Reverse proxy for WordPress.
+- **[mariadb](https://hub.docker.com/_/mariadb)**: Relational database for WordPress.
+- **[wordpress](https://hub.docker.com/_/wordpress)**: Content management system.
+- **[nginx](https://hub.docker.com/_/nginx)**: Reverse proxy server for WordPress.
 
 ### [ygg/](ygg/)
-- **watchtower**: Automatic Docker container updater.
+- **[macvlan](https://docs.docker.com/engine/network/drivers/macvlan/)**: Creates the Macvlan network used by all `ygg-*` Compose files.
+- **[watchtower](https://hub.docker.com/r/containrrr/watchtower)**: Automatic Docker container base image updates.
 
 ### [ygg-arr/](ygg-arr/)
-- **pg**: PostgreSQL database service.
-- **prowlarr**: Indexer manager for Sonarr/Radarr/etc.
-- **radarr**: Movies download and management.
-- **sonarr**: TV shows download and management.
-- **bazarr**: Subtitle management for Sonarr/Radarr.
-- **lidarr**: Music library management.
-- **requestrr**: Media request bot (Discord integration).
-- **recyclarr**: Sync Sonarr/Radarr settings with maintained lists.
+- **[pg](https://hub.docker.com/_/postgres)**: Object-relational database sytem for *arr.
+- **[prowlarr](https://hotio.dev/containers/prowlarr/)**: Indexer manager for *arr.
+- **[radarr](https://hotio.dev/containers/radarr/)**: Movie organizer/manager.
+- **[sonarr](https://hotio.dev/containers/sonarr/)**: Smart PVR.
+- **[bazarr](https://hotio.dev/containers/bazarr/)**: Subtitle manager for Sonarr/Radarr.
+- **[lidarr](https://hotio.dev/containers/lidarr/)**: Music collection manager.
+- **[requestrr](https://hotio.dev/containers/requestrr/)**: Discord chatbot for *arr.
+- **[recyclarr](https://github.com/recyclarr/recyclarr)**: Automatically sync [TRaSH Guides](https://trash-guides.info) to your Sonarr/Radarr instances.
 
 ### [ygg-core/](ygg-core/)
-- **omada**: TP-Link Omada controller.
-- **cloudflared**: Cloudflare Tunnel client.
-- **dns**: DNS server.
-- **npm**: Reverse proxy.
+- **[omada](https://hub.docker.com/r/mbentley/omada-controller)**: TP-Link Omada controller.
+- **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
+- **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
+- **[npm](https://hub.docker.com/r/jc21/nginx-proxy-manager)**: Reverse proxy.
 
 ### [ygg-download/](ygg-download/)
-- **gluetun**: VPN client for containerized apps.
-- **download**: qBittorrent.
+- **[gluetun](https://hub.docker.com/r/qmcgaw/gluetun)**: VPN client.
+- **[download](https://docs.linuxserver.io/images/docker-qbittorrent/)**: BitTorrent client.
 
 ### [ygg-hass/](ygg-hass/)
-- **matter-server**: Matter protocol server for smart home.
-- **mosquitto**: MQTT broker.
-- **ps5-mqtt**: PlayStation 5 status integration via MQTT.
-- **zigbee2mqtt**: Zigbee device integration via MQTT.
-- **hass**: Home Assistant platform.
-- **esphome**: Smart devices management (ESP-based devices).
+- **[matter-server](https://github.com/home-assistant-libs/python-matter-server)**: Matter Controller Server.
+- **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
+- **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
+- **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
+- **[hass](https://github.com/home-assistant/core)**: Home automation.
+- **[esphome](https://github.com/esphome/esphome)**: Control ESP32 through Home Assistant.
 
 ### [ygg-home/](ygg-home/)
-- **plex**: Media server for movies and TV shows.
-- **tautulli**: Plex usage statistics and monitoring.
-- **discordpy**: Custom Discord bot (Python based).
-- **tmm**: TinyMediaManager (media management).
-- **books**: Calibre-web ebook management service.
+- **[plex](https://hub.docker.com/r/plexinc/pms-docker/)**: Media server.
+- **[tautulli](https://github.com/Tautulli/Tautulli)**: Monitoring and tracking tool for Plex.
+- **[discordpy](https://hub.docker.com/r/gorialis/discord.py)**: Bot-ready environments for Python bots. Includes two bots: **hass** and **bjornify**.
+- **[tmm](https://hub.docker.com/r/tinymediamanager/tinymediamanager)**: Media management tool.
+- **[books](https://docs.linuxserver.io/images/docker-calibre-web/)**: Web app for browsing, reading and downloading eBooks.
 
 ### [ygg-immich/](ygg-immich/)
-- **immich**: Self-hosted photo and video backup system.
-- **immich-machine-learning**: ML features for Immich.
-- **redis**: Cache and message broker for Immich.
-- **database**: Database backend for Immich.
+- **[immich](https://github.com/immich-app/immich)**: Photo and video management.
+- **[immich-machine-learning](https://github.com/immich-app/immich/tree/main/machine-learning)**: CLIP embeddings and facial recognition for Immich.
+- **[redis](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
+- **[database](https://hub.docker.com/r/tensorchord/pgvecto-rs)**: Scalable vector search in Postgres for Immich.
 
 ### [ygg-other/](ygg-other/)
-- **irc**: IRC client.
-- **vw**: Vaultwarden password manager.
-- **acmesh**: ACME client for Let's Encrypt certificates.
-- **smtp**: SMTP email relay service.
-- **dbeaver**: Database management UI tool.
+- **[irc](https://github.com/thelounge/thelounge-docker)**: Web IRC client.
+- **[vw](https://hub.docker.com/r/vaultwarden/server)**: Password management service.
+- **[acmesh](https://hub.docker.com/r/neilpang/acme.sh)**: [ACME client](https://github.com/acmesh-official/acme.sh) for Let's Encrypt certificates.
+- **[smtp](https://hub.docker.com/r/turgon37/smtp-relay)**: Postfix SMTP server configured as an SMTP relay.
+- **[dbeaver](https://hub.docker.com/r/dbeaver/cloudbeaver)**: Cloud database manager.
 
 ## Requirements
 - Docker.
