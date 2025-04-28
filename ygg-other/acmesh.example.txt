@@ -1,0 +1,3 @@
+ACCOUNT_EMAIL="ebertek@gmail.com"
+CF_Token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CF_Email="ebertek@gmail.com"

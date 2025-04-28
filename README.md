@@ -64,15 +64,24 @@ A collection of Docker Compose files for various self-hosted services.
 - **dbeaver**: Database management UI tool.
 
 ## Requirements
-- Docker
-- Docker Compose
-- Some folders require specific environment files
+- Docker.
+- Docker Compose.
+- Some folders require specific environment files.
 
 ## Usage
-To deploy any environment:
-```
-cd <folder-name>
-docker compose up -d
-```
+1. Update the following elements in `compose.yaml` to work with your environment:
+    - `dns`
+    - `dns_search`
+    - `environment`
+    - `extra_hosts`
+    - `mac_address`
+    - `networks`
+    - `user`
+    - `volumes`
+2. Copy `*.example.txt` to `*.txt` and update its contents with your own secrets.
+3. Deploy:
 
-Make sure you review and customize the `.env` and volume paths as needed!
+    ```
+    cd <folder-name>
+    docker compose up -d
+    ```

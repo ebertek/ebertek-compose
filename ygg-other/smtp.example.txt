@@ -1,0 +1,2 @@
+RELAY_LOGIN="ebertek@gmail.com"
+RELAY_PASSWORD=password
