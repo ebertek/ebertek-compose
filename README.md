@@ -79,7 +79,7 @@ A collection of Docker Compose files for various self-hosted services.
     - `networks`
     - `user`
     - `volumes`
-2. Copy `*.example.txt` to `*.txt` and update its contents with your own secrets.
+2. Update the `.txt` files with your own secrets.
 3. Deploy:
 
     ```
