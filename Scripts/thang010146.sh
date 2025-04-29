@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /volume1/Downloads/YouTube/thang010146/ && \
+cd /volume1/Downloads/YouTube/thang010146/ &&
 	/var/services/homes/Hannibal/bin/yt-dlp \
 		--download-archive /volume1/Downloads/YouTube/thang010146.txt \
 		--restrict-filenames --compat-options filename,filename-sanitization \

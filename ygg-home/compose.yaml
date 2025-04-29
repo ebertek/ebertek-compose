@@ -73,7 +73,7 @@ services:
         ipv4_address: 10.4.21.41
     volumes:
       - "/volume1/docker/tautulli:/config"
-      - "/volume1/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro"  # yamllint disable-line
+      - "/volume1/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro" # yamllint disable-line
       - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
       - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 

@@ -40,7 +40,7 @@ services:
     healthcheck:
       interval: 5s
       retries: 1
-      start_period: 30s  # default was 10s
+      start_period: 30s # default was 10s
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun

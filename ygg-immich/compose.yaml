@@ -68,7 +68,7 @@ services:
           # cpus: "4"
           memory: 1500M
     device_cgroup_rules:
-      - 'c 189:* rmw'
+      - "c 189:* rmw"
     devices:
       - /dev/dri:/dev/dri
     env_file: db.txt
@@ -100,7 +100,7 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     hostname: redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:42cba146593a5ea9a622002c1b7cba5da7be248650cbb64ecb9c6c33d29794b1  # yamllint disable-line
+    image: docker.io/valkey/valkey:8-bookworm@sha256:42cba146593a5ea9a622002c1b7cba5da7be248650cbb64ecb9c6c33d29794b1 # yamllint disable-line
     mac_address: "0e:be:00:da:00:50"
     networks:
       macvlan1:
@@ -115,19 +115,19 @@ services:
     <<: *env
     command:
       [
-        'postgres',
-        '-c',
-        'shared_preload_libraries=vectors.so',
-        '-c',
+        "postgres",
+        "-c",
+        "shared_preload_libraries=vectors.so",
+        "-c",
         'search_path="$$user", public, vectors',
-        '-c',
-        'logging_collector=on',
-        '-c',
-        'max_wal_size=2GB',
-        '-c',
-        'shared_buffers=512MB',
-        '-c',
-        'wal_compression=on',
+        "-c",
+        "logging_collector=on",
+        "-c",
+        "max_wal_size=2GB",
+        "-c",
+        "shared_buffers=512MB",
+        "-c",
+        "wal_compression=on",
       ]
     container_name: database
     cpu_count: 2
@@ -141,14 +141,14 @@ services:
       - pg.txt
     environment:
       POSTGRES_DB: immich
-      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_INITDB_ARGS: "--data-checksums"
     healthcheck:
-      test: pg_isready --dbname='immich' --username='postgres' || exit 1; Chksum="$$(psql --dbname='immich' --username='postgres' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1  # yamllint disable-line
+      test: pg_isready --dbname='immich' --username='postgres' || exit 1; Chksum="$$(psql --dbname='immich' --username='postgres' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1 # yamllint disable-line
       interval: 5m
       # start_interval: 30s
       start_period: 5m
     hostname: database
-    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0  # yamllint disable-line
+    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0 # yamllint disable-line
     mac_address: "0e:be:00:da:00:51"
     networks:
       macvlan1:
