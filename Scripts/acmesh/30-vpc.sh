@@ -7,9 +7,13 @@ ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
 	echo "Error: $ENV_FILE file not found!"
 	exit 1
 }
-set -a
-. "$ENV_FILE"
-set +a
+while IFS='=' read -r key value; do
+	[ -z "$key" ] && continue
+	case "$key" in
+		\#*) continue ;;
+	esac
+	export "$key=$value"
+done < "$ENV_FILE"
 
 scp -r -P "$PORT" -i /var/services/homes/Hannibal/.ssh/id_rsa /volume1/docker/acmesh "$USER"@"$HOST":~/
 ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<EOF
