@@ -1,12 +1,15 @@
 #!/bin/sh
 set -e
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SCRIPT_NAME=$(basename "$0")
-ENV_FILE="${SCRIPT_NAME%.sh}.txt"
+ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
 [ -f "$ENV_FILE" ] || {
 	echo "Error: $ENV_FILE file not found!"
 	exit 1
 }
-export "$(grep -v '^#' "$ENV_FILE" | xargs)"
+set -a
+. "$ENV_FILE"
+set +a
 
 scp -r -P "$PORT" -i /var/services/homes/Hannibal/.ssh/id_rsa /volume1/docker/acmesh "$USER"@"$HOST":~/
 ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<EOF

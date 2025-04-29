@@ -1,11 +1,14 @@
 #!/bin/sh
 set -e
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SCRIPT_NAME=$(basename "$0")
-ENV_FILE="${SCRIPT_NAME%.sh}.txt"
+ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
 [ -f "$ENV_FILE" ] || {
 	echo "Error: $ENV_FILE file not found!"
 	exit 1
 }
-export "$(grep -v '^#' "$ENV_FILE" | xargs)"
+set -a
+. "$ENV_FILE"
+set +a
 
 curl -s -k "https://www.smartdnsproxy.com/api/IP/update/$API_KEY"
