@@ -3,12 +3,11 @@
 
 import logging
 import os
-
 import discord
-from discord.ext import commands
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 import soco
+import spotipy
+from discord.ext import commands
+from spotipy.oauth2 import SpotifyOAuth
 
 # Set up logging
 logging.basicConfig(
@@ -17,15 +16,15 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
     datefmt="%Y-%m-%d - %H:%M:%S",
     level=logging.INFO,
-    encoding="utf-8"
+    encoding="utf-8",
 )
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger('discord').setLevel(logging.INFO)
-logging.getLogger('spotipy').setLevel(logging.INFO)
-logging.getLogger('soco').setLevel(logging.INFO)
+logging.getLogger("discord").setLevel(logging.INFO)
+logging.getLogger("spotipy").setLevel(logging.INFO)
+logging.getLogger("soco").setLevel(logging.INFO)
 
 # Load environment variables
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
@@ -40,7 +39,7 @@ required_env_vars = [
     "SPOTIPY_CLIENT_SECRET",
     "SPOTIPY_REDIRECT_URI",
     "DISCORD_BOT_TOKEN",
-    "CHANNEL_ID"
+    "CHANNEL_ID",
 ]
 
 for var in required_env_vars:
@@ -56,11 +55,11 @@ SCOPE = (
 )
 
 auth_manager = SpotifyOAuth(
-    client_id = SPOTIPY_CLIENT_ID,
-    client_secret = SPOTIPY_CLIENT_SECRET,
-    redirect_uri = SPOTIPY_REDIRECT_URI,
-    scope = SCOPE,
-    open_browser = False
+    client_id=SPOTIPY_CLIENT_ID,
+    client_secret=SPOTIPY_CLIENT_SECRET,
+    redirect_uri=SPOTIPY_REDIRECT_URI,
+    scope=SCOPE,
+    open_browser=False
 )
 spotify = spotipy.Spotify(auth_manager=auth_manager)
 
@@ -72,16 +71,18 @@ intents.message_content = True
 bot = commands.Bot(
     command_prefix="!",
     description="Björnify adds requested tracks to Björngrottan's Spotify playback queue",
-    intents=intents
+    intents=intents,
 )
+
 
 def refresh_spotify_token():
     """Force refresh Spotify access token."""
     global spotify  # pylint: disable=W0603
     _LOGGER.info("Refreshing Spotify access token manually.")
 
-    auth_manager.refresh_access_token(auth_manager.get_cached_token()['refresh_token'])
+    auth_manager.refresh_access_token(auth_manager.get_cached_token()["refresh_token"])
     spotify = spotipy.Spotify(auth_manager=auth_manager)
+
 
 def find_playing_speaker():
     """Find and return the currently playing Sonos speaker using SoCo."""
@@ -101,12 +102,12 @@ def find_playing_speaker():
 
         checked_coordinators.add(coordinator.uid)
 
-        state = coordinator.get_current_transport_info()['current_transport_state']
-        if state == 'PLAYING':
+        state = coordinator.get_current_transport_info()["current_transport_state"]
+        if state == "PLAYING":
             _LOGGER.info(
                 "Currently playing coordinator: %s (%s)",
                 coordinator.player_name,
-                coordinator.ip_address
+                coordinator.ip_address,
             )
             members_info = "\n".join(
                 f" - {member.player_name} ({member.ip_address})"
@@ -118,6 +119,7 @@ def find_playing_speaker():
 
     _LOGGER.info("No Sonos speakers are currently playing.")
     return None
+
 
 def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
     """Try a Spotify action, fallback to a SoCo action if Spotify fails with 403."""
@@ -142,7 +144,8 @@ def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
                     return "🚫"
             if e.http_status == 403:
                 _LOGGER.warning(
-                    "Spotify refused to %s: Restricted device. Trying with SoCo.", action_name
+                    "Spotify refused to %s: Restricted device. Trying with SoCo.",
+                    action_name
                 )
                 playing_speaker = find_playing_speaker()
                 if playing_speaker:
@@ -164,10 +167,12 @@ def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
     _LOGGER.debug("%s failed: no playback found.", action_name.capitalize())
     return "🚫"
 
+
 @bot.event
 async def on_ready():
     """Bot logged in"""
     _LOGGER.info("Logged in as %s", bot.user)
+
 
 @bot.event
 async def on_message(message):
@@ -193,6 +198,7 @@ async def on_message(message):
         elif query.startswith("!pause") or query.startswith("!stop"):
             response = await bot.loop.run_in_executor(None, player_pause_playback)
             await message.add_reaction(response)
+
 
 def player_add_item_to_playback_queue(query):
     """Add the track to the playback queue if there are any search results"""
@@ -243,6 +249,7 @@ def player_add_item_to_playback_queue(query):
         _LOGGER.error("Unexpected error during add to queue: %s", e)
         return "Failed to add track to queue."
 
+
 def player_skip_to_next():
     """Skip to next track"""
     return spotify_action_with_soco_fallback(
@@ -251,6 +258,7 @@ def player_skip_to_next():
         action_name="skip to next track"
     )
 
+
 def player_pause_playback():
     """Pause playback"""
     return spotify_action_with_soco_fallback(
@@ -258,6 +266,7 @@ def player_pause_playback():
         soco_action=lambda speaker: speaker.pause(),
         action_name="pause playback"
     )
+
 
 # Run the bot
 bot.run(DISCORD_BOT_TOKEN)

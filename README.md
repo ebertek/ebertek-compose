@@ -96,7 +96,7 @@ A collection of Docker Compose files and shell scripts.
 
 ## Requirements
 - Docker and Docker Compose.
-    - Synology's Container Manager contains an old version of Docker; the [synology-docker](https://github.com/markdumay/synology-docker) script can be used to update it.
+  - Synology's Container Manager contains an old version of Docker; the [synology-docker](https://github.com/markdumay/synology-docker) script can be used to update it.
 - Some folders require specific environment files.
 
 ## Usage
@@ -112,7 +112,7 @@ A collection of Docker Compose files and shell scripts.
 2. Update the `.txt` files with your own secrets.
 3. Deploy:
 
-    ```
+    ```sh
     cd <folder-name>
     docker compose up -d
     ```
