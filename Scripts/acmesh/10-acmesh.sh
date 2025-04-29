@@ -10,7 +10,7 @@ ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
 while IFS='=' read -r key value; do
 	[ -z "$key" ] && continue
 	case "$key" in
-		\#*) continue ;;
+	\#*) continue ;;
 	esac
 	export "$key=$value"
 done < "$ENV_FILE"
