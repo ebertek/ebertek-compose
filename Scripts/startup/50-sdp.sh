@@ -13,6 +13,6 @@ while IFS='=' read -r key value; do
 	\#*) continue ;;
 	esac
 	export "$key=$value"
-done < "$ENV_FILE"
+done <"$ENV_FILE"
 
 curl -s -k "https://www.smartdnsproxy.com/api/IP/update/$API_KEY"

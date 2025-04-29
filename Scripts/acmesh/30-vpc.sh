@@ -13,7 +13,7 @@ while IFS='=' read -r key value; do
 	\#*) continue ;;
 	esac
 	export "$key=$value"
-done < "$ENV_FILE"
+done <"$ENV_FILE"
 
 scp -r -P "$PORT" -i /var/services/homes/Hannibal/.ssh/id_rsa /volume1/docker/acmesh "$USER"@"$HOST":~/
 ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<EOF

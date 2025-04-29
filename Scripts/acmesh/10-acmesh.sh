@@ -13,7 +13,7 @@ while IFS='=' read -r key value; do
 	\#*) continue ;;
 	esac
 	export "$key=$value"
-done < "$ENV_FILE"
+done <"$ENV_FILE"
 
 docker exec acmesh --issue -d tnt.photo -d '*.tnt.photo' -d '*.int.tnt.photo' -d '*.ext.tnt.photo' --challenge-alias 'tnt.photo' --server letsencrypt --dns dns_cf --force
 docker exec acmesh --issue -d melindaban.com -d '*.melindaban.com' --server letsencrypt --dns dns_cf --force

@@ -13,7 +13,7 @@ while IFS='=' read -r key value; do
 	\#*) continue ;;
 	esac
 	export "$key=$value"
-done < "$ENV_FILE"
+done <"$ENV_FILE"
 
 rm /volume1/docker/hass/config/ssl/fullchain.cer
 rm /volume1/docker/hass/config/ssl/tnt.photo.key

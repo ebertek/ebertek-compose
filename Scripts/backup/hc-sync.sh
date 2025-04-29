@@ -13,7 +13,7 @@ while IFS='=' read -r key value; do
 	\#*) continue ;;
 	esac
 	export "$key=$value"
-done < "$ENV_FILE"
+done <"$ENV_FILE"
 
 echo Backing up to Yggdrasil...
 rsync -e "ssh -p $PORT" -av --exclude docker/ /mnt/data/ "$USER@$HOST:/volume1/NetBackup/backupdata/"
