@@ -1,7 +1,7 @@
 # ebertek-compose
-A collection of Docker Compose files for various self-hosted services.
+A collection of Docker Compose files and shell scripts.
 
-## Services
+## Docker Compose
 
 ### [ebertek/](ebertek/)
 - **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
@@ -64,9 +64,39 @@ A collection of Docker Compose files for various self-hosted services.
 - **[smtp](https://hub.docker.com/r/turgon37/smtp-relay)**: Postfix SMTP server configured as an SMTP relay.
 - **[dbeaver](https://hub.docker.com/r/dbeaver/cloudbeaver)**: Cloud database manager.
 
+## Scripts
+
+### [Scripts/](Scripts/)
+- **pull_persistent**: Pull persistent files that should be version tracked.
+- **thang010146**: Back up videos from [Nguyen Duc Thang](https://www.youtube.com/user/thang010146).
+- **update-matter**: Fix routing between _matter\_server_ and Matter devices.
+
+### [acmesh/](Scripts/acmesh/)
+- **10-acmesh**: Renew all certificates.
+- **20-plex**: Replace _plex_ certificate.
+- **30-vpc**: Replace _tntphoto_ certificates.
+- **40-syno**: Replace Synology certificates.
+- **50-hass**: Replace _hass_ certificates.
+- **60-npm**: Replace _npm_ certificates.
+
+### [backup/](Scripts/backup/)
+- **hc-sync**: Back up persistent storage from _tntphoto_.
+- **photo-sync**: Back up photos.
+- **ygg-sync**: Back up persistent storage from NAS.
+
+### [startup/](Scripts/startup/)
+- **00-startup**: Load all other scripts.
+- **10-fix-sysctl**: Allow memory overcommit, increase the maximum number of incoming connections, fix networking for Docker, increase file system watch limit, [update Docker]((https://github.com/markdumay/synology-docker)), [update Synology compatible drive database](https://github.com/007revad/Synology_HDD_db).
+- **20-insmod-tun**: Load the `tun` kernel module required for VPN.
+- **30-macvlan**: Fix routing between the host and the Macvlan network used by _ygg_.
+- **40-disable-active_insight**: Remove Synology Active Insight.
+- **50-sdp**: Active current IP for [Smart DNS Proxy](https://www.smartdnsproxy.com/services/).
+- **60-rclone**: Update [rclone](https://rclone.org).
+- **70-youtube**: Update [yt-dlp](https://github.com/yt-dlp/yt-dlp).
+
 ## Requirements
-- Docker.
-- Docker Compose.
+- Docker and Docker Compose.
+    - Synology's Container Manager contains an old version of Docker; the [synology-docker](https://github.com/markdumay/synology-docker) script can be used to update it.
 - Some folders require specific environment files.
 
 ## Usage
