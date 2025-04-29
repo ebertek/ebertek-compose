@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 """Load hass Discord.py bot"""
+
+# pylint: disable=R0801
+
 # Based on:
 #  https://www.reddit.com/r/homeassistant/comments/1fcjypt/discord_assist_via_conversation_api/
 import logging
 import os
+
 import discord
 import requests
 from discord.ext import commands

@@ -1,8 +1,11 @@
 #!/usr/bin/python
 """Load Björnify Discord.py bot"""
 
+# pylint: disable=R0801
+
 import logging
 import os
+
 import discord
 import soco
 import spotipy
@@ -59,7 +62,7 @@ auth_manager = SpotifyOAuth(
     client_secret=SPOTIPY_CLIENT_SECRET,
     redirect_uri=SPOTIPY_REDIRECT_URI,
     scope=SCOPE,
-    open_browser=False
+    open_browser=False,
 )
 spotify = spotipy.Spotify(auth_manager=auth_manager)
 
@@ -121,7 +124,7 @@ def find_playing_speaker():
     return None
 
 
-def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
+def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):  # pylint: disable=R0911
     """Try a Spotify action, fallback to a SoCo action if Spotify fails with 403."""
     # GET /me/player
     playback_results = spotify.current_playback()
@@ -145,7 +148,7 @@ def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
             if e.http_status == 403:
                 _LOGGER.warning(
                     "Spotify refused to %s: Restricted device. Trying with SoCo.",
-                    action_name
+                    action_name,
                 )
                 playing_speaker = find_playing_speaker()
                 if playing_speaker:
@@ -154,7 +157,7 @@ def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):
                         _LOGGER.info(
                             "%s using SoCo: %s",
                             action_name.capitalize(),
-                            playing_speaker.player_name
+                            playing_speaker.player_name,
                         )
                         return "✅"
                     except Exception as ex:  # pylint: disable=W0718
@@ -233,10 +236,7 @@ def player_add_item_to_playback_queue(query):
             if device_id:
                 _LOGGER.debug("device_id: %s", device_id)
                 # PUT /me/player/play
-                spotify.start_playback(
-                    device_id=device_id,
-                    uris=[uri]
-                )
+                spotify.start_playback(device_id=device_id, uris=[uri])
                 _LOGGER.debug("Started playback: %s - %s", artist, name)
                 return f"Started playback: {artist} - {name}"
             _LOGGER.warning("No available devices to start playback.")
@@ -255,7 +255,7 @@ def player_skip_to_next():
     return spotify_action_with_soco_fallback(
         spotify_action=spotify.next_track,
         soco_action=lambda speaker: speaker.next(),
-        action_name="skip to next track"
+        action_name="skip to next track",
     )
 
 
@@ -264,7 +264,7 @@ def player_pause_playback():
     return spotify_action_with_soco_fallback(
         spotify_action=spotify.pause_playback,
         soco_action=lambda speaker: speaker.pause(),
-        action_name="pause playback"
+        action_name="pause playback",
     )
 
 

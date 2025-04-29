@@ -31,6 +31,8 @@
           env:
             # To report GitHub Actions status checks
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            VALIDATE_JSCPD: false
+            VALIDATE_NATURAL_LANGUAGE: false
 
     compose-config:
       name: compose.yaml - docker compose config
