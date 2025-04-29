@@ -11,7 +11,15 @@ jobs:
     steps:
       - name: Send repository_dispatch to ygg-compose
         run: |
-          curl -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
+          set -e
+          echo "Sending repository_dispatch to repo3..."
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-            -d '{"event_type": "trigger-sync"}'
+            -d '{"event_type": "trigger-sync"}')
+
+          echo "HTTP Response: $HTTP_RESPONSE"
+          if [ "$HTTP_RESPONSE" -ne 204 ]; then
+            echo "Error: Failed to dispatch event. HTTP Status: $HTTP_RESPONSE"
+            exit 1
+          fi
