@@ -1,51 +1,51 @@
 ---
-  name: Lint
-  
-  on: # yamllint disable-line rule:truthy
-    push: null
-    pull_request: null
-  
-  permissions: {}
-  
-  jobs:
-    build:
-      name: Lint
-      runs-on: ubuntu-latest
-  
-      permissions:
-        contents: read
-        packages: read
-        # To report GitHub Actions status checks
-        statuses: write
-  
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-          with:
-            # super-linter needs the full git history to get the
-            # list of files that changed across commits
-            fetch-depth: 0
-  
-        - name: Super-linter
-          uses: super-linter/super-linter/slim@v7.3.0 # x-release-please-version
-          env:
-            # To report GitHub Actions status checks
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            VALIDATE_JSCPD: false
-            VALIDATE_NATURAL_LANGUAGE: false
+name: Lint
 
-    compose-config:
-      name: compose.yaml - docker compose config
-      runs-on: ubuntu-latest
-  
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-  
-        - name: Validate docker compose config
-          run: |
-            find . -name 'compose.yaml' -print0 \
-              | while IFS= read -r -d '' file; do
-                echo "Validating $file"
-                docker compose -f "$file" config
-              done
+on: # yamllint disable-line rule:truthy
+  push: null
+  pull_request: null
+
+permissions: {}
+
+jobs:
+  build:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+      # To report GitHub Actions status checks
+      statuses: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # super-linter needs the full git history to get the
+          # list of files that changed across commits
+          fetch-depth: 0
+
+      - name: Super-linter
+        uses: super-linter/super-linter/slim@v7.3.0 # x-release-please-version
+        env:
+          # To report GitHub Actions status checks
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JSCPD: false
+          VALIDATE_NATURAL_LANGUAGE: false
+
+  compose-config:
+    name: compose.yaml - docker compose config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate docker compose config
+        run: |
+          find . -name 'compose.yaml' -print0 \
+            | while IFS= read -r -d '' file; do
+              echo "Validating $file"
+              docker compose -f "$file" config
+            done

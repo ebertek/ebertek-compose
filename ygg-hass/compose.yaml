@@ -147,4 +147,3 @@ services:
     volumes:
       - "/volume1/docker/hass/esphome:/config"
       - "/etc/localtime:/etc/localtime:ro"
-...

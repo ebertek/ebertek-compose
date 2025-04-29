@@ -93,4 +93,3 @@ services:
       - "/volume1/Downloads:/downloads"
       - "/volume1/docker/qbittorrent:/config"
       - "/volume1/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
-...

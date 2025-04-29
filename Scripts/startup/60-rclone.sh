@@ -12,7 +12,10 @@ set -e
 # when adding a tool to the list make sure to also add its corresponding command further in the script
 unzip_tools_list=('unzip' '7z' 'busybox')
 
-usage() { echo "Usage: sudo -v ; curl https://rclone.org/install.sh | sudo bash [-s beta]" 1>&2; exit 1; }
+usage() {
+	echo "Usage: sudo -v ; curl https://rclone.org/install.sh | sudo bash [-s beta]" 1>&2
+	exit 1
+}
 
 # check for beta flag
 if [ -n "$1" ] && [ "$1" != "beta" ]; then
@@ -93,13 +96,13 @@ esac
 
 OS_type="$(uname -m)"
 case "$OS_type" in
-x86_64|amd64)
+x86_64 | amd64)
 	OS_type='amd64'
 	;;
-i?86|x86)
+i?86 | x86)
 	OS_type='386'
 	;;
-aarch64|arm64)
+aarch64 | arm64)
 	OS_type='arm64'
 	;;
 armv7*)
@@ -160,7 +163,7 @@ case "$OS" in
 		mandb
 	fi
 	;;
-'freebsd'|'openbsd'|'netbsd')
+'freebsd' | 'openbsd' | 'netbsd')
 	cp rclone /usr/bin/rclone.new
 	chown root:wheel /usr/bin/rclone.new
 	mv /usr/bin/rclone.new /usr/bin/rclone

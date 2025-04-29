@@ -157,4 +157,3 @@ services:
         ipv4_address: 10.4.21.43
     volumes:
       - "/volume1/docker/dbeaver:/opt/cloudbeaver/workspace"
-...

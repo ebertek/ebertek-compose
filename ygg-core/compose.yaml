@@ -126,4 +126,3 @@ services:
       - "/volume1/docker/acmesh:/etc/letsencrypt"
       - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/data/custom_ssl/npm-2/fullchain.pem"
       - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/data/custom_ssl/npm-2/privkey.pem"
-...

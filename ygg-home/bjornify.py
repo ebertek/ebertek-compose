@@ -124,7 +124,9 @@ def find_playing_speaker():
     return None
 
 
-def spotify_action_with_soco_fallback(spotify_action, soco_action, action_name):  # pylint: disable=R0911
+def spotify_action_with_soco_fallback(
+    spotify_action, soco_action, action_name
+):  # pylint: disable=R0911
     """Try a Spotify action, fallback to a SoCo action if Spotify fails with 403."""
     # GET /me/player
     playback_results = spotify.current_playback()
