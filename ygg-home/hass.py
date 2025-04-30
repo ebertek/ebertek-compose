@@ -76,24 +76,24 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     """Bot logged in"""
-    logging.info("Logged in as %s", bot.user)
+    _LOGGER.info("Logged in as %s", bot.user)
 
 
 @bot.event
 async def on_message(message):
     """New message"""
-    logging.debug("New message in %s", message.channel.id)
+    _LOGGER.debug("New message in %s", message.channel.id)
     # Ignore the bot's own messages
     if message.author == bot.user or message.author.bot:
-        logging.debug("Message ignored from %s", message.author)
+        _LOGGER.debug("Message ignored from %s", message.author)
         return
 
     # Check if the message is in the specified channel
-    logging.debug("Check if it matches %s", CHANNEL_ID)
+    _LOGGER.debug("Check if it matches %s", CHANNEL_ID)
     if int(message.channel.id) == int(CHANNEL_ID):
-        logging.debug("Channel matches")
+        _LOGGER.debug("Channel matches")
         query = message.content
-        logging.debug("Query: %s", query)
+        _LOGGER.debug("Query: %s", query)
         response = send_query_to_ha_assist(query)  # Send the query to HA Assist
         await message.channel.send(response)  # Respond in the same channel
 
@@ -111,12 +111,12 @@ def send_query_to_ha_assist(query):
     response = requests.post(url, json=data, headers=headers, timeout=30)
 
     if response.status_code == 200:
-        logging.debug("Response: %s", str(response.json()))
+        _LOGGER.debug("Response: %s", str(response.json()))
         return response.json()["response"]["speech"]["plain"][
             "speech"
         ]  # Extract the response text
 
-    logging.info("Error communicating with Home Assistant.")
+    _LOGGER.info("Error communicating with Home Assistant.")
     return "Error communicating with Home Assistant."
 
 
