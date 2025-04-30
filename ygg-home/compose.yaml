@@ -102,6 +102,7 @@ services:
     user: "1028:100"
     volumes:
       - "/volume1/docker/discordpy/logs:/app/logs"
+      - "/volume1/docker/discordpy/secrets:/app/secrets"
 
   tmm:
     <<: *env

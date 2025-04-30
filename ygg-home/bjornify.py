@@ -79,6 +79,7 @@ auth_manager = SpotifyOAuth(
     redirect_uri=SPOTIPY_REDIRECT_URI,
     scope=SCOPE,
     open_browser=False,
+    cache_path="/app/secrets/spotipy_token.cache",
 )
 spotify = spotipy.Spotify(auth_manager=auth_manager)
 
