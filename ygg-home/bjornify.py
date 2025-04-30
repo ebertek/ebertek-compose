@@ -38,9 +38,11 @@ _LOGGER = logging.getLogger("bjornify")
 _LOGGER.setLevel(logging.DEBUG)
 _LOGGER.propagate = True  # Let messages bubble up to root
 
-# Reduce verbosity of specific discord submodules
+# Reduce verbosity
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
+logging.getLogger("discord.http").setLevel(logging.WARNING)
 logging.getLogger("discord.state").setLevel(logging.WARNING)
 
 # Load environment variables
