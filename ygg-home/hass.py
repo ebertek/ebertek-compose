@@ -12,15 +12,34 @@ import discord
 import requests
 from discord.ext import commands
 
-# Set up logging
-logging.basicConfig(
-    filename="logs/hass.log",
-    filemode="w",
-    format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
-    datefmt="%Y-%m-%d - %H:%M:%S",
-    level=logging.INFO,
-    encoding="utf-8",
+LOG_PATH = "logs/hass.log"
+
+# Make sure log folder exists
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
+# Create and configure file handler
+file_handler = logging.FileHandler(LOG_PATH, mode="w", encoding="utf-8")
+file_handler.setFormatter(
+    logging.Formatter(
+        "%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
+        "%Y-%m-%d - %H:%M:%S",
+    )
 )
+
+# Apply to root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)  # Log everything
+root_logger.addHandler(file_handler)
+
+# Create app-specific logger
+_LOGGER = logging.getLogger("hass")
+_LOGGER.setLevel(logging.DEBUG)
+_LOGGER.propagate = True  # Let messages bubble up to root
+
+# Reduce verbosity of specific discord submodules
+logging.getLogger("discord.client").setLevel(logging.WARNING)
+logging.getLogger("discord.gateway").setLevel(logging.WARNING)
+logging.getLogger("discord.state").setLevel(logging.WARNING)
 
 # Load environment variables
 DISCORD_BOT_TOKEN = os.getenv("HASS_DISCORD_BOT_TOKEN")
