@@ -322,7 +322,7 @@ class Add(commands.Cog):
         return [
             app_commands.Choice(
                 name=f"{track['artists'][0]['name']} - {track['name']}",
-                value=track['uri'],
+                value=track["uri"],
             )
             for track in tracks
         ]
@@ -339,8 +339,7 @@ class Add(commands.Cog):
 
             if not tracks:
                 await interaction.response.send_message(
-                    "🚫 No results found.",
-                    ephemeral=True
+                    "🚫 No results found.", ephemeral=True
                 )
                 return
 
@@ -348,13 +347,14 @@ class Add(commands.Cog):
             options = [
                 discord.SelectOption(
                     label=f"{track['artists'][0]['name']} - {track['name']}",
-                    value=track['uri'],
+                    value=track["uri"],
                 )
                 for track in tracks
             ]
 
-            class FallbackDropdown(discord.ui.Select):
+            class FallbackDropdown(discord.ui.Select):  # pylint: disable=too-few-public-methods
                 """Dropdown UI for selecting a fallback track from search results."""
+
                 def __init__(self):
                     super().__init__(
                         placeholder="Select a track to queue",
@@ -376,8 +376,9 @@ class Add(commands.Cog):
                             f"🚫 Failed to add track: {e}", delete_after=10
                         )
 
-            class FallbackDropdownView(discord.ui.View):
+            class FallbackDropdownView(discord.ui.View):  # pylint: disable=too-few-public-methods
                 """View that wraps the fallback dropdown for track selection."""
+
                 def __init__(self):
                     super().__init__(timeout=30)
                     self.add_item(FallbackDropdown())
