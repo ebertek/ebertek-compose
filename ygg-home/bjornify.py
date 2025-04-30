@@ -352,7 +352,9 @@ class Add(commands.Cog):
                 for track in tracks
             ]
 
-            class FallbackDropdown(discord.ui.Select):  # pylint: disable=too-few-public-methods
+            class FallbackDropdown(
+                discord.ui.Select
+            ):  # pylint: disable=too-few-public-methods
                 """Dropdown UI for selecting a fallback track from search results."""
 
                 def __init__(self):
@@ -376,7 +378,9 @@ class Add(commands.Cog):
                             f"🚫 Failed to add track: {e}", delete_after=10
                         )
 
-            class FallbackDropdownView(discord.ui.View):  # pylint: disable=too-few-public-methods
+            class FallbackDropdownView(
+                discord.ui.View
+            ):  # pylint: disable=too-few-public-methods
                 """View that wraps the fallback dropdown for track selection."""
 
                 def __init__(self):
