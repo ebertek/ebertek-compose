@@ -196,6 +196,7 @@ async def on_ready():
 @bot.command()
 @commands.is_owner()
 async def sync(ctx):
+    """Sync global slash commands with Discord."""
     await bot.tree.sync()
     await ctx.send("✅ Slash commands synced globally.")
 
@@ -203,6 +204,7 @@ async def sync(ctx):
 @bot.command()
 @commands.is_owner()
 async def resync(ctx):
+    """Clear and resync all slash commands with Discord."""
     bot.tree.clear_commands()
     await bot.tree.sync()
     await ctx.send("✅ Slash commands cleared and resynced.")
@@ -300,11 +302,12 @@ def player_pause_playback():
 
 
 class Add(commands.Cog):
+    """Cog for handling slash command /add with autocomplete and fallback UI."""
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, discord_bot):
+        self.bot = discord_bot
 
-    async def autocomplete_tracks(self, interaction: discord.Interaction, current: str):
+    async def autocomplete_tracks(self, _: discord.Interaction, current: str):
         """Fetch Spotify search suggestions based on current input"""
         if not current:
             return []
@@ -351,6 +354,7 @@ class Add(commands.Cog):
             ]
 
             class FallbackDropdown(discord.ui.Select):
+                """Dropdown UI for selecting a fallback track from search results."""
                 def __init__(self):
                     super().__init__(
                         placeholder="Select a track to queue",
@@ -360,6 +364,7 @@ class Add(commands.Cog):
                     )
 
                 async def callback(self, interaction_dropdown: discord.Interaction):
+                    """Handle user selection and add the chosen track to the Spotify queue."""
                     uri = self.values[0]
                     try:
                         spotify.add_to_queue(uri)
@@ -372,6 +377,7 @@ class Add(commands.Cog):
                         )
 
             class FallbackDropdownView(discord.ui.View):
+                """View that wraps the fallback dropdown for track selection."""
                 def __init__(self):
                     super().__init__(timeout=30)
                     self.add_item(FallbackDropdown())
@@ -394,6 +400,7 @@ class Add(commands.Cog):
 
 
 async def main():
+    """Initialize the bot, add cogs, and start it."""
     await bot.add_cog(Add(bot))
     await bot.start(DISCORD_BOT_TOKEN)
 
