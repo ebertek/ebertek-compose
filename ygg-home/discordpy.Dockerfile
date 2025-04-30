@@ -21,7 +21,7 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Update PATH to include user base binary directory
 ENV PATH="/home/appuser/.local/bin:${PATH}"
