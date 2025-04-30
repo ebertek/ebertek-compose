@@ -14,17 +14,19 @@ from discord import app_commands
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyOAuth
 
-log_path = "logs/bjornify.log"
+LOG_PATH = "logs/bjornify.log"
 
 # Make sure log folder exists
-os.makedirs(os.path.dirname(log_path), exist_ok=True)
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
 
 # Create and configure file handler
-file_handler = logging.FileHandler(log_path, mode="w", encoding="utf-8")
-file_handler.setFormatter(logging.Formatter(
-    "%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
-    "%Y-%m-%d - %H:%M:%S"
-))
+file_handler = logging.FileHandler(LOG_PATH, mode="w", encoding="utf-8")
+file_handler.setFormatter(
+    logging.Formatter(
+        "%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
+        "%Y-%m-%d - %H:%M:%S",
+    )
+)
 
 # Apply to root logger
 root_logger = logging.getLogger()
@@ -298,6 +300,7 @@ def player_pause_playback():
 
 
 class Add(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -316,7 +319,7 @@ class Add(commands.Cog):
         return [
             app_commands.Choice(
                 name=f"{track['artists'][0]['name']} - {track['name']}",
-                value=track['uri']
+                value=track['uri'],
             )
             for track in tracks
         ]
@@ -332,44 +335,62 @@ class Add(commands.Cog):
             tracks = results.get("tracks", {}).get("items", [])
 
             if not tracks:
-                await interaction.response.send_message("🚫 No results found.", ephemeral=True)
+                await interaction.response.send_message(
+                    "🚫 No results found.",
+                    ephemeral=True
+                )
                 return
 
             # Build fallback dropdown
             options = [
                 discord.SelectOption(
                     label=f"{track['artists'][0]['name']} - {track['name']}",
-                    value=track['uri']
+                    value=track['uri'],
                 )
                 for track in tracks
             ]
 
             class FallbackDropdown(discord.ui.Select):
                 def __init__(self):
-                    super().__init__(placeholder="Select a track to queue", min_values=1, max_values=1, options=options)
+                    super().__init__(
+                        placeholder="Select a track to queue",
+                        min_values=1,
+                        max_values=1,
+                        options=options,
+                    )
 
                 async def callback(self, interaction_dropdown: discord.Interaction):
                     uri = self.values[0]
                     try:
                         spotify.add_to_queue(uri)
-                        await interaction_dropdown.response.send_message("✅ Queued selected track!", delete_after=10)
+                        await interaction_dropdown.response.send_message(
+                            "✅ Queued selected track!", delete_after=10
+                        )
                     except spotipy.exceptions.SpotifyException as e:
-                        await interaction_dropdown.response.send_message(f"🚫 Failed to add track: {e}", delete_after=10)
+                        await interaction_dropdown.response.send_message(
+                            f"🚫 Failed to add track: {e}", delete_after=10
+                        )
 
             class FallbackDropdownView(discord.ui.View):
                 def __init__(self):
                     super().__init__(timeout=30)
                     self.add_item(FallbackDropdown())
 
-            await interaction.response.send_message("Select a track:", view=FallbackDropdownView())
+            await interaction.response.send_message(
+                "Select a track:", view=FallbackDropdownView()
+            )
             return
 
         # Normal case: user selected a real URI via autocomplete
         try:
             spotify.add_to_queue(query)
-            await interaction.response.send_message("✅ Queued selected track!", delete_after=10)
+            await interaction.response.send_message(
+                "✅ Queued selected track!", delete_after=10
+            )
         except spotipy.exceptions.SpotifyException as e:
-            await interaction.response.send_message(f"🚫 Failed to add track: {e}", delete_after=10)
+            await interaction.response.send_message(
+                f"🚫 Failed to add track: {e}", delete_after=10
+            )
 
 
 async def main():
