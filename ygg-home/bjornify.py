@@ -3,12 +3,14 @@
 
 # pylint: disable=R0801
 
+import asyncio
 import logging
 import os
 
 import discord
 import soco
 import spotipy
+from discord import app_commands
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyOAuth
 
@@ -189,6 +191,21 @@ async def on_ready():
     _LOGGER.info("Logged in as %s", bot.user)
 
 
+@bot.command()
+@commands.is_owner()
+async def sync(ctx):
+    await bot.tree.sync()
+    await ctx.send("✅ Slash commands synced globally.")
+
+
+@bot.command()
+@commands.is_owner()
+async def resync(ctx):
+    bot.tree.clear_commands()
+    await bot.tree.sync()
+    await ctx.send("✅ Slash commands cleared and resynced.")
+
+
 @bot.event
 async def on_message(message):
     """New message"""
@@ -280,5 +297,84 @@ def player_pause_playback():
     )
 
 
-# Run the bot
-bot.run(DISCORD_BOT_TOKEN)
+class Add(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    async def autocomplete_tracks(self, interaction: discord.Interaction, current: str):
+        """Fetch Spotify search suggestions based on current input"""
+        if not current:
+            return []
+
+        try:
+            results = spotify.search(q=current, limit=5, type="track")
+        except spotipy.exceptions.SpotifyException:
+            return []
+
+        tracks = results.get("tracks", {}).get("items", [])
+
+        return [
+            app_commands.Choice(
+                name=f"{track['artists'][0]['name']} - {track['name']}",
+                value=track['uri']
+            )
+            for track in tracks
+        ]
+
+    @app_commands.command(name="add", description="Add a song to the Spotify queue")
+    @app_commands.describe(query="Search for a song")
+    @app_commands.autocomplete(query=autocomplete_tracks)
+    async def add(self, interaction: discord.Interaction, query: str):
+        """Command that queues the selected song"""
+        if not query.startswith("spotify:track:"):
+            # fallback mode: query is not a URI, it's a search string
+            results = spotify.search(q=query, limit=5, type="track")
+            tracks = results.get("tracks", {}).get("items", [])
+
+            if not tracks:
+                await interaction.response.send_message("🚫 No results found.", ephemeral=True)
+                return
+
+            # Build fallback dropdown
+            options = [
+                discord.SelectOption(
+                    label=f"{track['artists'][0]['name']} - {track['name']}",
+                    value=track['uri']
+                )
+                for track in tracks
+            ]
+
+            class FallbackDropdown(discord.ui.Select):
+                def __init__(self):
+                    super().__init__(placeholder="Select a track to queue", min_values=1, max_values=1, options=options)
+
+                async def callback(self, interaction_dropdown: discord.Interaction):
+                    uri = self.values[0]
+                    try:
+                        spotify.add_to_queue(uri)
+                        await interaction_dropdown.response.send_message("✅ Queued selected track!", delete_after=10)
+                    except spotipy.exceptions.SpotifyException as e:
+                        await interaction_dropdown.response.send_message(f"🚫 Failed to add track: {e}", delete_after=10)
+
+            class FallbackDropdownView(discord.ui.View):
+                def __init__(self):
+                    super().__init__(timeout=30)
+                    self.add_item(FallbackDropdown())
+
+            await interaction.response.send_message("Select a track:", view=FallbackDropdownView())
+            return
+
+        # Normal case: user selected a real URI via autocomplete
+        try:
+            spotify.add_to_queue(query)
+            await interaction.response.send_message("✅ Queued selected track!", delete_after=10)
+        except spotipy.exceptions.SpotifyException as e:
+            await interaction.response.send_message(f"🚫 Failed to add track: {e}", delete_after=10)
+
+
+async def main():
+    await bot.add_cog(Add(bot))
+    await bot.start(DISCORD_BOT_TOKEN)
+
+
+asyncio.run(main())
