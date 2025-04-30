@@ -17,11 +17,11 @@ RUN adduser --disabled-password --gecos '' appuser
 # Give appuser ownership of the /app directory
 RUN chown -R appuser:appuser /app
 
-# Switch to non-root user
-USER appuser
-
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Switch to non-root user
+USER appuser
 
 # Update PATH to include user base binary directory
 ENV PATH="/home/appuser/.local/bin:${PATH}"
