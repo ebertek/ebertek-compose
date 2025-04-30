@@ -44,6 +44,8 @@ logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 logging.getLogger("discord.http").setLevel(logging.WARNING)
 logging.getLogger("discord.state").setLevel(logging.WARNING)
+logging.getLogger("spotipy.client").setLevel(logging.INFO)
+logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Load environment variables
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
