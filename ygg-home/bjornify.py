@@ -12,22 +12,32 @@ import spotipy
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyOAuth
 
-# Set up logging
-logging.basicConfig(
-    filename="logs/bjornify.log",
-    filemode="w",
-    format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
-    datefmt="%Y-%m-%d - %H:%M:%S",
-    level=logging.INFO,
-    encoding="utf-8",
-)
+log_path = "logs/bjornify.log"
 
-_LOGGER = logging.getLogger(__name__)
+# Make sure log folder exists
+os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+# Create and configure file handler
+file_handler = logging.FileHandler(log_path, mode="w", encoding="utf-8")
+file_handler.setFormatter(logging.Formatter(
+    "%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
+    "%Y-%m-%d - %H:%M:%S"
+))
+
+# Apply to root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)  # Log everything
+root_logger.addHandler(file_handler)
+
+# Create app-specific logger
+_LOGGER = logging.getLogger("bjornify")
 _LOGGER.setLevel(logging.DEBUG)
-logging.getLogger().setLevel(logging.INFO)
-logging.getLogger("discord").setLevel(logging.INFO)
-logging.getLogger("spotipy").setLevel(logging.INFO)
-logging.getLogger("soco").setLevel(logging.INFO)
+_LOGGER.propagate = True  # Let messages bubble up to root
+
+# Reduce verbosity of specific discord submodules
+logging.getLogger("discord.client").setLevel(logging.WARNING)
+logging.getLogger("discord.gateway").setLevel(logging.WARNING)
+logging.getLogger("discord.state").setLevel(logging.WARNING)
 
 # Load environment variables
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
