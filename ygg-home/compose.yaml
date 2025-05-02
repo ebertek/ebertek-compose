@@ -79,10 +79,6 @@ services:
 
   discordpy:
     <<: *env
-    build:
-      context: .
-      dockerfile: discordpy.Dockerfile
-      network: host
     container_name: discordpy
     cpu_count: 1
     deploy:
@@ -92,8 +88,7 @@ services:
           memory: 250M
     env_file: discordpy.txt
     hostname: discordpy
-    labels:
-      com.centurylinklabs.watchtower.enable: false
+    image: "ghcr.io/ebertek/bjornify:latest"
     mac_address: "0e:be:00:da:00:52"
     networks:
       macvlan1:
