@@ -125,7 +125,10 @@ def find_playing_speaker():
         checked_coordinators.add(coordinator.uid)
 
         state = coordinator.get_current_transport_info()["current_transport_state"]
-        if state == "PLAYING":
+        media_info = coordinator.get_current_media_info()
+        uri = media_info.get("uri", "")
+
+        if state == "PLAYING" and "x-sonos-spotify:" in uri:
             _LOGGER.info(
                 "Currently playing coordinator: %s (%s)",
                 coordinator.player_name,
