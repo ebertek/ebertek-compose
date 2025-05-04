@@ -2,15 +2,17 @@
 name: Trigger ygg-compose sync
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Lint"]
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
   dispatch:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Send repository_dispatch to ygg-compose
