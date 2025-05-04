@@ -3,6 +3,7 @@ SPOTIPY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SPOTIPY_REDIRECT_URI=http://localhost:3000
 DISCORD_BOT_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 CHANNEL_ID=xxxxxxxxxxxxxxxxxxx
+GUILD_ID=xxxxxxxxxxxxxxxxxxx
 HASS_DISCORD_BOT_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 HASS_CHANNEL_ID=xxxxxxxxxxxxxxxxxxx
 HA_URL=https://hass.local/api/conversation/process
