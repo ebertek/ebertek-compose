@@ -56,7 +56,7 @@ A collection of Docker Compose files and shell scripts.
 
 - **[plex](https://hub.docker.com/r/plexinc/pms-docker/)**: Media server.
 - **[tautulli](https://github.com/Tautulli/Tautulli)**: Monitoring and tracking tool for Plex.
-- **[discordpy](https://hub.docker.com/r/gorialis/discord.py)**: Bot-ready environments for Python bots. Includes two bots: **hass** and **bjornify**.
+- **[bjornify](https://github.com/ebertek/bjornify)**: Discord bot based on discord.py that adds requested tracks to your Spotify playback queue.
 - **[tmm](https://hub.docker.com/r/tinymediamanager/tinymediamanager)**: Media management tool.
 - **[books](https://docs.linuxserver.io/images/docker-calibre-web/)**: Web app for browsing, reading and downloading eBooks.
 
