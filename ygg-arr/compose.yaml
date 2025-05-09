@@ -65,7 +65,7 @@ services:
     shm_size: 128mb
     user: "999:999"
     volumes:
-      - "/volume1/docker/pg:/var/lib/postgresql/data"
+      - "/volume2/docker/pg:/var/lib/postgresql/data"
 
   prowlarr:
     <<: [*arr, *env]
@@ -92,7 +92,7 @@ services:
           - prowlarr.int.tnt.photo
         ipv4_address: 10.4.21.54
     volumes:
-      - "/volume1/docker/prowlarr:/config"
+      - "/volume2/docker/prowlarr:/config"
 
   radarr:
     <<: [*arr, *env]
@@ -115,7 +115,7 @@ services:
           - radarr.int.tnt.photo
         ipv4_address: 10.4.21.55
     volumes:
-      - "/volume1/docker/radarr:/config"
+      - "/volume2/docker/radarr:/config"
       - "/volume1/Downloads:/downloads"
 
   sonarr:
@@ -139,7 +139,7 @@ services:
           - sonarr.int.tnt.photo
         ipv4_address: 10.4.21.56
     volumes:
-      - "/volume1/docker/sonarr:/config"
+      - "/volume2/docker/sonarr:/config"
       - "/volume1/Downloads:/downloads"
 
   bazarr:
@@ -165,7 +165,7 @@ services:
           - bazarr.int.tnt.photo
         ipv4_address: 10.4.21.57
     volumes:
-      - "/volume1/docker/bazarr:/config"
+      - "/volume2/docker/bazarr:/config"
       - "/volume1/Downloads:/downloads"
 
   lidarr:
@@ -189,7 +189,7 @@ services:
           - lidarr.int.tnt.photo
         ipv4_address: 10.4.21.58
     volumes:
-      - "/volume1/docker/lidarr:/config"
+      - "/volume2/docker/lidarr:/config"
       - "/volume1/Downloads:/downloads"
 
   requestrr:
@@ -215,7 +215,7 @@ services:
           - requestrr.int.tnt.photo
         ipv4_address: 10.4.21.61
     volumes:
-      - "/volume1/docker/requestrr:/config"
+      - "/volume2/docker/requestrr:/config"
 
   recyclarr:
     <<: [*arr, *env]
@@ -244,4 +244,4 @@ services:
     security_opt: ["no-new-privileges:true"]
     user: "1028:100"
     volumes:
-      - "/volume1/docker/recyclarr:/config"
+      - "/volume2/docker/recyclarr:/config"

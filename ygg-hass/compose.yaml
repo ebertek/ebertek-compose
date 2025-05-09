@@ -43,7 +43,7 @@ services:
     security_opt:
       - "apparmor:unconfined"
     volumes:
-      - "/volume1/docker/hass/matter-server:/data"
+      - "/volume2/docker/hass/matter-server:/data"
       - "/run/dbus:/run/dbus:ro"
 
   mosquitto:
@@ -60,9 +60,9 @@ services:
           - mosquitto.ext.tnt.photo
         ipv4_address: 10.4.21.67
     volumes:
-      - "/volume1/docker/hass/mosquitto/config:/mosquitto/config"
-      - "/volume1/docker/hass/mosquitto/data:/mosquitto/data"
-      - "/volume1/docker/hass/mosquitto/log:/mosquitto/log"
+      - "/volume2/docker/hass/mosquitto/config:/mosquitto/config"
+      - "/volume2/docker/hass/mosquitto/data:/mosquitto/data"
+      - "/volume2/docker/hass/mosquitto/log:/mosquitto/log"
 
   ps5-mqtt:
     <<: *env
@@ -89,7 +89,7 @@ services:
         ipv4_address: 10.4.21.68
     stop_signal: SIGKILL
     volumes:
-      - "/volume1/docker/hass/ps5-mqtt:/config"
+      - "/volume2/docker/hass/ps5-mqtt:/config"
 
   zigbee2mqtt:
     <<: *env
@@ -107,7 +107,7 @@ services:
           - 45df7312-zigbee2mqtt
         ipv4_address: 10.4.21.69
     volumes:
-      - "/volume1/docker/hass/zigbee2mqtt:/app/data"
+      - "/volume2/docker/hass/zigbee2mqtt:/app/data"
       - "/run/udev:/run/udev:ro"
 
   hass:
@@ -126,7 +126,7 @@ services:
         ipv4_address: 10.4.21.70
     privileged: true
     volumes:
-      - "/volume1/docker/hass/config:/config"
+      - "/volume2/docker/hass/config:/config"
       - "/etc/localtime:/etc/localtime:ro"
       - "/run/dbus:/run/dbus:ro"
 
@@ -145,5 +145,5 @@ services:
     privileged: true
     stop_signal: SIGINT
     volumes:
-      - "/volume1/docker/hass/esphome:/config"
+      - "/volume2/docker/hass/esphome:/config"
       - "/etc/localtime:/etc/localtime:ro"

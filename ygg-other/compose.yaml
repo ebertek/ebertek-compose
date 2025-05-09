@@ -42,9 +42,9 @@ services:
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
     volumes:
-      - "/volume1/docker/irc:/var/opt/thelounge"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/letsencrypt/privkey.pem"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/letsencrypt/fullchain.pem"
+      - "/volume2/docker/irc:/var/opt/thelounge"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/letsencrypt/privkey.pem"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/letsencrypt/fullchain.pem"
 
   vw:
     <<: *env
@@ -77,7 +77,7 @@ services:
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80
     volumes:
-      - "/volume1/docker/vw:/data"
+      - "/volume2/docker/vw:/data"
 
   acmesh:
     <<: *env
@@ -102,7 +102,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - "/volume1/docker/acmesh:/acme.sh"
+      - "/volume2/docker/acmesh:/acme.sh"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   smtp:
@@ -136,8 +136,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.60
     volumes:
-      - "/volume1/docker/smtp/data:/data"
-      - "/volume1/docker/smtp/spool:/var/spool/postfix"
+      - "/volume2/docker/smtp/data:/data"
+      - "/volume2/docker/smtp/spool:/var/spool/postfix"
       - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
 
   dbeaver:
@@ -156,4 +156,4 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.43
     volumes:
-      - "/volume1/docker/dbeaver:/opt/cloudbeaver/workspace"
+      - "/volume2/docker/dbeaver:/opt/cloudbeaver/workspace"

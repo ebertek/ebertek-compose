@@ -46,9 +46,9 @@ services:
           - plex.ext.tnt.photo
         ipv4_address: 10.4.21.40
     volumes:
-      - "/volume1/docker/plex/config:/config"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/config/tnt.photo.pfx"
-      - "/volume1/docker/plex/transcode:/transcode"
+      - "/volume2/docker/plex/config:/config"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/config/tnt.photo.pfx"
+      - "/volume2/docker/plex/transcode:/transcode"
       - "/volume1/Downloads:/data"
 
   tautulli:
@@ -72,10 +72,10 @@ services:
           - tautulli.ext.tnt.photo
         ipv4_address: 10.4.21.41
     volumes:
-      - "/volume1/docker/tautulli:/config"
-      - "/volume1/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro" # yamllint disable-line
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
+      - "/volume2/docker/tautulli:/config"
+      - "/volume2/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro" # yamllint disable-line
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 
   discordpy:
     <<: *env
@@ -96,8 +96,8 @@ services:
     stop_signal: SIGINT
     user: "1028:100"
     volumes:
-      - "/volume1/docker/discordpy/logs:/app/logs"
-      - "/volume1/docker/discordpy/secrets:/app/secrets"
+      - "/volume2/docker/discordpy/logs:/app/logs"
+      - "/volume2/docker/discordpy/secrets:/app/secrets"
 
   tmm:
     <<: *env
@@ -123,8 +123,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.53
     volumes:
-      - "/volume1/docker/tmm/data:/data"
-      # - "/volume1/docker/tmm/app/addons:/app/addons"
+      - "/volume2/docker/tmm/data:/data"
+      # - "/volume2/docker/tmm/app/addons:/app/addons"
       - "/volume1/Downloads:/downloads"
 
   books:
@@ -153,5 +153,5 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.59
     volumes:
-      - "/volume1/docker/calibre-web:/config"
+      - "/volume2/docker/calibre-web:/config"
       - "/volume1/Downloads:/downloads"

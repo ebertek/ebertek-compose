@@ -56,7 +56,7 @@ services:
     user: 1028:100
     volumes:
       - /volume1/photo/Pictures:/mnt/media/Pictures:ro
-      - /volume1/docker/immich/upload:/usr/src/app/upload
+      - /volume2/docker/immich/upload:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
 
   immich-machine-learning:
@@ -84,7 +84,7 @@ services:
         ipv4_address: 10.4.21.49
     user: 1028:100
     volumes:
-      - /volume1/docker/immich/cache:/cache
+      - /volume2/docker/immich/cache:/cache
       - /dev/bus/usb:/dev/bus/usb
 
   redis:
@@ -109,7 +109,7 @@ services:
       net.core.somaxconn: 512
     # user: 1028:100
     volumes:
-      - /volume1/docker/immich/redis:/data
+      - /volume2/docker/immich/redis:/data
 
   database:
     <<: *env
@@ -155,4 +155,4 @@ services:
         ipv4_address: 10.4.21.51
     # user: 1028:100
     volumes:
-      - /volume1/docker/immich/postgres:/var/lib/postgresql/data
+      - /volume2/docker/immich/postgres:/var/lib/postgresql/data

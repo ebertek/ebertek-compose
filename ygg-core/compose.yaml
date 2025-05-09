@@ -42,11 +42,11 @@ services:
         soft: 4096
         hard: 8192
     volumes:
-      - "/volume1/docker/omada/data:/opt/tplink/EAPController/data"
-      - "/volume1/docker/omada/logs:/opt/tplink/EAPController/logs"
-      - "/volume1/docker/omada/work:/opt/tplink/EAPController/work"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/cert/tls.key"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/cert/tls.crt"
+      - "/volume2/docker/omada/data:/opt/tplink/EAPController/data"
+      - "/volume2/docker/omada/logs:/opt/tplink/EAPController/logs"
+      - "/volume2/docker/omada/work:/opt/tplink/EAPController/work"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/cert/tls.key"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/cert/tls.crt"
 
   cloudflared:
     <<: *env
@@ -95,8 +95,8 @@ services:
     sysctls:
       net.ipv4.ip_local_port_range: "1024 65000"
     volumes:
-      - "/volume1/docker/dns:/etc/dns"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/etc/dns/tnt.photo.pfx"
+      - "/volume2/docker/dns:/etc/dns"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/etc/dns/tnt.photo.pfx"
 
   npm:
     <<: *env
@@ -122,7 +122,7 @@ services:
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80
     volumes:
-      - "/volume1/docker/npm:/data"
-      - "/volume1/docker/acmesh:/etc/letsencrypt"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/fullchain.cer:/data/custom_ssl/npm-2/fullchain.pem"
-      - "/volume1/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/data/custom_ssl/npm-2/privkey.pem"
+      - "/volume2/docker/npm:/data"
+      - "/volume2/docker/acmesh:/etc/letsencrypt"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/data/custom_ssl/npm-2/fullchain.pem"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/data/custom_ssl/npm-2/privkey.pem"

@@ -1,6 +1,6 @@
 #!/bin/bash
-from="/volume1/docker"
-to="/volume1/docker/ebertek-compose-secrets/_persistent"
+from="/volume2/docker"
+to="/volume2/docker/ebertek-compose-secrets/_persistent"
 files=(
 	"acmesh/account.conf"
 	"bazarr/config/config.yaml"

@@ -1,4 +1,4 @@
 #!/bin/bash
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /var/services/homes/Hannibal/bin/yt-dlp && chmod a+rx /var/services/homes/Hannibal/bin/yt-dlp
-cp /var/services/homes/Hannibal/bin/yt-dlp /volume1/docker/tmm/data/addons/yt-dlp && chown docker:users /volume1/docker/tmm/data/addons/yt-dlp && chmod 770 /volume1/docker/tmm/data/addons/yt-dlp
+cp /var/services/homes/Hannibal/bin/yt-dlp /volume2/docker/tmm/data/addons/yt-dlp && chown docker:users /volume2/docker/tmm/data/addons/yt-dlp && chmod 770 /volume2/docker/tmm/data/addons/yt-dlp
 curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 -o /var/services/homes/Hannibal/bin/phantomjs.tar.bz2 && tar xvjf /var/services/homes/Hannibal/bin/phantomjs.tar.bz2 && rm /var/services/homes/Hannibal/bin/phantomjs.tar.bz2 && cp /var/services/homes/Hannibal/bin/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/ && rm -r /var/services/homes/Hannibal/bin/phantomjs-2.1.1-linux-x86_64
