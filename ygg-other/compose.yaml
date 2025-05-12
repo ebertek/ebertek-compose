@@ -39,6 +39,7 @@ services:
       traefik.enable: true
       traefik.http.routers.irc.entrypoints: websecure
       traefik.http.routers.irc.rule: "Host(`irc.int.tnt.photo`) || Host(`irc.ext.tnt.photo`)"
+      traefik.http.routers.irc.tls: true
       traefik.http.services.irc.loadbalancer.server.port: 9000
     mac_address: "0e:be:00:da:00:45"
     networks:
@@ -79,6 +80,7 @@ services:
       traefik.enable: true
       traefik.http.routers.vw.entrypoints: websecure
       traefik.http.routers.vw.rule: "Host(`vw.int.tnt.photo`) || Host(`vw.ext.tnt.photo`) || Host(`vaultwarden.ext.tnt.photo`) || Host(`vaultwarden.ext.tnt.photo`)"
+      traefik.http.routers.vw.tls: true
       traefik.http.services.vw.loadbalancer.server.port: 80
     mac_address: "0e:be:00:da:00:46"
     networks:
