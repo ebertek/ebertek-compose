@@ -50,7 +50,7 @@ services:
     <<: *env
     container_name: mosquitto
     hostname: mosquitto
-    image: "docker.io/eclipse-mosquitto:latest"
+    image: "docker.io/library/eclipse-mosquitto:latest"
     mac_address: "0e:be:00:da:00:67"
     networks:
       macvlan1:

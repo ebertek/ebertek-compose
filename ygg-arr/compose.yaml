@@ -52,7 +52,7 @@ services:
       test: ["CMD-SHELL", "pg_isready"]
       timeout: 5s
     hostname: pg
-    image: "postgres:14"
+    image: "docker.io/library/postgres:14"
     mac_address: "0e:be:00:da:00:42"
     networks:
       macvlan1:

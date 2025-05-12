@@ -137,7 +137,7 @@ services:
           # cpus: "1"
           memory: 250M
     hostname: traefik
-    image: "traefik:v3"
+    image: "docker.io/library/traefik:v3"
     mac_address: "0e:be:00:da:00:44"
     networks:
       macvlan1:

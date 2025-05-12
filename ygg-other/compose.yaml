@@ -143,7 +143,7 @@ services:
       RELAY_TLS_VERIFY: encrypt
       RELAY_USE_TLS: "yes"
     hostname: smtp
-    image: "turgon37/smtp-relay:latest"
+    image: "docker.io/turgon37/smtp-relay:latest"
     mac_address: "0e:be:00:da:00:60"
     networks:
       macvlan1:
@@ -163,7 +163,7 @@ services:
           # cpus: "1"
           memory: 500M
     hostname: dbeaver
-    image: "dbeaver/cloudbeaver:latest"
+    image: "docker.io/dbeaver/cloudbeaver:latest"
     mac_address: "0e:be:00:da:00:43"
     networks:
       macvlan1:
