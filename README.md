@@ -36,7 +36,7 @@ A collection of Docker Compose files and shell scripts.
 - **[omada](https://hub.docker.com/r/mbentley/omada-controller)**: TP-Link Omada controller.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
-- **[npm](https://hub.docker.com/r/jc21/nginx-proxy-manager)**: Reverse proxy.
+- **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
 
 ### [ygg-download/](ygg-download/)
 
@@ -90,7 +90,6 @@ A collection of Docker Compose files and shell scripts.
 - **30-vpc**: Replace _tntphoto_ certificates.
 - **40-syno**: Replace Synology certificates.
 - **50-hass**: Replace _hass_ certificates.
-- **60-npm**: Replace _npm_ certificates.
 
 ### [backup/](Scripts/backup/)
 

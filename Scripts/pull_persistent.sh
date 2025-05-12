@@ -24,19 +24,6 @@ files=(
 	"irc/users/cocakukk.json"
 	"lidarr/config.xml"
 	"lidarr/asp/key-0b8c80e7-4044-4ae8-a779-5a815d27c572.xml"
-	"npm/nginx/proxy_host/1.conf"
-	"npm/nginx/proxy_host/2.conf"
-	"npm/nginx/proxy_host/3.conf"
-	"npm/nginx/proxy_host/5.conf"
-	"npm/nginx/proxy_host/6.conf"
-	"npm/nginx/proxy_host/7.conf"
-	"npm/nginx/proxy_host/8.conf"
-	"npm/nginx/proxy_host/9.conf"
-	"npm/nginx/proxy_host/10.conf"
-	"npm/nginx/proxy_host/12.conf"
-	"npm/nginx/proxy_host/13.conf"
-	"npm/nginx/proxy_host/14.conf"
-	"npm/nginx/proxy_host/15.conf"
 	"prowlarr/config.xml"
 	"prowlarr/asp/key-ffb5a087-1f4f-4338-b84d-2106714fd787.xml"
 	"qbittorrent/mam-update.sh"
@@ -63,6 +50,8 @@ files=(
 	"tmm/data/data/scraper_tvdb_movie_artwork.conf"
 	"tmm/data/data/scraper_tvdb_tvshow.conf"
 	"tmm/data/data/scraper_tvdb_tvshow_artwork.conf"
+	"traefik/dynamic.yml"
+	"traefik/traefik.yml"
 )
 
 for file in "${files[@]}"; do
