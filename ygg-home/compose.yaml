@@ -38,6 +38,10 @@ services:
       ALLOWED_NETWORKS: 10.4.21.0/24
     hostname: plex
     image: "docker.io/plexinc/pms-docker:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.plex.rule: "Host(`plex.int.tnt.photo`) || Host(`plex.ext.tnt.photo`)"
+      traefik.http.services.plex.loadbalancer.server.port: 32400
     mac_address: "0e:be:00:da:00:40"
     networks:
       macvlan1:
@@ -64,6 +68,10 @@ services:
           memory: 250M
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.tautulli.rule: "Host(`tautulli.int.tnt.photo`) || Host(`tautulli.ext.tnt.photo`)"
+      traefik.http.services.tautulli.loadbalancer.server.port: 8181
     mac_address: "0e:be:00:da:00:41"
     networks:
       macvlan1:
@@ -148,6 +156,10 @@ services:
       OAUTHLIB_RELAX_TOKEN_SCOPE: 1
     hostname: books
     image: "lscr.io/linuxserver/calibre-web:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.books.rule: "Host(`books.int.tnt.photo`) || Host(`books.ext.tnt.photo`)"
+      traefik.http.services.books.loadbalancer.server.port: 8083
     mac_address: "0e:be:00:da:00:59"
     networks:
       macvlan1:

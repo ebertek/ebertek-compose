@@ -46,6 +46,10 @@ services:
       disable: true
     hostname: immich
     image: ghcr.io/immich-app/immich-server:release
+    labels:
+      traefik.enable: true
+      traefik.http.routers.immich.rule: "Host(`immich.int.tnt.photo`) || Host(`immich.ext.tnt.photo`)"
+      traefik.http.services.immich.loadbalancer.server.port: 2283
     mac_address: "0e:be:00:da:00:48"
     networks:
       macvlan1:

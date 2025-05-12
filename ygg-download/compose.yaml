@@ -86,6 +86,9 @@ services:
     image: "lscr.io/linuxserver/qbittorrent:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
+      traefik.enable: true
+      traefik.http.routers.download.rule: "Host(`download.int.tnt.photo`) || Host(`download.ext.tnt.photo`)"
+      traefik.http.services.download.loadbalancer.server.port: 8080
     network_mode: "container:gluetun"
     restart: "no"
     stop_grace_period: 1m

@@ -35,6 +35,10 @@ services:
       PGID: 100
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.irc.rule: "Host(`irc.int.tnt.photo`) || Host(`irc.ext.tnt.photo`)"
+      traefik.http.services.irc.loadbalancer.server.port: 9000
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
@@ -70,6 +74,9 @@ services:
       WEBSOCKET_ENABLED: true
     hostname: vw
     image: "docker.io/vaultwarden/server:testing"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.vw.rule: "Host(`vw.int.tnt.photo`) || Host(`vw.ext.tnt.photo`)"
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:
