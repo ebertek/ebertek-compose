@@ -126,3 +126,24 @@ services:
       - "/volume2/docker/acmesh:/etc/letsencrypt"
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/data/custom_ssl/npm-2/fullchain.pem"
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/data/custom_ssl/npm-2/privkey.pem"
+
+  traefik:
+    <<: *env
+    container_name: traefik
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 250M
+    hostname: traefik
+    image: "traefik:v3"
+    mac_address: "0e:be:00:da:00:44"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.44
+    volumes:
+      - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml"
+      - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
