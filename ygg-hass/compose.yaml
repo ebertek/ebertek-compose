@@ -121,6 +121,7 @@ services:
     image: "ghcr.io/home-assistant/home-assistant:stable"
     labels:
       traefik.enable: true
+      traefik.http.routers.hass.entrypoints: websecure
       traefik.http.routers.hass.rule: "Host(`hass.int.tnt.photo`) || Host(`hass.ext.tnt.photo`) || Host(`homeassistant.int.tnt.photo`) || Host(`homeassistant.ext.tnt.photo`)"
     mac_address: "0e:be:00:da:00:70"
     networks:

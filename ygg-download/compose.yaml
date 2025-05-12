@@ -87,6 +87,7 @@ services:
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
       traefik.enable: true
+      traefik.http.routers.download.entrypoints: websecure
       traefik.http.routers.download.rule: "Host(`download.int.tnt.photo`) || Host(`download.ext.tnt.photo`)"
       traefik.http.services.download.loadbalancer.server.port: 8080
     network_mode: "container:gluetun"
