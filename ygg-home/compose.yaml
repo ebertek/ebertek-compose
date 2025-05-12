@@ -72,7 +72,7 @@ services:
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: false
       traefik.http.routers.tautulli.entrypoints: websecure
       traefik.http.routers.tautulli.rule: "Host(`tautulli.int.tnt.photo`) || Host(`tautulli.ext.tnt.photo`)"
       traefik.http.routers.tautulli.tls: true
@@ -164,6 +164,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.books.entrypoints: websecure
+      traefik.http.routers.books.middlewares: sweden@file
       traefik.http.routers.books.rule: "Host(`books.int.tnt.photo`) || Host(`books.ext.tnt.photo`)"
       traefik.http.routers.books.tls: true
       traefik.http.services.books.loadbalancer.server.port: 8083

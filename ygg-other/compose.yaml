@@ -36,7 +36,7 @@ services:
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: false
       traefik.http.routers.irc.entrypoints: websecure
       traefik.http.routers.irc.rule: "Host(`irc.int.tnt.photo`) || Host(`irc.ext.tnt.photo`)"
       traefik.http.routers.irc.tls: true
