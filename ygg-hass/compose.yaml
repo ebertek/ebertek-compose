@@ -125,6 +125,7 @@ services:
       traefik.http.routers.hass.rule: "Host(`hass.int.tnt.photo`) || Host(`hass.ext.tnt.photo`) || Host(`homeassistant.int.tnt.photo`) || Host(`homeassistant.ext.tnt.photo`)"
       traefik.http.routers.hass.tls: true
       traefik.http.services.hass.loadbalancer.server.port: 443
+      traefik.http.services.hass.loadbalancer.server.scheme: https
     mac_address: "0e:be:00:da:00:70"
     networks:
       macvlan1:

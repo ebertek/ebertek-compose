@@ -44,6 +44,7 @@ services:
       traefik.http.routers.plex.rule: "Host(`plex.int.tnt.photo`) || Host(`plex.ext.tnt.photo`)"
       traefik.http.routers.plex.tls: true
       traefik.http.services.plex.loadbalancer.server.port: 32400
+      traefik.http.services.plex.loadbalancer.server.scheme: https
     mac_address: "0e:be:00:da:00:40"
     networks:
       macvlan1:

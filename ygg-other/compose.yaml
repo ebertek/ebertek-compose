@@ -41,6 +41,7 @@ services:
       traefik.http.routers.irc.rule: "Host(`irc.int.tnt.photo`) || Host(`irc.ext.tnt.photo`)"
       traefik.http.routers.irc.tls: true
       traefik.http.services.irc.loadbalancer.server.port: 9000
+      traefik.http.services.irc.loadbalancer.server.scheme: https
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
