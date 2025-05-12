@@ -81,6 +81,8 @@ services:
       timeout: 10s
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
+    labels:
+      com.centurylinklabs.watchtower.depends-on: mosquitto
     mac_address: "0e:be:00:da:00:68"
     networks:
       macvlan1:
@@ -100,6 +102,8 @@ services:
       - dialout
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
+    labels:
+      com.centurylinklabs.watchtower.depends-on: mosquitto
     mac_address: "0e:be:00:da:00:69"
     networks:
       macvlan1:
