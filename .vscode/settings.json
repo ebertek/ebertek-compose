@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "**/_persistent/hass/config/*.yaml": "home-assistant",
+    "**/_persistent/hass/esphome/*.yaml": "esphome"
+  }
+}
