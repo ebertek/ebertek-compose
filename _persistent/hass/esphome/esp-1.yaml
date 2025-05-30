@@ -1,0 +1,351 @@
+---
+esphome:
+  area: Office
+  friendly_name: esp-1
+  min_version: 2025.2.0
+  name: esp-1
+  platformio_options:
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32s3box
+  flash_size: 16MB
+  framework:
+    sdkconfig_options:
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+api:
+  encryption:
+    key: !secret api_1
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    id: ota_esphome
+    password: !secret ota_1
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+wifi:
+  domain: .int.tnt.photo
+  password: !secret wifi_password
+  ssid: !secret wifi_ssid
+
+at581x:
+  i2c_id: bus_a
+  id: "Radar"
+
+audio_adc:
+  - platform: es7210
+    bits_per_sample: 16bit
+    i2c_id: bus_a
+    id: es7210_adc
+    sample_rate: 16000
+
+audio_dac:
+  - platform: es8311
+    bits_per_sample: 16bit
+    i2c_id: bus_a
+    id: es8311_dac
+    sample_rate: 48000
+
+binary_sensor:
+  - platform: status
+    device_class: connectivity
+    entity_category: diagnostic
+    id: system_status
+    name: Node Status
+  - platform: gpio
+    disabled_by_default: true
+    entity_category: diagnostic
+    id: btn_mute
+    name: Mute
+    pin:
+      inverted: true
+      number: GPIO1
+  - platform: gpio
+    disabled_by_default: true
+    id: btn_top_left
+    internal: true
+    name: Top Left Button
+    on_multi_click:
+      - timing:
+          - ON for at least 50ms
+          - OFF for at least 50ms
+        then:
+          - switch.turn_off: timer_ringing
+      - timing:
+          - ON for at least 10s
+        then:
+          - button.press: btn_factory_reset
+    pin:
+      ignore_strapping_warning: true
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+      number: GPIO0
+  - platform: gt911
+    id: btn_home
+    index: 0
+    name: Home Button
+  - platform: gpio
+    device_class: occupancy
+    disabled_by_default: false
+    filters:
+      - delayed_off: 60000ms
+    name: Presence detect
+    pin:
+      number: GPIO21
+
+bluetooth_proxy:
+  active: true
+
+button:
+  - platform: safe_mode
+    id: btn_safe_mode
+    name: Safe Mode Boot
+  - platform: factory_reset
+    id: btn_factory_reset
+    internal: true
+    name: Factory reset
+  - platform: restart
+    entity_category: diagnostic
+    id: btn_restart
+    name: Restart
+
+display:
+  - platform: ili9xxx
+    cs_pin: 5
+    data_rate: 40MHz
+    dc_pin: 4
+    id: s3_box_lcd
+    invert_colors: false
+    model: S3BOX
+    reset_pin:
+      inverted: true
+      number: GPIO48
+    spi_id: bus_display
+    update_interval: never
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+
+i2c:
+  - id: bus_a
+    frequency: 100kHz
+    scan: false
+    scl: GPIO18
+    scl_pullup_enabled: true
+    sda: GPIO08
+    sda_pullup_enabled: true
+  - id: bus_b
+    frequency: 50kHz
+    scan: false
+    scl: GPIO40
+    scl_pullup_enabled: true
+    sda: GPIO41
+    sda_pullup_enabled: true
+
+i2s_audio:
+  - id: i2s_audio_bus
+    i2s_bclk_pin: GPIO17
+    i2s_lrclk_pin:
+      ignore_strapping_warning: true
+      number: GPIO45
+    i2s_mclk_pin: GPIO2
+
+light:
+  - platform: monochromatic
+    default_transition_length: 250ms
+    entity_category: config
+    icon: "mdi:television"
+    id: led
+    name: LCD Backlight
+    output: backlight_output
+    restore_mode: RESTORE_DEFAULT_OFF
+
+media_player:
+  - platform: speaker
+    announcement_pipeline:
+      format: FLAC
+      num_channels: 1
+      sample_rate: 48000
+      speaker: box_speaker
+    id: s3_media_player
+    name: Media Player
+    volume_max: 0.8
+    volume_min: 0.5
+
+microphone:
+  - platform: i2s_audio
+    adc_type: external
+    bits_per_sample: 16bit
+    i2s_din_pin: GPIO16
+    id: box_mic
+    sample_rate: 16000
+
+output:
+  - platform: ledc
+    id: backlight_output
+    pin: GPIO47
+
+remote_receiver:
+  dump: all
+  id: ir_rx
+  pin:
+    inverted: true
+    number: GPIO38
+#  rmt_channel: 4
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  id: ir_tx
+  pin:
+    inverted: false
+    number: GPIO39
+#  rmt_channel: 0
+
+sensor:
+  - platform: uptime
+    device_class: duration
+    entity_category: diagnostic
+    icon: mdi:timer-outline
+    id: uptime_s
+    name: Uptime
+    state_class: total_increasing
+    update_interval: 300s
+  - platform: wifi_signal
+    accuracy_decimals: 0
+    device_class: signal_strength
+    entity_category: diagnostic
+    icon: mdi:wifi-strength-3
+    id: wifi_signal_db
+    name: Wi-Fi Signal
+    state_class: measurement
+    unit_of_measurement: dBm
+    update_interval: 60s
+  - platform: aht10
+    humidity:
+      id: aht20_h
+      name: Humidity
+    i2c_id: bus_b
+    temperature:
+      id: aht20_t
+      name: Temperature
+    update_interval: 60s
+    variant: AHT20
+  - platform: absolute_humidity
+    humidity: aht20_h
+    id: aht20_h_abs
+    name: Absolute humidity
+    temperature: aht20_t
+  - platform: template
+    icon: "mdi:thermometer-alert"
+    id: aht20_dew_point
+    lambda: |-
+      return (243.5*(log(id(aht20_h).state/100)+((17.67*id(aht20_t).state)/
+      (243.5+id(aht20_t).state)))/(17.67-log(id(aht20_h).state/100)-
+      ((17.67*id(aht20_t).state)/(243.5+id(aht20_t).state))));
+    name: Dew point
+    unit_of_measurement: °C
+  - platform: template
+    accuracy_decimals: 2
+    filters:
+      - filter_out: nan
+    icon: "mdi:gauge"
+    id: aht20_vpd
+    lambda: |-
+          return (((100 - id(aht20_h).state) / 100.0) * (0.6108 * exp((17.27 * id(aht20_t).state) / (id(aht20_t).state + 237.3))));
+    name: VPD
+    update_interval: 10s
+    unit_of_measurement: kPa
+  - platform: adc
+    accuracy_decimals: 1
+    attenuation: auto
+    device_class: voltage
+    disabled_by_default: true
+    entity_category: diagnostic
+    filters:
+      - multiply: 4.11
+    id: battery_voltage
+    name: Battery voltage
+    pin: GPIO10
+    unit_of_measurement: V
+    update_interval: 30s
+  - platform: copy
+    accuracy_decimals: 0
+    device_class: battery
+    entity_category: diagnostic
+    filters:
+      - clamp:
+          max_value: 100
+          min_value: 0
+      - lambda: return (x - 2.7) / (4.2 - 2.7) * 100;
+    id: battery_percent
+    name: Battery level
+    source_id: battery_voltage
+    unit_of_measurement: "%"
+
+speaker:
+  - platform: i2s_audio
+    audio_dac: es8311_dac
+    bits_per_sample: 16bit
+    buffer_duration: 100ms
+    channel: left
+    dac_type: external
+    i2s_dout_pin: GPIO15
+    id: box_speaker
+    sample_rate: 48000
+
+spi:
+  - id: bus_display
+    clk_pin: 7
+    interface: spi2
+    mosi_pin: 6
+
+switch:
+  - platform: gpio
+    id: enable_ir_rx
+    name: IR Receiver
+    pin:
+      inverted: true
+      number: GPIO44
+    restore_mode: ALWAYS_ON
+  - platform: gpio
+    disabled_by_default: true
+    entity_category: config
+    name: Speaker Enable
+    pin:
+      ignore_strapping_warning: true
+      number: GPIO46
+    restore_mode: RESTORE_DEFAULT_ON
+  - platform: template
+    id: timer_ringing
+    internal: true
+    on_turn_on:
+      - delay: 15min
+      - switch.turn_off: timer_ringing
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+  - platform: at581x
+    at581x_id: Radar
+    name: Enable Radar
+    restore_mode: ALWAYS_ON
+
+touchscreen:
+  i2c_id: bus_a
+  id: gt911_touchscreen
+  interrupt_pin:
+    ignore_strapping_warning: true
+    number: GPIO3
+  platform: gt911

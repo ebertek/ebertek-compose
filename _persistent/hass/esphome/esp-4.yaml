@@ -1,0 +1,195 @@
+---
+esphome:
+  area: Bedroom
+  friendly_name: esp-4
+  min_version: 2025.2.0
+  name: esp-4
+  platformio_options:
+    board_build.f_cpu: 240000000L
+    board_build.mcu: esp32s3
+
+esp32:
+  board: m5stack-atoms3
+  flash_size: 8MB
+  framework:
+    platform_version: 6.9.0
+    type: esp-idf
+    version: 5.3.1
+  variant: esp32s3
+
+api:
+  encryption:
+    key: !secret api_4
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    id: ota_esphome
+    password: !secret ota_4
+
+logger:
+
+wifi:
+  domain: .int.tnt.photo
+  password: !secret wifi_password
+  ssid: !secret wifi_ssid
+
+binary_sensor:
+  - platform: status
+    device_class: connectivity
+    entity_category: diagnostic
+    id: system_status
+    name: Node Status
+  - platform: gpio
+    filters:
+      - delayed_off: 10ms
+    id: btn
+    name: Button
+    pin:
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+      number: GPIO41
+
+bluetooth_proxy:
+  active: true
+
+button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+
+i2c:
+  - id: bus_abc
+    scan: true
+    scl: GPIO39
+    sda: GPIO38
+
+light:
+  - platform: esp32_rmt_led_strip
+    chipset: ws2812
+    id: led
+    name: LED
+    num_leds: 4
+    pin: GPIO35
+    restore_mode: RESTORE_DEFAULT_OFF
+    rgb_order: GRB
+#    rmt_channel: 2
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: GPIO4
+
+sensor:
+  - platform: uptime
+    device_class: duration
+    entity_category: diagnostic
+    icon: mdi:timer-outline
+    id: uptime_s
+    name: Uptime
+    state_class: total_increasing
+    update_interval: 300s
+  - platform: wifi_signal
+    accuracy_decimals: 0
+    device_class: signal_strength
+    entity_category: diagnostic
+    icon: mdi:wifi-strength-3
+    id: wifi_signal_db
+    name: Wi-Fi Signal
+    state_class: measurement
+    unit_of_measurement: dBm
+    update_interval: 60s
+  - platform: bmp280_i2c
+    address: 0x76
+    i2c_id: pahub1
+    pressure:
+      id: bmp280_p
+      name: BMP280 Pressure
+    temperature:
+      id: bmp280_t
+      name: BMP280 Temperature
+      oversampling: 16x
+    update_interval: 60s
+  - platform: sgp30
+    address: 0x58
+    compensation:
+      temperature_source: sht40_t
+      humidity_source: sht40_h
+    eco2:
+      accuracy_decimals: 1
+      filters:
+        - sliding_window_moving_average:
+            send_every: 60
+            window_size: 60
+      name: eCO2
+    i2c_id: pahub0
+    store_baseline: yes
+    tvoc:
+      accuracy_decimals: 1
+      device_class: volatile_organic_compounds_parts
+      filters:
+        - sliding_window_moving_average:
+            send_every: 60
+            window_size: 60
+      name: TVOC
+    update_interval: 1s
+  - platform: sht4x
+    address: 0x44
+    humidity:
+      id: sht40_h
+      name: SHT40 Humidity
+    i2c_id: pahub1
+    temperature:
+      id: sht40_t
+      name: SHT40 Temperature
+  - platform: absolute_humidity
+    humidity: sht40_h
+    id: sht40_h_abs
+    name: Absolute humidity
+    temperature: sht40_t
+  - platform: template
+    icon: "mdi:thermometer-alert"
+    id: sht40_dew_point
+    lambda: |-
+      return (243.5*(log(id(sht40_h).state/100)+((17.67*id(sht40_t).state)/
+      (243.5+id(sht40_t).state)))/(17.67-log(id(sht40_h).state/100)-
+      ((17.67*id(sht40_t).state)/(243.5+id(sht40_t).state))));
+    name: Dew point
+    unit_of_measurement: °C
+  - platform: template
+    accuracy_decimals: 2
+    filters:
+      - filter_out: nan
+    icon: "mdi:gauge"
+    id: sht40_vpd
+    lambda: |-
+          return (((100 - id(sht40_h).state) / 100.0) * (0.6108 * exp((17.27 * id(sht40_t).state) / (id(sht40_t).state + 237.3))));
+    name: VPD
+    update_interval: 10s
+    unit_of_measurement: kPa
+
+tca9548a:
+  - address: 0x70
+    channels:
+      - bus_id: pahub0
+        channel: 0
+      - bus_id: pahub1
+        channel: 1
+      - bus_id: pahub2
+        channel: 2
+      - bus_id: pahub3
+        channel: 3
+      - bus_id: pahub4
+        channel: 4
+      - bus_id: pahub5
+        channel: 5
+    i2c_id: bus_abc
+    id: pahub
