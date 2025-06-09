@@ -147,6 +147,13 @@ services:
     env_file: esphome.txt
     hostname: esphome
     image: "ghcr.io/esphome/esphome:stable"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.esphome.entrypoints: websecure
+      traefik.http.routers.esphome.rule: "Host(`esphome.int.tnt.photo`) || Host(`esp.int.tnt.photo`)"
+      traefik.http.routers.esphome.tls: true
+      traefik.http.services.esphome.loadbalancer.server.port: 6052
+      traefik.http.services.esphome.loadbalancer.server.scheme: http
     mac_address: "0e:be:00:da:00:71"
     networks:
       macvlan1:
