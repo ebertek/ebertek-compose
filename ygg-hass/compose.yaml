@@ -110,6 +110,7 @@ services:
         aliases:
           - 45df7312-zigbee2mqtt
         ipv4_address: 10.4.21.69
+    restart: on-failure
     volumes:
       - "/volume2/docker/hass/zigbee2mqtt:/app/data"
       - "/run/udev:/run/udev:ro"
