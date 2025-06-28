@@ -32,6 +32,7 @@ services:
       PGID: 100
       TZ: Europe/Stockholm
       SERVER_HOSTNAMES: se-got-wg-003
+      UNBLOCK: t.ncore.sh
       UPDATER_PERIOD: 24h
       VPN_SERVICE_PROVIDER: mullvad
       VPN_TYPE: wireguard
