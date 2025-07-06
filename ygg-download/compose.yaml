@@ -93,6 +93,7 @@ services:
       traefik.http.routers.download.rule: "Host(`download.int.tnt.photo`) || Host(`download.ext.tnt.photo`)"
       traefik.http.routers.download.tls: true
       traefik.http.services.download.loadbalancer.server.port: 8080
+      traefik.http.services.download.loadbalancer.server.scheme: https
     network_mode: "container:gluetun"
     restart: "no"
     stop_grace_period: 1m
