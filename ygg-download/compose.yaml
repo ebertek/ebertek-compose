@@ -98,5 +98,7 @@ services:
     stop_grace_period: 1m
     volumes:
       - "/volume1/Downloads:/downloads"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
       - "/volume2/docker/qbittorrent:/config"
+      - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
       - "/volume2/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
