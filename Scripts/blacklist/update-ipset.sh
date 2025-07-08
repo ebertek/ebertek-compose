@@ -55,7 +55,7 @@ $SORT -u "$TMP_FILE" -o "$TMP_FILE"
 echo "Adding IPs to temporary ipset..."
 while read -r IP; do
 	[[ -n "$IP" ]] && $IPSET add $TMP_SET "$IP" 2>/dev/null
-done < "$TMP_FILE"
+done <"$TMP_FILE"
 
 # Atomically swap the sets
 echo "Swapping sets..."
