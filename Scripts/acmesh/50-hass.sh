@@ -20,7 +20,7 @@ rm /volume2/docker/hass/config/ssl/tnt.photo.key
 cp /volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer /volume2/docker/hass/config/ssl/fullchain.cer
 cp /volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key /volume2/docker/hass/config/ssl/tnt.photo.key
 chmod 644 /volume2/docker/hass/config/ssl/*
-curl -X POST \
+curl -k -X POST \
 	-H "Authorization: Bearer $AUTHORIZATION_TOKEN" \
 	-H "Content-Type: application/json" \
 	-d '{}' \
