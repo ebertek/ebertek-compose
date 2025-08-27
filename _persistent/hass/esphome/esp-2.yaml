@@ -67,10 +67,6 @@ esp32_ble_tracker:
   scan_parameters:
     active: true
 
-# globals:
-#   - id: esphome_volume
-#     type: int
-
 i2c:
   - id: bus_bme280
     scl: GPIO12
@@ -85,7 +81,7 @@ light:
     pin: GPIO38
     restore_mode: RESTORE_DEFAULT_OFF
     rgb_order: GRB
-    rmt_channel: 0
+#    rmt_channel: 0
 
 sensor:
   - platform: uptime
@@ -145,51 +141,3 @@ sensor:
     name: VPD
     update_interval: 10s
     unit_of_measurement: kPa
-#  - platform: adc
-#    device_class: signal_strength
-#    filters:
-#      - lambda: |-
-#          unsigned int sample;
-#          unsigned long startMillis= millis();
-#          float peakToPeak = 0;
-#          unsigned int signalMax = 0;
-#          unsigned int signalMin = 4096;
-#          while (millis() - startMillis < 500) {
-#            sample = analogRead(GPIO8);
-#            if (sample < 4096){
-#                if (sample > signalMax){
-#                    signalMax = sample;
-#                }
-#                else if (sample < signalMin){
-#                    signalMin = sample;
-#                }
-#              }
-#          }
-#          peakToPeak = map((signalMax - signalMin),1,4096,1.5,4096);
-#          id(esphome_volume) = peakToPeak;
-#          float state = 44*log10(peakToPeak)+15;
-#          return(state);
-#    icon: "mdi:volume-vibrate"
-#    id: esphome_db # Work of Reubertt
-#    name: Sound level ADC
-#    pin:
-#      inverted: true
-#      mode:
-#        input: true
-#        pullup: true
-#      number: GPIO8
-#    raw: true
-#    unit_of_measurement: dB
-#    update_interval: 1s
-#  - platform: template
-#    icon: "mdi:volume-high"
-#    lambda: return(map((id(esphome_db).state),15,150,0,100));
-#    name: Sound level mapped
-#    unit_of_measurement: "%"
-#    update_interval: 5s
-#  - platform: template
-#    icon: "mdi:volume-source"
-#    lambda: return(map(id(esphome_volume),1,4096,0,100));
-#    name: Sound level mapped raw
-#    unit_of_measurement: "%"
-#    update_interval: 5s
