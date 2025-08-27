@@ -71,11 +71,11 @@ globals:
   - id: env_peak_accum
     type: float
     restore_value: no
-    initial_value: '0.0'
+    initial_value: "0.0"
   - id: env_peak_last
     type: float
     restore_value: no
-    initial_value: '0.0'
+    initial_value: "0.0"
 
 i2c:
   - id: bus_bme280
