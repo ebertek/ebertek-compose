@@ -67,10 +67,27 @@ esp32_ble_tracker:
   scan_parameters:
     active: true
 
+globals:
+  - id: env_peak_accum
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+  - id: env_peak_last
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
 i2c:
   - id: bus_bme280
     scl: GPIO12
     sda: GPIO10
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          id(env_peak_last) = id(env_peak_accum);
+          id(env_peak_accum) = 0.0f;
 
 light:
   - platform: esp32_rmt_led_strip
@@ -141,3 +158,59 @@ sensor:
     name: VPD
     update_interval: 10s
     unit_of_measurement: kPa
+  - platform: adc
+    accuracy_decimals: 5
+    attenuation: 12db
+    filters:
+      - lambda: |-
+          static float mean = 0.0f;
+          const float alpha_mean = 0.001f;
+          mean = (1.0f - alpha_mean) * mean + alpha_mean * x;
+          float dev = fabsf(x - mean);
+          static float env = 0.0f;
+          const float attack = 0.25f;
+          const float release = 0.01f;
+          float coeff = (dev > env) ? attack : release;
+          env = coeff * dev + (1.0f - coeff) * env;
+          return env;
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+    id: mic_adc_raw
+    internal: true
+    name: "Mic Envelope"
+    on_value:
+      then:
+        - lambda: |-
+            if (x > id(env_peak_accum)) id(env_peak_accum) = x;
+    pin: GPIO4
+    update_interval: 5ms
+  - platform: template
+    accuracy_decimals: 1
+    id: mic_pseudodb
+    lambda: |-
+      float peak = id(env_peak_last);
+      float floor = 0.02f;
+      float db = 20.0f * log10f((peak + 1e-6f) / floor);
+      if (db < 0.0f) db = 0.0f;
+      if (db > 60.0f) db = 60.0f;
+      return db;
+    name: "Mic Level"
+    unit_of_measurement: "dB"
+    update_interval: 1s
+  - platform: template
+    accuracy_decimals: 0
+    id: mic_level_percent
+    lambda: |-
+      const float RAW_MAX_V = 3.90f;
+      const float RAW_MIN_V = 0.25f;
+      float v = id(env_peak_last);
+      if (v < RAW_MIN_V) v = RAW_MIN_V;
+      if (v > RAW_MAX_V) v = RAW_MAX_V;
+      float pct = (v - RAW_MIN_V) * 100.0f / (RAW_MAX_V - RAW_MIN_V);
+      if (pct < 0.0f) pct = 0.0f;
+      if (pct > 100.0f) pct = 100.0f;
+      return pct;
+    name: "Mic Level (%)"
+    unit_of_measurement: "%"
+    update_interval: 1s
