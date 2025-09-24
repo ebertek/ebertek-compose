@@ -19,7 +19,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 250M
+          memory: 256M
     devices:
       - "/dev/net/tun:/dev/net/tun"
     dns:
@@ -63,15 +63,15 @@ services:
 
   download:
     container_name: download
+    cpu_count: 1
     depends_on:
       gluetun:
         condition: service_healthy
-    cpu_count: 1
     deploy:
       resources:
         limits:
           # cpus: "1"
-          memory: 250M
+          memory: 256M
     dns_search: int.tnt.photo
     environment:
       PUID: 1028

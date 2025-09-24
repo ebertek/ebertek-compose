@@ -27,7 +27,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 100M
+          memory: 128M
     environment:
       TZ: Europe/Stockholm
       WATCHTOWER_CLEANUP: true

@@ -27,7 +27,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 2500M
+          memory: 2560M
     environment:
       PUID: 1028
       PGID: 100
@@ -57,7 +57,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 100M
+          memory: 128M
     env_file: cloudflared.txt
     hostname: cloudflared
     image: "docker.io/cloudflare/cloudflared:latest"
@@ -80,10 +80,10 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 1000M
+          memory: 1024M
         reservations:
           # cpus: "0.002"
-          memory: 200M
+          memory: 256M
     environment:
       DNS_SERVER_DOMAIN: dns
     hostname: dns
@@ -106,7 +106,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 250M
+          memory: 256M
     hostname: traefik
     image: "docker.io/library/traefik:v3"
     mac_address: "0e:be:00:da:00:44"

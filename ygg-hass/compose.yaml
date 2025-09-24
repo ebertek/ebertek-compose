@@ -30,6 +30,12 @@ services:
       --log-level-sdk progress
       --primary-interface eth0
     container_name: matter-server
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
     hostname: matter-server
     image: "ghcr.io/home-assistant-libs/python-matter-server:stable"
     mac_address: "0e:be:00:da:00:66"
@@ -49,6 +55,12 @@ services:
   mosquitto:
     <<: *env
     container_name: mosquitto
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
     hostname: mosquitto
     image: "docker.io/library/eclipse-mosquitto:latest"
     mac_address: "0e:be:00:da:00:67"
@@ -67,8 +79,14 @@ services:
   ps5-mqtt:
     <<: *env
     container_name: ps5-mqtt
+    cpu_count: 1
     depends_on:
       - mosquitto
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
     entrypoint: /app/run-standalone.sh
     environment:
       CONFIG_PATH: /config/options.json
@@ -96,8 +114,14 @@ services:
   zigbee2mqtt:
     <<: *env
     container_name: zigbee2mqtt
+    cpu_count: 1
     depends_on:
       - mosquitto
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
     group_add:
       - dialout
     hostname: zigbee2mqtt
@@ -118,6 +142,12 @@ services:
   hass:
     <<: *env
     container_name: hass
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 2048M
     hostname: hass
     image: "ghcr.io/home-assistant/home-assistant:stable"
     labels:
@@ -145,6 +175,12 @@ services:
   esphome:
     <<: *env
     container_name: esphome
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
     env_file: esphome.txt
     hostname: esphome
     image: "ghcr.io/esphome/esphome:stable"

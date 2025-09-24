@@ -29,6 +29,7 @@ services:
   immich:
     <<: *env
     container_name: immich
+    cpu_count: 4
     depends_on:
       - redis
       - database
@@ -36,7 +37,7 @@ services:
       resources:
         limits:
           # cpus: "4"
-          memory: 1500M
+          memory: 1536M
     devices:
       - /dev/dri:/dev/dri
     env_file: db.txt
@@ -68,11 +69,12 @@ services:
   immich-machine-learning:
     <<: *env
     container_name: immich-machine-learning
+    cpu_count: 4
     deploy:
       resources:
         limits:
           # cpus: "4"
-          memory: 1500M
+          memory: 1536M
     device_cgroup_rules:
       - "c 189:* rmw"
     devices:
@@ -101,7 +103,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 2000M
+          memory: 2048M
     env_file: db.txt
     healthcheck:
       test: redis-cli ping || exit 1
@@ -141,7 +143,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 1500M
+          memory: 1536M
     env_file:
       - db.txt
       - pg.txt

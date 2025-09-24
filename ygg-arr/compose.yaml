@@ -41,7 +41,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 1000M
+          memory: 1024M
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
       POSTGRES_USER_FILE: /run/secrets/postgres-user
@@ -82,7 +82,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: prowlarr
     image: ghcr.io/hotio/prowlarr
     mac_address: "0e:be:00:da:00:54"
@@ -105,7 +105,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: radarr
     image: ghcr.io/hotio/radarr
     mac_address: "0e:be:00:da:00:55"
@@ -129,7 +129,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: sonarr
     image: ghcr.io/hotio/sonarr
     mac_address: "0e:be:00:da:00:56"
@@ -153,7 +153,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     environment:
       WEBUI_PORTS: 6767/tcp,6767/udp
     hostname: lidarr
@@ -179,7 +179,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: lidarr
     image: ghcr.io/hotio/lidarr
     mac_address: "0e:be:00:da:00:58"
@@ -205,7 +205,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: requestrr
     image: ghcr.io/hotio/requestrr
     mac_address: "0e:be:00:da:00:61"
@@ -230,7 +230,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     environment:
       RECYCLARR_CREATE_CONFIG: true
     hostname: recyclarr

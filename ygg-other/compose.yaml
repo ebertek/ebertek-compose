@@ -29,7 +29,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     environment:
       PUID: 1028
       PGID: 100
@@ -63,7 +63,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 250M
+          memory: 256M
     env_file: vw.txt
     environment:
       PUID: 1028
@@ -101,7 +101,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 100M
+          memory: 128M
     env_file: acmesh.txt
     environment:
       PUID: 1028
@@ -126,7 +126,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 100M
+          memory: 128M
     env_file: smtp.txt
     environment:
       POSTCONF_compatibility_level: 2
@@ -161,7 +161,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
     mac_address: "0e:be:00:da:00:43"

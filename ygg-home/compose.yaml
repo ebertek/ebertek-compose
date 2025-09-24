@@ -24,13 +24,14 @@ services:
   plex:
     <<: *env
     container_name: plex
+    cpu_count: 4
     devices:
       - "/dev/dri:/dev/dri"
     deploy:
       resources:
         limits:
           # cpus: "4"
-          memory: 1000M
+          memory: 1024M
     env_file: plex.txt
     environment:
       PLEX_UID: 1028
@@ -68,7 +69,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 250M
+          memory: 256M
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
     labels:
@@ -98,7 +99,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 250M
+          memory: 256M
     env_file: discordpy.txt
     hostname: discordpy
     image: "ghcr.io/ebertek/bjornify:latest"
@@ -120,7 +121,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 1280M
+          memory: 1536M
     environment:
       USER_ID: 1028
       GROUP_ID: 100
@@ -151,7 +152,7 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 500M
+          memory: 512M
     environment:
       UMASK: 002
       # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
