@@ -37,7 +37,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "wget --no-check-certificate -qO- https://127.0.0.1:9000/ >/dev/null"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-check-certificate -qO- https://127.0.0.1:9000/ >/dev/null",
+        ]
       timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
@@ -116,7 +120,11 @@ services:
       interval: 1m
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf"]
+      test:
+        [
+          "CMD-SHELL",
+          "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf",
+        ]
       timeout: 5s
     hostname: acmesh
     image: "docker.io/neilpang/acme.sh:latest"

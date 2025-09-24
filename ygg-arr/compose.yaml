@@ -87,7 +87,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9696/ping >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:9696/ping >/dev/null || exit 1",
+        ]
       timeout: 5s
     hostname: prowlarr
     image: ghcr.io/hotio/prowlarr
@@ -116,7 +120,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7878/ping >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:7878/ping >/dev/null || exit 1",
+        ]
       timeout: 5s
     hostname: radarr
     image: ghcr.io/hotio/radarr
@@ -146,7 +154,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1",
+        ]
       timeout: 5s
     hostname: sonarr
     image: ghcr.io/hotio/sonarr
@@ -178,7 +190,8 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: lidarr
     image: ghcr.io/hotio/bazarr
@@ -208,7 +221,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8686/ping >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8686/ping >/dev/null || exit 1",
+        ]
       timeout: 5s
     hostname: lidarr
     image: ghcr.io/hotio/lidarr
@@ -240,7 +257,11 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:4545/health >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:4545/health >/dev/null || exit 1",
+        ]
       timeout: 5s
     hostname: requestrr
     image: ghcr.io/hotio/requestrr
