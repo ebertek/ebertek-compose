@@ -33,6 +33,12 @@ services:
     environment:
       PUID: 1028
       PGID: 100
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "wget --no-check-certificate -qO- https://127.0.0.1:9000/ >/dev/null"]
+      timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
     labels:
@@ -106,6 +112,12 @@ services:
     environment:
       PUID: 1028
       PGID: 100
+    healthcheck:
+      interval: 1m
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf"]
+      timeout: 5s
     hostname: acmesh
     image: "docker.io/neilpang/acme.sh:latest"
     mac_address: "0e:be:00:da:00:36"
@@ -162,6 +174,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null"]
+      timeout: 5s
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
     mac_address: "0e:be:00:da:00:43"

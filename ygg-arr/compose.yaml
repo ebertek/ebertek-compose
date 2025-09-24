@@ -83,6 +83,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9696/ping >/dev/null || exit 1"]
+      timeout: 5s
     hostname: prowlarr
     image: ghcr.io/hotio/prowlarr
     mac_address: "0e:be:00:da:00:54"
@@ -106,6 +112,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7878/ping >/dev/null || exit 1"]
+      timeout: 5s
     hostname: radarr
     image: ghcr.io/hotio/radarr
     mac_address: "0e:be:00:da:00:55"
@@ -130,6 +142,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1"]
+      timeout: 5s
     hostname: sonarr
     image: ghcr.io/hotio/sonarr
     mac_address: "0e:be:00:da:00:56"
@@ -156,6 +174,12 @@ services:
           memory: 512M
     environment:
       WEBUI_PORTS: 6767/tcp,6767/udp
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
+      timeout: 5s
     hostname: lidarr
     image: ghcr.io/hotio/bazarr
     mac_address: "0e:be:00:da:00:57"
@@ -180,6 +204,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8686/ping >/dev/null || exit 1"]
+      timeout: 5s
     hostname: lidarr
     image: ghcr.io/hotio/lidarr
     mac_address: "0e:be:00:da:00:58"
@@ -206,6 +236,12 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:4545/health >/dev/null || exit 1"]
+      timeout: 5s
     hostname: requestrr
     image: ghcr.io/hotio/requestrr
     mac_address: "0e:be:00:da:00:61"
@@ -233,6 +269,12 @@ services:
           memory: 512M
     environment:
       RECYCLARR_CREATE_CONFIG: true
+    healthcheck:
+      interval: 1m
+      retries: 3
+      start_period: 30s
+      test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1"]
+      timeout: 5s
     hostname: recyclarr
     image: ghcr.io/recyclarr/recyclarr
     mac_address: "0e:be:00:da:00:62"

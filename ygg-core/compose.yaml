@@ -107,6 +107,12 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080"]
+      timeout: 5s
     hostname: traefik
     image: "docker.io/library/traefik:v3"
     mac_address: "0e:be:00:da:00:44"
