@@ -19,35 +19,6 @@ x-env: &env
   stop_grace_period: 2m
 
 services:
-  omada:
-    <<: *env
-    container_name: omada
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 2560M
-    environment:
-      PUID: 1028
-      PGID: 100
-    hostname: omada
-    image: "docker.io/mbentley/omada-controller:latest"
-    mac_address: "0e:be:00:da:00:38"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.38
-    ulimits:
-      nofile:
-        soft: 4096
-        hard: 8192
-    volumes:
-      - "/volume2/docker/omada/data:/opt/tplink/EAPController/data"
-      - "/volume2/docker/omada/logs:/opt/tplink/EAPController/logs"
-      - "/volume2/docker/omada/work:/opt/tplink/EAPController/work"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/cert/tls.key"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/cert/tls.crt"
-
   cloudflared:
     <<: *env
     command: tunnel run
