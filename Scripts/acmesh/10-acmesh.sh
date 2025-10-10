@@ -16,7 +16,7 @@ while IFS='=' read -r key value; do
 done <"$ENV_FILE"
 
 docker exec acmesh --issue -d tnt.photo -d '*.tnt.photo' -d '*.int.tnt.photo' -d '*.ext.tnt.photo' --challenge-alias 'tnt.photo' --server letsencrypt --dns dns_cf --force
-docker exec acmesh --issue -d melindaban.com -d '*.melindaban.com' --server letsencrypt --dns dns_cf --force
+docker exec acmesh --issue -d melindaban.com -d '*.melindaban.com' -d linda-ebert.com -d '*.linda-ebert.com' --server letsencrypt --dns dns_cf --force
 docker exec acmesh --issue -d ebertek.com -d '*.ebertek.com' --server letsencrypt --dns dns_cf --force
 docker exec acmesh --issue -d ld25.se -d '*.ld25.se' -d lindi-david.se -d '*.lindi-david.se' --server letsencrypt --dns dns_cf --force
 docker exec acmesh --toPkcs -d tnt.photo --password "$PASSWORD"
