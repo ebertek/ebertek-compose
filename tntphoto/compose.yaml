@@ -85,15 +85,17 @@ services:
     networks:
       wp_net:
         aliases:
+          - ebertek.com
+          - www.ebertek.com
+          - linda-ebert.com
+          - www.linda-ebert.com
+          - lindi-david.se
+          - www.lindi-david.se
+          - melindaban.com
+          - www.melindaban.com
           - tnt.photo
           - www.tnt.photo
           - x.tnt.photo
-          - ebertek.com
-          - www.ebertek.com
-          - melindaban.com
-          - www.melindaban.com
-          - lindi-david.se
-          - www.lindi-david.se
     ports:
       - "80:80"
       - "443:443"
