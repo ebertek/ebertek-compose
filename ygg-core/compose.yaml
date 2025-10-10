@@ -57,6 +57,16 @@ services:
           memory: 256M
     environment:
       DNS_SERVER_DOMAIN: dns
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+        [
+          "CMD-SHELL",
+          "grep -i \"$(printf '%08x:%04x' 0 53)\" /proc/net/udp >/dev/null 2>&1 || exit 1"
+        ]
+      timeout: 5s
     hostname: dns
     image: "docker.io/technitium/dns-server:latest"
     mac_address: "0e:be:00:da:00:34"

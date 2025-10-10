@@ -43,7 +43,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -fsS http://127.0.0.1:5580/metrics >/dev/null || exit 1",
+          "curl -fsS http://127.0.0.1:5580/ >/dev/null || exit 1",
         ]
       timeout: 10s
     hostname: matter-server
@@ -140,6 +140,12 @@ services:
           memory: 256M
     group_add:
       - dialout
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8099"]
+      timeout: 5s
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
     labels:
@@ -164,6 +170,16 @@ services:
         limits:
           # cpus: "2"
           memory: 2048M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsSk https://127.0.0.1/ >/dev/null || exit 1",
+        ]
+      timeout: 10s
     hostname: hass
     image: "ghcr.io/home-assistant/home-assistant:stable"
     labels:
