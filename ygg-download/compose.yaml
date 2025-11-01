@@ -32,7 +32,7 @@ services:
       PGID: 100
       TZ: Europe/Stockholm
       BLOCK_MALICIOUS: off
-      SERVER_HOSTNAMES: se-got-wg-003
+      SERVER_CITIES: Gothenburg
       UNBLOCK: t.ncore.sh
       UPDATER_PERIOD: 24h
       VPN_SERVICE_PROVIDER: mullvad
