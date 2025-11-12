@@ -33,7 +33,7 @@ services:
       TZ: Europe/Stockholm
       BLOCK_MALICIOUS: off
       SERVER_CITIES: Gothenburg
-      UNBLOCK: t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
+      UNBLOCK: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
       UPDATER_PERIOD: 24h
       VPN_SERVICE_PROVIDER: mullvad
       VPN_TYPE: wireguard
