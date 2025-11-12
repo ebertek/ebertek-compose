@@ -32,6 +32,8 @@ services:
       PGID: 100
       TZ: Europe/Stockholm
       BLOCK_MALICIOUS: off
+      HEALTH_VPN_DURATION_ADDITION: 5s
+      HEALTH_VPN_DURATION_INITIAL: 10s
       SERVER_CITIES: Gothenburg
       UNBLOCK: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
       UPDATER_PERIOD: 24h
