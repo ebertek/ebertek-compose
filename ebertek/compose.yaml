@@ -34,7 +34,7 @@ services:
       TZ: Europe/Stockholm
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_ROLLING_RESTART: true
-    image: "docker.io/containrrr/watchtower:latest"
+    image: "docker.io/nickfedor/watchtower:latest"
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
