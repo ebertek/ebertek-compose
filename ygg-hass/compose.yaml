@@ -211,7 +211,6 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/hass/config:/config"
-      - "/etc/localtime:/etc/localtime:ro"
       - "/run/dbus:/run/dbus:ro"
 
   esphome:
@@ -246,4 +245,3 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/hass/esphome:/config"
-      - "/etc/localtime:/etc/localtime:ro"

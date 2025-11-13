@@ -78,7 +78,6 @@ services:
       - *tz
       - /volume1/photo/Pictures:/mnt/media/Pictures:ro
       - /volume2/docker/immich/upload:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
 
   immich-machine-learning:
     <<: *common
