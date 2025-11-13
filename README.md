@@ -7,7 +7,7 @@ A collection of Docker Compose files and shell scripts.
 ### [ebertek/](ebertek/)
 
 - **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
-- **[watchtower](https://hub.docker.com/r/containrrr/watchtower)**: Automatic Docker container base image updates.
+- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [tntphoto/](tntphoto/)
 
@@ -18,7 +18,7 @@ A collection of Docker Compose files and shell scripts.
 ### [ygg/](ygg/)
 
 - **[macvlan](https://docs.docker.com/engine/network/drivers/macvlan/)**: Creates the Macvlan network used by all `ygg-*` Compose files.
-- **[watchtower](https://hub.docker.com/r/containrrr/watchtower)**: Automatic Docker container base image updates.
+- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-arr/](ygg-arr/)
 
@@ -33,7 +33,6 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ygg-core/](ygg-core/)
 
-- **[omada](https://hub.docker.com/r/mbentley/omada-controller)**: TP-Link Omada controller.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
@@ -71,7 +70,7 @@ A collection of Docker Compose files and shell scripts.
 - **[immich](https://github.com/immich-app/immich)**: Photo and video management.
 - **[immich-machine-learning](https://github.com/immich-app/immich/tree/main/machine-learning)**: CLIP embeddings and facial recognition for Immich.
 - **[redis](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
-- **[database](https://hub.docker.com/r/tensorchord/pgvecto-rs)**: Scalable vector search in Postgres for Immich.
+- **[database](https://github.com/immich-app/base-images/pkgs/container/postgres)**: Scalable vector search in Postgres for Immich.
 
 ### [ygg-other/](ygg-other/)
 
