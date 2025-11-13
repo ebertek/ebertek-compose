@@ -24,6 +24,7 @@ services:
     <<: *common
     cap_add:
       - NET_ADMIN
+      - NET_RAW
       - SYS_MODULE
     cpu_count: 1
     container_name: gluetun
@@ -43,6 +44,7 @@ services:
     environment:
       <<: *env
       BLOCK_MALICIOUS: off
+      HEALTH_RESTART_VPN: off
       HEALTH_VPN_DURATION_ADDITION: 5s
       HEALTH_VPN_DURATION_INITIAL: 10s
       SERVER_CITIES: Gothenburg
