@@ -8,7 +8,7 @@ services:
     environment:
       PUID: 100
       PGID: 101
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
     healthcheck:
       test: "bash -c 'exec 6<> /dev/tcp/localhost/53'"
       interval: 5m
@@ -31,7 +31,7 @@ services:
 
   watchtower:
     environment:
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_ROLLING_RESTART: true
     image: "docker.io/nickfedor/watchtower:latest"

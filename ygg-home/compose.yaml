@@ -8,21 +8,24 @@ networks:
   macvlan1:
     external: true
 
-x-env: &env
+x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search: int.tnt.photo
-  environment:
-    PUID: 1028
-    PGID: 100
-    TZ: Europe/Stockholm
   restart: "no"
   stop_grace_period: 3m
 
+x-env: &env
+  PUID: 1028
+  PGID: 100
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   plex:
-    <<: *env
+    <<: *common
     container_name: plex
     cpu_count: 4
     devices:
@@ -34,6 +37,7 @@ services:
           memory: 1024M
     env_file: plex.txt
     environment:
+      <<: *env
       PLEX_UID: 1028
       PLEX_GID: 100
       ALLOWED_NETWORKS: 10.4.21.0/24
@@ -54,13 +58,14 @@ services:
           - plex.ext.tnt.photo
         ipv4_address: 10.4.21.40
     volumes:
+      - *tz
       - "/volume2/docker/plex/config:/config"
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/config/tnt.photo.pfx"
       - "/volume2/docker/plex/transcode:/transcode"
       - "/volume1/Downloads:/data"
 
   tautulli:
-    <<: *env
+    <<: *common
     container_name: tautulli
     cpu_count: 1
     depends_on:
@@ -70,6 +75,8 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    environment:
+      <<: *env
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
     labels:
@@ -86,13 +93,14 @@ services:
           - tautulli.ext.tnt.photo
         ipv4_address: 10.4.21.41
     volumes:
+      - *tz
       - "/volume2/docker/tautulli:/config"
       - "/volume2/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro" # yamllint disable-line
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 
   discordpy:
-    <<: *env
+    <<: *common
     container_name: discordpy
     cpu_count: 1
     deploy:
@@ -101,6 +109,8 @@ services:
           # cpus: "1"
           memory: 256M
     env_file: discordpy.txt
+    environment:
+      <<: *env
     hostname: discordpy
     image: "ghcr.io/ebertek/bjornify:latest"
     mac_address: "0e:be:00:da:00:52"
@@ -110,11 +120,12 @@ services:
     stop_signal: SIGINT
     user: "1028:100"
     volumes:
+      - *tz
       - "/volume2/docker/discordpy/logs:/app/logs"
       - "/volume2/docker/discordpy/secrets:/app/secrets"
 
   tmm:
-    <<: *env
+    <<: *common
     container_name: tmm
     cpu_count: 2
     deploy:
@@ -123,6 +134,7 @@ services:
           # cpus: "2"
           memory: 1536M
     environment:
+      <<: *env
       USER_ID: 1028
       GROUP_ID: 100
       UMASK: 002
@@ -143,12 +155,13 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.53
     volumes:
+      - *tz
       - "/volume2/docker/tmm/data:/data"
       # - "/volume2/docker/tmm/app/addons:/app/addons"
       - "/volume1/Downloads:/downloads"
 
   books:
-    <<: *env
+    <<: *common
     container_name: books
     cpu_count: 1
     # depends_on:
@@ -160,6 +173,7 @@ services:
           # cpus: "1"
           memory: 512M
     environment:
+      <<: *env
       UMASK: 002
       # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
       DOCKER_MODS: >
@@ -187,5 +201,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.59
     volumes:
+      - *tz
       - "/volume2/docker/calibre-web:/config"
       - "/volume1/Downloads:/downloads"

@@ -8,23 +8,25 @@ networks:
   macvlan1:
     external: true
 
-x-arr: &arr
-  environment:
-    PUID: 1028
-    PGID: 100
-    UMASK: 002
-  extra_hosts:
-    - "download.int.tnt.photo:10.4.21.39"
-
-x-env: &env
+x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search: int.tnt.photo
-  environment:
-    TZ: Europe/Stockholm
+  extra_hosts:
+    - "download.int.tnt.photo:10.4.21.39"
   restart: "no"
   stop_grace_period: 2m
+
+x-env: &env
+  TZ: Etc/UTC
+
+x-env-arr: &env-arr
+  PUID: 1028
+  PGID: 100
+  UMASK: 002
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 secrets:
   postgres-passwd:
@@ -34,7 +36,7 @@ secrets:
 
 services:
   pg:
-    <<: *env
+    <<: *common
     container_name: pg
     cpu_count: 2
     deploy:
@@ -43,6 +45,7 @@ services:
           # cpus: "2"
           memory: 1024M
     environment:
+      <<: *env
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
       POSTGRES_USER_FILE: /run/secrets/postgres-user
     healthcheck:
@@ -65,10 +68,11 @@ services:
     shm_size: 128mb
     user: "999:999"
     volumes:
+      - *tz
       - "/volume2/docker/pg:/var/lib/postgresql/data"
 
   prowlarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: prowlarr
     cpu_count: 1
     depends_on:
@@ -83,6 +87,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    environment:
+      <<: [*env, *env-arr]
     healthcheck:
       interval: 30s
       retries: 5
@@ -102,10 +108,11 @@ services:
           - prowlarr.int.tnt.photo
         ipv4_address: 10.4.21.54
     volumes:
+      - *tz
       - "/volume2/docker/prowlarr:/config"
 
   radarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: radarr
     cpu_count: 1
     depends_on:
@@ -116,6 +123,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    environment:
+      <<: [*env, *env-arr]
     healthcheck:
       interval: 30s
       retries: 5
@@ -135,11 +144,12 @@ services:
           - radarr.int.tnt.photo
         ipv4_address: 10.4.21.55
     volumes:
+      - *tz
       - "/volume2/docker/radarr:/config"
       - "/volume1/Downloads:/downloads"
 
   sonarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: sonarr
     cpu_count: 1
     depends_on:
@@ -150,6 +160,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    environment:
+      <<: [*env, *env-arr]
     healthcheck:
       interval: 30s
       retries: 5
@@ -169,11 +181,12 @@ services:
           - sonarr.int.tnt.photo
         ipv4_address: 10.4.21.56
     volumes:
+      - *tz
       - "/volume2/docker/sonarr:/config"
       - "/volume1/Downloads:/downloads"
 
   bazarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: bazarr
     cpu_count: 1
     depends_on:
@@ -185,6 +198,7 @@ services:
           # cpus: "1"
           memory: 512M
     environment:
+      <<: [*env, *env-arr]
       WEBUI_PORTS: 6767/tcp,6767/udp
     healthcheck:
       interval: 30s
@@ -202,11 +216,12 @@ services:
           - bazarr.int.tnt.photo
         ipv4_address: 10.4.21.57
     volumes:
+      - *tz
       - "/volume2/docker/bazarr:/config"
       - "/volume1/Downloads:/downloads"
 
   lidarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: lidarr
     cpu_count: 1
     depends_on:
@@ -217,6 +232,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    environment:
+      <<: [*env, *env-arr]
     healthcheck:
       interval: 30s
       retries: 5
@@ -236,11 +253,12 @@ services:
           - lidarr.int.tnt.photo
         ipv4_address: 10.4.21.58
     volumes:
+      - *tz
       - "/volume2/docker/lidarr:/config"
       - "/volume1/Downloads:/downloads"
 
   requestrr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: requestrr
     cpu_count: 1
     depends_on:
@@ -253,6 +271,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    environment:
+      <<: [*env, *env-arr]
     healthcheck:
       interval: 30s
       retries: 5
@@ -272,10 +292,11 @@ services:
           - requestrr.int.tnt.photo
         ipv4_address: 10.4.21.61
     volumes:
+      - *tz
       - "/volume2/docker/requestrr:/config"
 
   recyclarr:
-    <<: [*arr, *env]
+    <<: *common
     container_name: recyclarr
     cpu_count: 1
     depends_on:
@@ -289,6 +310,7 @@ services:
           # cpus: "1"
           memory: 512M
     environment:
+      <<: [*env, *env-arr]
       RECYCLARR_CREATE_CONFIG: true
     healthcheck:
       interval: 1m
@@ -307,4 +329,5 @@ services:
     security_opt: ["no-new-privileges:true"]
     user: "1028:100"
     volumes:
+      - *tz
       - "/volume2/docker/recyclarr:/config"

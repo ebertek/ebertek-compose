@@ -10,24 +10,27 @@ networks:
   macvlan1:
     external: true
 
-x-env: &env
+x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search: int.tnt.photo
-  environment:
-    DB_DATABASE_NAME: immich
-    DB_HOSTNAME: database
-    REDIS_HOSTNAME: redis
-    TZ: Europe/Stockholm
   labels:
     com.centurylinklabs.watchtower.monitor-only: true
   restart: "no"
   stop_grace_period: 1m
 
+x-env: &env
+  DB_DATABASE_NAME: immich
+  DB_HOSTNAME: database
+  REDIS_HOSTNAME: redis
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   immich:
-    <<: *env
+    <<: *common
     container_name: immich
     cpu_count: 4
     depends_on:
@@ -42,6 +45,7 @@ services:
       - /dev/dri:/dev/dri
     env_file: db.txt
     environment:
+      <<: *env
       NO_COLOR: true
     healthcheck:
       disable: true
@@ -71,12 +75,13 @@ services:
         ipv4_address: 10.4.21.48
     user: 1028:100
     volumes:
+      - *tz
       - /volume1/photo/Pictures:/mnt/media/Pictures:ro
       - /volume2/docker/immich/upload:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
 
   immich-machine-learning:
-    <<: *env
+    <<: *common
     container_name: immich-machine-learning
     cpu_count: 4
     deploy:
@@ -90,6 +95,7 @@ services:
       - /dev/dri:/dev/dri
     env_file: db.txt
     environment:
+      <<: *env
       NO_COLOR: true
     healthcheck:
       disable: true
@@ -101,11 +107,12 @@ services:
         ipv4_address: 10.4.21.49
     user: 1028:100
     volumes:
+      - *tz
       - /volume2/docker/immich/cache:/cache
       - /dev/bus/usb:/dev/bus/usb
 
   redis:
-    <<: *env
+    <<: *common
     container_name: redis
     cpu_count: 2
     deploy:
@@ -114,6 +121,8 @@ services:
           # cpus: "2"
           memory: 2048M
     env_file: db.txt
+    environment:
+      <<: *env
     healthcheck:
       test: redis-cli ping || exit 1
     hostname: redis
@@ -126,10 +135,11 @@ services:
       net.core.somaxconn: 512
     # user: 1028:100
     volumes:
+      - *tz
       - /volume2/docker/immich/redis:/data
 
   database:
-    <<: *env
+    <<: *common
     container_name: database
     cpu_count: 2
     deploy:
@@ -141,6 +151,7 @@ services:
       - db.txt
       - pg.txt
     environment:
+      <<: *env
       POSTGRES_DB: immich
       POSTGRES_INITDB_ARGS: "--data-checksums"
     hostname: database
@@ -152,4 +163,5 @@ services:
     shm_size: 128mb
     # user: 1028:100
     volumes:
+      - *tz
       - /volume2/docker/immich/postgres:/var/lib/postgresql/data

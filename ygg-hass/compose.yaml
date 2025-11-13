@@ -8,19 +8,22 @@ networks:
   macvlan1:
     external: true
 
-x-env: &env
+x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search: int.tnt.photo
-  environment:
-    TZ: Europe/Stockholm
   restart: "no"
   stop_grace_period: 10m
 
+x-env: &env
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   matter-server:
-    <<: *env
+    <<: *common
     cap_add:
       - NET_ADMIN
     command: >
@@ -36,6 +39,8 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    environment:
+      <<: *env
     healthcheck:
       interval: 30s
       retries: 5
@@ -56,11 +61,12 @@ services:
     security_opt:
       - "apparmor:unconfined"
     volumes:
+      - *tz
       - "/volume2/docker/hass/matter-server:/data"
       - "/run/dbus:/run/dbus:ro"
 
   mosquitto:
-    <<: *env
+    <<: *common
     container_name: mosquitto
     cpu_count: 1
     deploy:
@@ -68,6 +74,8 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    environment:
+      <<: *env
     healthcheck:
       interval: 30s
       retries: 5
@@ -85,12 +93,13 @@ services:
           - mosquitto.ext.tnt.photo
         ipv4_address: 10.4.21.67
     volumes:
+      - *tz
       - "/volume2/docker/hass/mosquitto/config:/mosquitto/config"
       - "/volume2/docker/hass/mosquitto/data:/mosquitto/data"
       - "/volume2/docker/hass/mosquitto/log:/mosquitto/log"
 
   ps5-mqtt:
-    <<: *env
+    <<: *common
     container_name: ps5-mqtt
     cpu_count: 1
     depends_on:
@@ -102,6 +111,7 @@ services:
           memory: 256M
     entrypoint: /app/run-standalone.sh
     environment:
+      <<: *env
       CONFIG_PATH: /config/options.json
       DEBUG: "@ha:ps5:*"
     healthcheck:
@@ -122,10 +132,11 @@ services:
         ipv4_address: 10.4.21.68
     stop_signal: SIGKILL
     volumes:
+      - *tz
       - "/volume2/docker/hass/ps5-mqtt:/config"
 
   zigbee2mqtt:
-    <<: *env
+    <<: *common
     container_name: zigbee2mqtt
     cpu_count: 1
     depends_on:
@@ -135,6 +146,8 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    environment:
+      <<: *env
     group_add:
       - dialout
     healthcheck:
@@ -155,11 +168,12 @@ services:
         ipv4_address: 10.4.21.69
     restart: on-failure
     volumes:
+      - *tz
       - "/volume2/docker/hass/zigbee2mqtt:/app/data"
       - "/run/udev:/run/udev:ro"
 
   hass:
-    <<: *env
+    <<: *common
     container_name: hass
     cpu_count: 2
     deploy:
@@ -167,6 +181,8 @@ services:
         limits:
           # cpus: "2"
           memory: 2048M
+    environment:
+      <<: *env
     healthcheck:
       interval: 30s
       retries: 5
@@ -193,12 +209,13 @@ services:
         ipv4_address: 10.4.21.70
     privileged: true
     volumes:
+      - *tz
       - "/volume2/docker/hass/config:/config"
       - "/etc/localtime:/etc/localtime:ro"
       - "/run/dbus:/run/dbus:ro"
 
   esphome:
-    <<: *env
+    <<: *common
     container_name: esphome
     cpu_count: 1
     deploy:
@@ -207,6 +224,8 @@ services:
           # cpus: "1"
           memory: 256M
     env_file: esphome.txt
+    environment:
+      <<: *env
     hostname: esphome
     image: "ghcr.io/esphome/esphome:stable"
     labels:
@@ -225,5 +244,6 @@ services:
     privileged: true
     stop_signal: SIGINT
     volumes:
+      - *tz
       - "/volume2/docker/hass/esphome:/config"
       - "/etc/localtime:/etc/localtime:ro"

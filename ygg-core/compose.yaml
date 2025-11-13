@@ -8,19 +8,22 @@ networks:
   macvlan1:
     external: true
 
-x-env: &env
+x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search: int.tnt.photo
-  environment:
-    TZ: Europe/Stockholm
   restart: "no"
   stop_grace_period: 2m
 
+x-env: &env
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   cloudflared:
-    <<: *env
+    <<: *common
     command: tunnel run
     container_name: cloudflared
     cpu_count: 1
@@ -30,6 +33,8 @@ services:
           # cpus: "1"
           memory: 128M
     env_file: cloudflared.txt
+    environment:
+      <<: *env
     hostname: cloudflared
     image: "docker.io/cloudflare/cloudflared:latest"
     mac_address: "0e:be:00:da:00:37"
@@ -42,9 +47,11 @@ services:
       nofile:
         soft: 70000
         hard: 70000
+    volumes:
+      - *tz
 
   dns:
-    <<: *env
+    <<: *common
     container_name: dns
     cpu_count: 1
     deploy:
@@ -56,6 +63,7 @@ services:
           # cpus: "0.002"
           memory: 256M
     environment:
+      <<: *env
       DNS_SERVER_DOMAIN: dns
     healthcheck:
       interval: 30s
@@ -76,11 +84,12 @@ services:
     sysctls:
       net.ipv4.ip_local_port_range: "1024 65000"
     volumes:
+      - *tz
       - "/volume2/docker/dns:/etc/dns"
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/etc/dns/tnt.photo.pfx"
 
   traefik:
-    <<: *env
+    <<: *common
     container_name: traefik
     cpu_count: 1
     deploy:
@@ -88,6 +97,8 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
+    environment:
+      <<: *env
     healthcheck:
       interval: 30s
       retries: 3
@@ -101,6 +112,7 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.44
     volumes:
+      - *tz
       - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml"
       - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
       - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"

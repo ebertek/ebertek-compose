@@ -10,7 +10,7 @@ services:
     container_name: mariadb
     env_file: mariadb.txt
     environment:
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
       MARIADB_AUTO_UPGRADE: 1
     healthcheck:
       interval: 1m
@@ -46,7 +46,7 @@ services:
     environment:
       PUID: 82
       PGID: 82
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
       WORDPRESS_DB_HOST: "mariadb:3306"
     healthcheck:
       interval: 3m
@@ -73,7 +73,7 @@ services:
     environment:
       PUID: 101
       PGID: 101
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
     healthcheck:
       interval: 3m
       retries: 5

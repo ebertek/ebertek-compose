@@ -8,8 +8,20 @@ networks:
   macvlan1:
     external: true
 
+x-common: &common
+  restart: "no"
+  stop_grace_period: 1m
+
+x-env: &env
+  PUID: 1028
+  PGID: 100
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   gluetun:
+    <<: *common
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -29,9 +41,7 @@ services:
     dns_search: int.tnt.photo
     env_file: gluetun.txt
     environment:
-      PUID: 1028
-      PGID: 100
-      TZ: Europe/Stockholm
+      <<: *env
       BLOCK_MALICIOUS: off
       HEALTH_VPN_DURATION_ADDITION: 5s
       HEALTH_VPN_DURATION_INITIAL: 10s
@@ -55,16 +65,16 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.39
     privileged: true
-    restart: "no"
-    stop_grace_period: 1m
     sysctls:
       net.ipv4.conf.all.src_valid_mark: 1
       net.ipv6.conf.all.disable_ipv6: 0
     volumes:
+      - *tz
       - "/volume2/docker/gluetun:/gluetun"
       - "/lib/modules:/lib/modules:ro"
 
   download:
+    <<: *common
     container_name: download
     cpu_count: 1
     depends_on:
@@ -77,9 +87,7 @@ services:
           memory: 256M
     dns_search: int.tnt.photo
     environment:
-      PUID: 1028
-      PGID: 100
-      TZ: Europe/Stockholm
+      <<: *env
       TORRENTING_PORT: 56213
       WEBUI_PORT: 8080
     healthcheck:
@@ -98,9 +106,8 @@ services:
       traefik.http.services.download.loadbalancer.server.port: 8080
       traefik.http.services.download.loadbalancer.server.scheme: https
     network_mode: "container:gluetun"
-    restart: "no"
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/volume1/Downloads:/downloads"
       - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
       - "/volume2/docker/qbittorrent:/config"

@@ -29,7 +29,7 @@ services:
           # cpus: "1"
           memory: 128M
     environment:
-      TZ: Europe/Stockholm
+      TZ: Etc/UTC
       WATCHTOWER_CLEANUP: true
       # WATCHTOWER_ROLLING_RESTART: true
     hostname: watchtower
