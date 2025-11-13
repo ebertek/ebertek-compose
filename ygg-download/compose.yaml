@@ -44,7 +44,7 @@ services:
     environment:
       <<: *env
       BLOCK_MALICIOUS: off
-      HEALTH_RESTART_VPN: off
+      DNS_UNBLOCK_HOSTNAMES: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
       HEALTH_VPN_DURATION_ADDITION: 5s
       HEALTH_VPN_DURATION_INITIAL: 10s
       SERVER_CITIES: Gothenburg
@@ -61,7 +61,7 @@ services:
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun
-    image: "docker.io/qmcgaw/gluetun:latest"
+    image: "docker.io/qmcgaw/gluetun:v3.40"
     mac_address: "0e:be:00:da:00:39"
     networks:
       macvlan1:
