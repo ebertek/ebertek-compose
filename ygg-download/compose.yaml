@@ -52,8 +52,8 @@ services:
       UPDATER_PERIOD: 24h
       VPN_SERVICE_PROVIDER: mullvad
       VPN_TYPE: wireguard
-      WIREGUARD_ADDRESSES: "10.67.208.69/32,fc00:bbbb:bbbb:bb01::4:d044/128"
-      WIREGUARD_ENDPOINT_PORT: 443
+      WIREGUARD_ADDRESSES: "10.75.26.2/32,fc00:bbbb:bbbb:bb01::c:1a01/128"
+      WIREGUARD_ENDPOINT_PORT: 53
     healthcheck:
       interval: 5s
       retries: 1
@@ -61,7 +61,7 @@ services:
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun
-    image: "docker.io/qmcgaw/gluetun:v3.40"
+    image: "docker.io/qmcgaw/gluetun:latest"
     mac_address: "0e:be:00:da:00:39"
     networks:
       macvlan1:
