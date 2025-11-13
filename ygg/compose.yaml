@@ -32,9 +32,8 @@ services:
       TZ: Europe/Stockholm
       WATCHTOWER_CLEANUP: true
       # WATCHTOWER_ROLLING_RESTART: true
-      DOCKER_CONFIG: /config
     hostname: watchtower
-    image: "docker.io/containrrr/watchtower:latest"
+    image: "docker.io/nickfedor/watchtower:latest"
     mac_address: "0e:be:00:da:00:47"
     networks:
       macvlan1:
@@ -44,4 +43,4 @@ services:
     stop_grace_period: 1m
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/volume2/docker/watchtower:/config"
+      - "/volume2/docker/watchtower/config.json:/config.json"
