@@ -96,6 +96,7 @@ services:
       - "--log.level=DEBUG"
       - "--metrics.prometheus=true"
       - "--providers.docker=true"
+      - "--tracing=true"
     container_name: traefik
     cpu_count: 1
     deploy:
