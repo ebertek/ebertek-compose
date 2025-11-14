@@ -50,7 +50,3 @@ storage_config:
 
 pattern_ingester:
   enabled: true
-
-ingester:
-  max_chunk_age: 168h
-  max_ingestion_time_offset: 744h

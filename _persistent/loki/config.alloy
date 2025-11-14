@@ -107,9 +107,6 @@ loki.source.docker "docker_logs" {
   targets      = discovery.docker.docker.targets
   relabel_rules = discovery.relabel.logs_docker.rules
   forward_to    = [loki.write.local.receiver]
-  exclude = {
-    older_than = "168h"
-  }
 }
 
 loki.write "local" {
