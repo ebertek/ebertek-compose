@@ -46,7 +46,7 @@ services:
       BLOCK_MALICIOUS: off
       DNS_UNBLOCK_HOSTNAMES: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
       HEALTH_VPN_DURATION_ADDITION: 5s
-      HEALTH_VPN_DURATION_INITIAL: 10s
+      HEALTH_VPN_DURATION_INITIAL: 30s
       SERVER_CITIES: Gothenburg
       UNBLOCK: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
       UPDATER_PERIOD: 24h
@@ -57,7 +57,7 @@ services:
     healthcheck:
       interval: 5s
       retries: 1
-      start_period: 30s # default was 10s
+      start_period: 40s
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun
