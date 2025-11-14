@@ -1,7 +1,6 @@
-# NODE (HOST) METRICS - node_exporter
+// NODE (HOST) METRICS - node_exporter
 
 prometheus.exporter.unix "integrations_node_exporter" {
-  # Use host-mounted paths
   rootfs_path    = "/rootfs"
   procfs_path    = "/rootproc"
   sysfs_path     = "/sys"
@@ -46,7 +45,7 @@ prometheus.scrape "integrations_node_exporter" {
 }
 
 
-# DOCKER CONTAINER METRICS - cAdvisor
+// DOCKER CONTAINER METRICS - cAdvisor
 
 prometheus.exporter.cadvisor "docker" {
   docker_only = true
@@ -73,7 +72,7 @@ prometheus.scrape "docker_metrics" {
 }
 
 
-# METRIC OUTPUT -> PROMETHEUS
+// METRIC OUTPUT -> PROMETHEUS
 
 prometheus.remote_write "local" {
   endpoint {
@@ -82,7 +81,7 @@ prometheus.remote_write "local" {
 }
 
 
-# DOCKER LOGS -> LOKI
+// DOCKER LOGS -> LOKI
 
 discovery.docker "docker" {
   host = "unix:///var/run/docker.sock"
