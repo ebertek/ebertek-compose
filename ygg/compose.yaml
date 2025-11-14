@@ -31,6 +31,8 @@ services:
     environment:
       TZ: Etc/UTC
       WATCHTOWER_CLEANUP: true
+      WATCHTOWER_HTTP_API_METRICS: true
+      WATCHTOWER_HTTP_API_TOKEN: demotoken
       # WATCHTOWER_ROLLING_RESTART: true
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"

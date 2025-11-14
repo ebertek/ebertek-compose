@@ -90,6 +90,14 @@ services:
 
   traefik:
     <<: *common
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--providers.docker=true"
+      - "--providers.docker.watch"
     container_name: traefik
     cpu_count: 1
     deploy:

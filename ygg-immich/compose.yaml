@@ -46,6 +46,7 @@ services:
     env_file: db.txt
     environment:
       <<: *env
+      IMMICH_TELEMETRY_INCLUDE: all
       NO_COLOR: true
     healthcheck:
       disable: true
