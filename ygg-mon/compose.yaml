@@ -180,5 +180,5 @@ services:
     user: "1028:100"
     volumes:
       - *tz
-      - "/volume2/docker/prometheus:/etc/prometheus:ro"
-      - "/volume2/docker/prometheus/data:/prometheus"
+      - "/volume2/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "/volume2/docker/prometheus:/prometheus"
