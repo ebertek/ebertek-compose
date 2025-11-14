@@ -14,8 +14,8 @@ x-env: &env
 x-hc: &hc
   interval: 3m
   retries: 5
-  start_interval: 10s
-  start_period: 1m
+  start_interval: 5s
+  start_period: 1.5m
   timeout: 10s
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
