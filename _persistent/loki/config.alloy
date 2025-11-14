@@ -92,8 +92,8 @@ discovery.relabel "logs_docker" {
 
   rule {
     source_labels = ["__meta_docker_container_name"]
-    regex        = "/(.*)"
-    target_label = "container_name"
+    regex         = "/(.*)"
+    target_label  = "container_name"
   }
 
   rule {
@@ -103,8 +103,8 @@ discovery.relabel "logs_docker" {
 }
 
 loki.source.docker "docker_logs" {
-  host         = "unix:///var/run/docker.sock"
-  targets      = discovery.docker.docker.targets
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.docker.targets
   relabel_rules = discovery.relabel.logs_docker.rules
   forward_to    = [loki.write.local.receiver]
 }
