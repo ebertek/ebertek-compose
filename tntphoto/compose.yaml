@@ -4,33 +4,46 @@
 # version: "3.9"
 name: tntphoto
 
+x-common: &common
+  restart: always
+  stop_grace_period: 1m
+
+x-env: &env
+  TZ: Etc/UTC
+
+x-hc: &hc
+  interval: 3m
+  retries: 5
+  start_interval: 10s
+  start_period: 1m
+  timeout: 10s
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   mariadb:
+    <<: *common
     command: "--default-authentication-plugin=mysql_native_password"
     container_name: mariadb
     env_file: mariadb.txt
     environment:
-      TZ: Etc/UTC
+      <<: *env
       MARIADB_AUTO_UPGRADE: 1
     healthcheck:
-      interval: 1m
-      retries: 3
-      start_interval: 10s
-      start_period: 1m
+      <<: *hc
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      timeout: 5s
     hostname: mariadb
     image: "docker.io/mariadb:latest"
     networks:
       - wp_net
     ports:
       - "127.0.0.1:3306:3306"
-    restart: always
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/mnt/data/tntphoto_mariadb_data/_data:/var/lib/mysql"
 
   wordpress:
+    <<: *common
     command:
       - sh
       - -c
@@ -44,42 +57,36 @@ services:
         condition: service_healthy
     env_file: wordpress.txt
     environment:
+      <<: *env
       PUID: 82
       PGID: 82
-      TZ: Etc/UTC
       WORDPRESS_DB_HOST: "mariadb:3306"
     healthcheck:
-      interval: 3m
-      retries: 5
-      start_period: 20s
+      <<: *hc
       test: ["CMD-SHELL", "netstat -ltn | grep 9000"]
-      timeout: 10s
     hostname: wordpress
     image: "docker.io/wordpress:php8.3-fpm-alpine"
     networks:
       - wp_net
-    restart: always
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
       - "/mnt/data/tntphoto_php_config/_data:/usr/local/etc/php/conf.d"
       - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
 
   nginx:
+    <<: *common
     container_name: nginx
     depends_on:
       wordpress:
         condition: service_healthy
     environment:
+      <<: *env
       PUID: 101
       PGID: 101
-      TZ: Etc/UTC
     healthcheck:
-      interval: 3m
-      retries: 5
-      start_period: 20s
+      <<: *hc
       test: ["CMD-SHELL", "nc -z localhost 443 || exit 1"]
-      timeout: 10s
     hostname: nginx
     image: "docker.io/nginx:alpine"
     networks:
@@ -99,9 +106,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    restart: unless-stopped
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/mnt/data/tntphoto_nginx_config/_data:/etc/nginx"
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
       - "/mnt/data/tntphoto_certbot_config/_data:/etc/nginx/ssl:ro"
