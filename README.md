@@ -72,6 +72,13 @@ A collection of Docker Compose files and shell scripts.
 - **[redis](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
 - **[database](https://github.com/immich-app/base-images/pkgs/container/postgres)**: Scalable vector search in Postgres for Immich.
 
+### [ygg-mon/](ygg-mon/)
+
+- **[loki](https://hub.docker.com/r/grafana/loki)**: Cloud Native Log Aggregation.
+- **[alloy](https://hub.docker.com/r/grafana/alloy)**: Vendor-agnostic OpenTelemetry Collector distribution with programmable pipelines.
+- **[grafana](https://hub.docker.com/r/grafana/grafana)**: Analytics & monitoring solution.
+- **[prometheus](https://hub.docker.com/r/prom/prometheus)**: Systems and service monitoring system.
+
 ### [ygg-other/](ygg-other/)
 
 - **[irc](https://github.com/thelounge/thelounge-docker)**: Web IRC client.
