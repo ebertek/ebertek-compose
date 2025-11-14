@@ -1,0 +1,178 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-mon
+
+networks:
+  macvlan1:
+    external: true
+
+x-common: &common
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search: int.tnt.photo
+  restart: "no"
+  stop_grace_period: 2m
+
+x-env: &env
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
+services:
+  loki:
+    <<: *common
+    command: -config.file=/etc/loki/config.yaml
+    container_name: loki
+    environment:
+      <<: *env
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    hostname: loki
+    image: "grafana/loki:latest"
+    mac_address: "0e:be:00:da:00:80"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.80
+    volumes:
+      - *tz
+      - "/volume2/docker/loki/config.yaml:/etc/loki/config.yaml:ro"
+      - "/volume2/docker/loki/data:/loki"
+
+  alloy:
+    <<: *common
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    container_name: alloy
+    depends_on:
+      - loki
+    devices:
+      - /dev/kmsg
+    environment:
+      <<: *env
+      ALLOY_DEPLOY_MODE: docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:12345/ || exit 1",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    hostname: alloy
+    image: "grafana/alloy:latest"
+    mac_address: "0e:be:00:da:00:81"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.81
+    volumes:
+      - *tz
+      - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
+      - "/proc:/rootproc:ro"
+      - "/var/run/docker.sock.raw:/var/run/docker.sock:ro"
+      - "/sys:/sys:ro"
+      - "/:/rootfs:ro"
+      - "/dev/disk/:/dev/disk:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+
+  grafana:
+    <<: *common
+    container_name: grafana
+    depends_on:
+      - loki
+      - alloy
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            url: http://loki:3100
+            isDefault: true
+            version: 1
+            editable: false
+          - name: Prometheus
+            type: prometheus
+            url: http://prometheus:9090
+            isDefault: false
+            version: 1
+            editable: false
+        EOF
+        /run.sh
+    env_file: grafana.txt
+    environment:
+      <<: *env
+      GF_SERVER_CERT_FILE: /etc/grafana/certs/fullchain.cer
+      GF_SERVER_CERT_KEY: /etc/grafana/certs/tnt.photo.key
+      GF_SERVER_HTTP_PORT: 443
+      GF_SERVER_PROTOCOL: https
+      GF_SERVER_ROOT_URL: https://grafana.int.tnt.photo/
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-check-certificate --no-verbose --tries=1 --spider https://localhost:443/api/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: "grafana/grafana:latest"
+    mac_address: "0e:be:00:da:00:82"
+    networks:
+      macvlan1:
+        aliases:
+          - grafana.ext.tnt.photo
+          - grafana.int.tnt.photo
+        ipv4_address: 10.4.21.82
+    volumes:
+      - *tz
+      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/grafana/certs/fullchain.cer:ro"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/grafana/certs/tnt.photo.key:ro"
+      - "/volume2/docker/grafana:/var/lib/grafana"
+
+  prometheus:
+    <<: *common
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
+      - --enable-feature=native-histograms
+    container_name: prometheus
+    depends_on:
+      - alloy
+    environment:
+      <<: *env
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready || exit 1",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    hostname: prometheus
+    image: prom/prometheus:latest
+    mac_address: "0e:be:00:da:00:83"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.83
+    volumes:
+      - *tz
+      - "/volume2/docker/prometheus:/etc/prometheus:ro"
+      - "/volume2/docker/prometheus/data:/prometheus"
