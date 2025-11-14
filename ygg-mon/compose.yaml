@@ -30,6 +30,12 @@ services:
     <<: *common
     command: -config.file=/etc/loki/config.yaml
     container_name: loki
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 1024M
     environment:
       <<: *env
     healthcheck:
@@ -57,8 +63,14 @@ services:
     <<: *common
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     container_name: alloy
+    cpu_count: 1
     depends_on:
       - loki
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 1024M
     devices:
       - /dev/kmsg
     environment:
@@ -96,9 +108,15 @@ services:
     cap_add:
       - NET_BIND_SERVICE
     container_name: grafana
+    cpu_count: 1
     depends_on:
       - loki
       - alloy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
     entrypoint:
       - sh
       - -euc
@@ -162,8 +180,14 @@ services:
       - "--web.enable-remote-write-receiver"
       - --enable-feature=native-histograms
     container_name: prometheus
+    cpu_count: 1
     depends_on:
       - alloy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 1024M
     environment:
       <<: *env
     healthcheck:
