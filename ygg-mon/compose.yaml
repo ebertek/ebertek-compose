@@ -21,6 +21,10 @@ x-env: &env
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
+secrets:
+  hass-bearer-token:
+    file: hass-bearer-token.txt
+
 services:
   loki:
     <<: *common
@@ -177,6 +181,8 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.83
+    secrets:
+      - hass-bearer-token
     user: "1028:100"
     volumes:
       - *tz

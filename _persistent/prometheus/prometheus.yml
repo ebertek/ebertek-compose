@@ -3,6 +3,14 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
+  - job_name: "hass"
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+    authorization:
+      credentials_file: /var/run/secrets/hass-bearer-token
+    scheme: https
+    static_configs:
+      - targets: ['hass.ext.tnt.photo:443']
   - job_name: "immich_api"
     static_configs:
       - targets: ["immich-server:8081"]
