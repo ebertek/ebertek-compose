@@ -143,6 +143,7 @@ services:
     env_file: grafana.txt
     environment:
       <<: *env
+      GF_FEATURE_TOGGLES_ENABLE: "provisioning,kubernetesDashboards"
       GF_SERVER_CERT_FILE: /etc/grafana/grafana.crt
       GF_SERVER_CERT_KEY: /etc/grafana/grafana.key
       GF_SERVER_DOMAIN: grafana.int.tnt.photo
