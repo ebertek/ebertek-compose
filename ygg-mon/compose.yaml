@@ -117,7 +117,7 @@ services:
             version: 1
             editable: false
         EOF
-        /run.sh
+        exec /run.sh
     env_file: grafana.txt
     environment:
       <<: *env
