@@ -7,7 +7,7 @@ scrape_configs:
     scrape_interval: 60s
     metrics_path: /api/prometheus
     authorization:
-      credentials_file: /var/run/secrets/hass-bearer-token
+      credentials_file: /run/secrets/hass-bearer-token
     scheme: https
     static_configs:
       - targets: ["hass.ext.tnt.photo:443"]
