@@ -43,6 +43,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.80
+    user: "1028:100"
     volumes:
       - *tz
       - "/volume2/docker/loki/config.yaml:/etc/loki/config.yaml:ro"
@@ -140,6 +141,7 @@ services:
           - grafana.ext.tnt.photo
           - grafana.int.tnt.photo
         ipv4_address: 10.4.21.82
+    user: "1028:100"
     volumes:
       - *tz
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/grafana/certs/fullchain.cer:ro"
@@ -172,6 +174,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.83
+    user: "1028:100"
     volumes:
       - *tz
       - "/volume2/docker/prometheus:/etc/prometheus:ro"
