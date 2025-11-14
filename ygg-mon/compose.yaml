@@ -81,7 +81,7 @@ services:
       - *tz
       - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
       - "/proc:/rootproc:ro"
-      - "/var/run/docker.sock.raw:/var/run/docker.sock:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/sys:/sys:ro"
       - "/:/rootfs:ro"
       - "/dev/disk/:/dev/disk:ro"
