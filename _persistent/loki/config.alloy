@@ -113,6 +113,4 @@ loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
-  max_batch_size = 1024
-  max_batch_wait = "1s"
 }
