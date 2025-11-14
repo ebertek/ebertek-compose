@@ -14,7 +14,7 @@ x-common: &common
     - 1.1.1.1
   dns_search: int.tnt.photo
   restart: "no"
-  stop_grace_period: 10m
+  stop_grace_period: 5m
 
 x-env: &env
   TZ: Etc/UTC
