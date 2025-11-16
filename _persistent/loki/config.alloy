@@ -1,12 +1,12 @@
 prometheus.remote_write "local" {
   endpoint {
-    url = "http://prometheus:9090/api/v1/write"
+    url = sys.env("PROM_URL")
   }
 }
 
 loki.write "local" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+    url = sys.env("LOKI_URL")
   }
 }
 
@@ -24,7 +24,7 @@ discovery.relabel "metrics_integrations_node" {
 
   rule {
     target_label = "node"
-    replacement  = env("ALLOY_NODE")
+    replacement  = sys.env("ALLOY_NODE")
   }
 }
 
@@ -78,7 +78,7 @@ discovery.relabel "metrics_integrations_docker" {
 
   rule {
     target_label = "node"
-    replacement  = env("ALLOY_NODE")
+    replacement  = sys.env("ALLOY_NODE")
   }
 }
 
@@ -143,7 +143,7 @@ discovery.relabel "logs_integrations_docker" {
 
     rule {
       target_label = "node"
-      replacement  = env("ALLOY_NODE")
+      replacement  = sys.env("ALLOY_NODE")
     }
 
     rule {

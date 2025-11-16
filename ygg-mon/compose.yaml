@@ -77,6 +77,8 @@ services:
       <<: *env
       ALLOY_DEPLOY_MODE: docker
       ALLOY_NODE: yggdrasil
+      LOKI_URL: "http://loki:3100/loki/api/v1/push"
+      PROM_URL: "http://prometheus:9090/api/v1/write"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
