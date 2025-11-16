@@ -114,9 +114,11 @@ loki.source.journal "read" {
     "job" = "integrations/node_exporter",
   }
 }
+
 discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
 }
+
 discovery.relabel "logs_integrations_docker" {
     targets = []
 
@@ -141,6 +143,7 @@ discovery.relabel "logs_integrations_docker" {
         target_label  = "stream"
     }
 }
+
 loki.source.docker "default" {
   host = "unix:///var/run/docker.sock"
   targets = discovery.docker.linux.targets
