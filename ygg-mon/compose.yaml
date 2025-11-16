@@ -144,22 +144,26 @@ services:
     environment:
       <<: *env
       GF_FEATURE_TOGGLES_ENABLE: "provisioning,kubernetesDashboards"
-      GF_SERVER_CERT_FILE: /etc/grafana/grafana.crt
-      GF_SERVER_CERT_KEY: /etc/grafana/grafana.key
-      GF_SERVER_DOMAIN: grafana.int.tnt.photo
+      GF_SERVER_DOMAIN: grafana.ext.tnt.photo
       GF_SERVER_HTTP_PORT: 3000
-      GF_SERVER_PROTOCOL: https
-      GF_SERVER_ROOT_URL: "https://grafana.int.tnt.photo:3000"
+      GF_SERVER_PROTOCOL: http
+      GF_SERVER_ROOT_URL: "https://grafana.ext.tnt.photo"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget --no-check-certificate --no-verbose --tries=1 --spider https://localhost:3000/api/health || exit 1",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
     image: "grafana/grafana:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.immich.entrypoints: websecure
+      traefik.http.routers.immich.rule: "Host(`grafana.int.tnt.photo`) || Host(`grafana.ext.tnt.photo`)"
+      traefik.http.routers.immich.tls: true
+      traefik.http.services.immich.loadbalancer.server.port: 3000
     mac_address: "0e:be:00:da:00:82"
     networks:
       macvlan1:
@@ -170,8 +174,6 @@ services:
     user: "1028:100"
     volumes:
       - *tz
-      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/grafana/grafana.crt:ro"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/grafana/grafana.key:ro"
       - "/volume2/docker/grafana:/var/lib/grafana"
 
   prometheus:
