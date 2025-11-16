@@ -18,6 +18,10 @@ prometheus.scrape "linux_node" {
 }
 
 prometheus.exporter.unix "node" {
+  rootfs_path    = "/rootfs"
+  procfs_path    = "/rootproc"
+  sysfs_path     = "/sys"
+  udev_data_path = "/dev/disk"
 }
 
 loki.relabel "journal" {
