@@ -76,6 +76,7 @@ services:
     environment:
       <<: *env
       ALLOY_DEPLOY_MODE: docker
+      ALLOY_NODE: yggdrasil
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:

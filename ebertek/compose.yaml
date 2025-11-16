@@ -23,6 +23,7 @@ services:
     environment:
       <<: *env
       ALLOY_DEPLOY_MODE: docker
+      ALLOY_NODE: hc
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:

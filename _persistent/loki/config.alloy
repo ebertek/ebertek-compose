@@ -21,6 +21,10 @@ discovery.relabel "metrics_integrations_node" {
   rule {
     target_label = "instance"
     replacement  = constants.hostname
+
+  rule {
+    target_label = "node"
+    replacement  = env("ALLOY_NODE")
   }
 }
 
@@ -70,6 +74,11 @@ discovery.relabel "metrics_integrations_docker" {
   rule {
     target_label = "instance"
     replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "node"
+    replacement  = env("ALLOY_NODE")
   }
 }
 
@@ -130,6 +139,11 @@ discovery.relabel "logs_integrations_docker" {
     rule {
         target_label = "instance"
         replacement  = constants.hostname
+    }
+
+    rule {
+      target_label = "node"
+      replacement  = env("ALLOY_NODE")
     }
 
     rule {
