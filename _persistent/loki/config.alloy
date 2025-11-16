@@ -40,6 +40,30 @@ prometheus.exporter.unix "node" {
     device_exclude = "^(veth.*|cali.*|[a-f0-9]{15})$"
   }
 }
+
+prometheus.exporter.cadvisor "docker" {
+  docker_only = true
+}
+
+discovery.relabel "metrics_integrations_docker" {
+  targets = prometheus.exporter.cadvisor.docker.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "integrations/docker"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+}
+
+prometheus.scrape "docker_metrics" {
+  targets = discovery.relabel.metrics_integrations_docker.output
+  forward_to = [
+    prometheus.remote_write.local.receiver,
+  ]
 }
 
 loki.relabel "journal" {
