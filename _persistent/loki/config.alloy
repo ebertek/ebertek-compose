@@ -10,8 +10,22 @@ loki.write "local" {
   }
 }
 
-prometheus.scrape "linux_node" {
+discovery.relabel "metrics_integrations_node" {
   targets = prometheus.exporter.unix.node.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "integrations/node_exporter"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+}
+
+prometheus.scrape "linux_node" {
+  targets = discovery.relabel.metrics_integrations_node.output
   forward_to = [
     prometheus.remote_write.local.receiver,
   ]
