@@ -2,13 +2,25 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
 ---
 # version: "3.9"
+name: ebertek
+
+x-common: &common
+  restart: unless-stopped
+  stop_grace_period: 1m
+
+x-env: &env
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
 services:
   bind9:
+    <<: *common
     container_name: bind9
     environment:
+      <<: *env
       PUID: 100
       PGID: 101
-      TZ: Etc/UTC
     healthcheck:
       test: "bash -c 'exec 6<> /dev/tcp/localhost/53'"
       interval: 5m
@@ -18,24 +30,22 @@ services:
     hostname: bind9
     image: "docker.io/ubuntu/bind9:latest"
     network_mode: host
-    restart: unless-stopped
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/mnt/data/ebertek_bind9_data/_data/etc/bind:/etc/bind"
       - "/mnt/data/ebertek_bind9_data/_data/var/cache/bind:/var/cache/bind"
       - "/mnt/data/ebertek_bind9_data/_data/var/lib/bind:/var/lib/bind"
       - "/mnt/data/ebertek_bind9_data/_data/var/log:/var/log"
-      - "/usr/share/zoneinfo:/usr/share/zoneinfo:ro"
-      - "/etc/timezone:/etc/timezone:ro"
-      - "/etc/localtime:/etc/localtime:ro"
 
   watchtower:
+    <<: *common
+    container_name: watchtower
     environment:
-      TZ: Etc/UTC
+      <<: *env
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_ROLLING_RESTART: true
+    hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
-    restart: unless-stopped
-    stop_grace_period: 1m
     volumes:
+      - *tz
       - "/var/run/docker.sock:/var/run/docker.sock"
