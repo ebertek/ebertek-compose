@@ -21,6 +21,7 @@ discovery.relabel "metrics_integrations_node" {
   rule {
     target_label = "instance"
     replacement  = constants.hostname
+  }
 
   rule {
     target_label = "node"
