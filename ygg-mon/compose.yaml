@@ -207,7 +207,7 @@ services:
       timeout: 5s
       retries: 5
     hostname: prometheus
-    image: prom/prometheus:latest
+    image: "prom/prometheus:latest"
     mac_address: "0e:be:00:da:00:83"
     networks:
       macvlan1:
