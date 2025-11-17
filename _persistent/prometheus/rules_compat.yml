@@ -25,6 +25,15 @@ groups:
       - record: node_memory_SwapFree
         expr: node_memory_SwapFree_bytes
 
+      - record: node_memory_Inactive
+        expr: node_memory_Inactive_bytes
+
+      - record: node_memory_KernelStack
+        expr: node_memory_KernelStack_bytes
+
+      - record: node_memory_Active
+        expr: node_memory_Active_bytes
+
   - name: compat_node_disk
     rules:
       - record: node_disk_bytes_read
