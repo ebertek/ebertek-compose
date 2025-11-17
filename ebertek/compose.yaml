@@ -17,7 +17,6 @@ services:
   alloy:
     <<: *common
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    container_name: alloy
     devices:
       - /dev/kmsg
     environment:
@@ -51,7 +50,6 @@ services:
 
   bind9:
     <<: *common
-    container_name: bind9
     environment:
       <<: *env
       PUID: 100
@@ -74,7 +72,6 @@ services:
 
   watchtower:
     <<: *common
-    container_name: watchtower
     environment:
       <<: *env
       WATCHTOWER_CLEANUP: true
