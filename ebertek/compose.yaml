@@ -23,7 +23,7 @@ services:
     environment:
       <<: *env
       ALLOY_DEPLOY_MODE: docker
-      ALLOY_NODE: hc
+      ALLOY_HOST: hc
       LOKI_URL: "http://loki.ext.tnt.photo/loki/api/v1/push"
       PROM_URL: "http://prometheus.ext.tnt.photo/api/v1/write"
     extra_hosts:

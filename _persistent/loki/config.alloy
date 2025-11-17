@@ -14,6 +14,11 @@ discovery.relabel "metrics_integrations_node" {
   targets = prometheus.exporter.unix.node.targets
 
   rule {
+    target_label = "namespace"
+    replacement  = sys.env("ALLOY_HOST")
+  }
+
+  rule {
     target_label = "job"
     replacement  = "integrations/node_exporter"
   }
@@ -24,8 +29,8 @@ discovery.relabel "metrics_integrations_node" {
   }
 
   rule {
-    target_label = "node"
-    replacement  = sys.env("ALLOY_NODE")
+    target_label = "host"
+    replacement  = sys.env("ALLOY_HOST")
   }
 }
 
@@ -78,15 +83,33 @@ discovery.relabel "metrics_integrations_docker" {
   }
 
   rule {
-    target_label = "node"
-    replacement  = sys.env("ALLOY_NODE")
+    target_label = "host"
+    replacement  = sys.env("ALLOY_HOST")
+  }
+}
+
+prometheus.relabel "metrics_docker_labels" {
+  forward_to = [
+    prometheus.remote_write.local.receiver,
+  ]
+
+  rule {
+    action        = "replace"
+    source_labels = ["container_label_com_docker_compose_project"]
+    target_label  = "namespace"
+  }
+
+  rule {
+    action        = "replace"
+    source_labels = ["container_label_com_docker_compose_service"]
+    target_label  = "service_name"
   }
 }
 
 prometheus.scrape "docker_metrics" {
   targets = discovery.relabel.metrics_integrations_docker.output
   forward_to = [
-    prometheus.remote_write.local.receiver,
+    prometheus.relabel.metrics_docker_labels.receiver,
   ]
 }
 
@@ -122,6 +145,8 @@ loki.source.journal "read" {
   relabel_rules = loki.relabel.journal.rules
   labels = {
     "job" = "integrations/node_exporter",
+    "host" = sys.env("ALLOY_HOST"),
+    "namespace" = sys.env("ALLOY_HOST"),
   }
 }
 
@@ -131,6 +156,16 @@ discovery.docker "linux" {
 
 discovery.relabel "logs_integrations_docker" {
     targets = []
+
+    rule {
+      source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+      target_label  = "namespace"
+    }
+
+    rule {
+      source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+      target_label  = "service_name"
+    }
 
     rule {
         target_label = "job"
@@ -143,8 +178,8 @@ discovery.relabel "logs_integrations_docker" {
     }
 
     rule {
-      target_label = "node"
-      replacement  = sys.env("ALLOY_NODE")
+      target_label = "host"
+      replacement  = sys.env("ALLOY_HOST")
     }
 
     rule {
