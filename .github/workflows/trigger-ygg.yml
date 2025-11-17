@@ -18,7 +18,7 @@ jobs:
       - name: Send repository_dispatch to ygg-compose
         run: |
           set -e
-          echo "Sending repository_dispatch to repo3..."
+          echo "Sending repository_dispatch to ygg-compose..."
           HTTP_RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
