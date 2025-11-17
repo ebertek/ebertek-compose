@@ -6,6 +6,7 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ebertek/](ebertek/)
 
+- **[alloy](https://hub.docker.com/r/grafana/alloy)**: Push logs and metrics to `ygg-mon`.
 - **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
 - **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
