@@ -60,6 +60,9 @@ services:
 
   alloy:
     <<: *common
+    cap_add:
+      - SYS_ADMIN
+      - SYSLOG
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     cpu_count: 1
     depends_on:
@@ -96,13 +99,15 @@ services:
         ipv4_address: 10.4.21.81
     volumes:
       - *tz
-      - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
-      - "/proc:/rootproc:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/sys:/sys:ro"
       - "/:/rootfs:ro"
       - "/dev/disk/:/dev/disk:ro"
+      - "/dev/mapper/:/dev/mapper:ro"
+      - "/proc:/rootproc:ro"
+      - "/sys:/sys:ro"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
 
   grafana:
     <<: *common
