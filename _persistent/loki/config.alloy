@@ -24,11 +24,6 @@ discovery.relabel "metrics_integrations_node" {
   }
 
   rule {
-    target_label = "instance"
-    replacement  = constants.hostname
-  }
-
-  rule {
     target_label = "host"
     replacement  = sys.env("ALLOY_HOST")
   }
@@ -75,11 +70,6 @@ discovery.relabel "metrics_integrations_docker" {
   rule {
     target_label = "job"
     replacement  = "integrations/docker"
-  }
-
-  rule {
-    target_label = "instance"
-    replacement  = constants.hostname
   }
 
   rule {
@@ -170,11 +160,6 @@ discovery.relabel "logs_integrations_docker" {
     rule {
         target_label = "job"
         replacement  = "integrations/docker"
-    }
-
-    rule {
-        target_label = "instance"
-        replacement  = constants.hostname
     }
 
     rule {
