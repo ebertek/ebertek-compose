@@ -25,12 +25,7 @@ discovery.relabel "metrics_integrations_node" {
 
   rule {
     target_label = "instance"
-    replacement  = constants.hostname
-  }
-
-  rule {
-    target_label = "host"
-    replacement  = sys.env("ALLOY_HOST")
+    replacement  = sys.env("ALLOY_HOST") + ":38080"
   }
 }
 
@@ -79,12 +74,7 @@ discovery.relabel "metrics_integrations_docker" {
 
   rule {
     target_label = "instance"
-    replacement  = constants.hostname
-  }
-
-  rule {
-    target_label = "host"
-    replacement  = sys.env("ALLOY_HOST")
+    replacement  = sys.env("ALLOY_HOST") + ":38080"
   }
 }
 
@@ -145,7 +135,6 @@ loki.source.journal "read" {
   relabel_rules = loki.relabel.journal.rules
   labels = {
     "job" = "integrations/node_exporter",
-    "host" = sys.env("ALLOY_HOST"),
     "namespace" = sys.env("ALLOY_HOST"),
   }
 }
@@ -174,12 +163,7 @@ discovery.relabel "logs_integrations_docker" {
 
     rule {
         target_label = "instance"
-        replacement  = constants.hostname
-    }
-
-    rule {
-      target_label = "host"
-      replacement  = sys.env("ALLOY_HOST")
+        replacement  = sys.env("ALLOY_HOST") + ":38080"
     }
 
     rule {
