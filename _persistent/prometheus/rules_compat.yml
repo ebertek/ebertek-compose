@@ -1,0 +1,42 @@
+groups:
+  - name: compat_node_memory
+    rules:
+      - record: node_memory_MemAvailable
+        expr: node_memory_MemAvailable_bytes
+
+      - record: node_memory_MemTotal
+        expr: node_memory_MemTotal_bytes
+
+      - record: node_memory_MemFree
+        expr: node_memory_MemFree_bytes
+
+      - record: node_memory_Buffers
+        expr: node_memory_Buffers_bytes
+
+      - record: node_memory_Cached
+        expr: node_memory_Cached_bytes
+
+      - record: node_memory_Slab
+        expr: node_memory_Slab_bytes
+
+      - record: node_memory_SwapTotal
+        expr: node_memory_SwapTotal_bytes
+
+      - record: node_memory_SwapFree
+        expr: node_memory_SwapFree_bytes
+
+  - name: compat_node_disk
+    rules:
+      - record: node_disk_bytes_read
+        expr: node_disk_read_bytes_total
+
+      - record: node_disk_bytes_written
+        expr: node_disk_written_bytes_total
+
+  - name: compat_node_network
+    rules:
+      - record: node_network_receive_bytes
+        expr: node_network_receive_bytes_total
+
+      - record: node_network_transmit_bytes
+        expr: node_network_transmit_bytes_total

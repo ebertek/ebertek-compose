@@ -2,6 +2,9 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - rules_compat.yml
+
 scrape_configs:
   - job_name: "hass"
     scrape_interval: 60s
