@@ -30,6 +30,8 @@ discovery.relabel "metrics_integrations_node" {
 }
 
 prometheus.scrape "linux_node" {
+  scrape_interval = "15s"
+  scrape_timeout = "10s"
   targets = discovery.relabel.metrics_integrations_node.output
   forward_to = [
     prometheus.remote_write.local.receiver,
@@ -97,6 +99,8 @@ prometheus.relabel "metrics_docker_labels" {
 }
 
 prometheus.scrape "docker_metrics" {
+  scrape_interval = "15s"
+  scrape_timeout = "10s"
   targets = discovery.relabel.metrics_integrations_docker.output
   forward_to = [
     prometheus.relabel.metrics_docker_labels.receiver,
