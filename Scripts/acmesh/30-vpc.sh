@@ -34,5 +34,6 @@ ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<
 	chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/tnt.photo/tnt.photo.key
 	chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/ld25.se/ld25.se.key
 	chown -R 101:101 /mnt/data/tntphoto_certbot_config/_data/archive
-	docker exec nginx sh -c "/usr/sbin/nginx -s reload"
+	NGINX_CONTAINER=$(docker ps --filter "label=com.docker.compose.service=nginx" --format '{{.ID}}' | head -n1)
+	docker exec "$NGINX_CONTAINER" sh -c "/usr/sbin/nginx -s reload"
 EOF
