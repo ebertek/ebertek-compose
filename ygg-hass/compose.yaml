@@ -272,7 +272,7 @@ services:
       DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb2-admin-password
       DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb2-admin-username
     hostname: influxdb
-    image: "influxdb:2"
+    image: "docker.io/library/influxdb:2"
     mac_address: "0e:be:00:da:00:72"
     networks:
       macvlan1:

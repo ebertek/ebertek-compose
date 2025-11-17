@@ -47,7 +47,7 @@ services:
       timeout: 5s
       retries: 5
     hostname: loki
-    image: "grafana/loki:latest"
+    image: "docker.io/grafana/loki:latest"
     mac_address: "0e:be:00:da:00:80"
     networks:
       macvlan1:
@@ -92,7 +92,7 @@ services:
       timeout: 5s
       retries: 5
     hostname: alloy
-    image: "grafana/alloy:latest"
+    image: "docker.io/grafana/alloy:latest"
     mac_address: "0e:be:00:da:00:81"
     networks:
       macvlan1:
@@ -162,7 +162,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    image: "grafana/grafana:latest"
+    image: "docker.io/grafana/grafana:latest"
     labels:
       traefik.enable: true
       traefik.http.routers.grafana.entrypoints: websecure
@@ -207,7 +207,7 @@ services:
       timeout: 5s
       retries: 5
     hostname: prometheus
-    image: "prom/prometheus:latest"
+    image: "docker.io/prom/prometheus:latest"
     mac_address: "0e:be:00:da:00:83"
     networks:
       macvlan1:
