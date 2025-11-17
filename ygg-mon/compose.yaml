@@ -218,4 +218,5 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
-      - "/volume2/docker/prometheus:/prometheus"
+      - "/volume2/docker/prometheus/rules_compat.yml:/etc/prometheus/rules_compat.yml:ro"
+      - "/volume2/docker/prometheus/data:/prometheus/data"
