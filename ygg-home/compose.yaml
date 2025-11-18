@@ -111,6 +111,8 @@ services:
     env_file: discordpy.txt
     environment:
       <<: *env
+      LIB_LOG_LEVEL: INFO
+      LOG_LEVEL: INFO
     hostname: discordpy
     image: "ghcr.io/ebertek/bjornify:latest"
     mac_address: "0e:be:00:da:00:52"
