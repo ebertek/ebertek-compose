@@ -45,7 +45,7 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ygg-hass/](ygg-hass/)
 
-- **[matter-server](https://github.com/home-assistant-libs/python-matter-server)**: Matter Controller Server.
+- **[matter-server](https://github.com/matter-js/python-matter-server)**: Matter Controller Server.
 - **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
 - **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
