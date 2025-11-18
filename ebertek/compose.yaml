@@ -78,7 +78,7 @@ services:
   watchtower:
     <<: *common
     environment:
-      <<: *
+      <<: *env
       NO_COLOR: true
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_LOG_FORMAT: JSON
