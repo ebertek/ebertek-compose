@@ -30,9 +30,11 @@ services:
           memory: 128M
     environment:
       TZ: Etc/UTC
+      NO_COLOR: true
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_HTTP_API_METRICS: true
       WATCHTOWER_HTTP_API_TOKEN: demotoken
+      WATCHTOWER_LOG_FORMAT: JSON
       # WATCHTOWER_ROLLING_RESTART: true
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"

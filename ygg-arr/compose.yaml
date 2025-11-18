@@ -89,6 +89,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
+      PROWLARR__LOG__CONSOLEFORMAT: json
     healthcheck:
       interval: 30s
       retries: 5
@@ -125,6 +126,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
+      RADARR__LOG__CONSOLEFORMAT: json
     healthcheck:
       interval: 30s
       retries: 5
@@ -162,6 +164,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
+      SONARR__LOG__CONSOLEFORMAT: json
     healthcheck:
       interval: 30s
       retries: 5
@@ -234,6 +237,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
+      LIDARR__LOG__CONSOLEFORMAT: json
     healthcheck:
       interval: 30s
       retries: 5

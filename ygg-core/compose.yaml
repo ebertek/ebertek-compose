@@ -106,6 +106,7 @@ services:
           memory: 256M
     environment:
       <<: *env
+      TRAEFIK_LOG_FORMAT: json
     healthcheck:
       interval: 30s
       retries: 3
