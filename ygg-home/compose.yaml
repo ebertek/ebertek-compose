@@ -99,21 +99,19 @@ services:
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 
-  discordpy:
+  bjornify:
     <<: *common
-    container_name: discordpy
+    container_name: bjornify
     cpu_count: 1
     deploy:
       resources:
         limits:
           # cpus: "1"
           memory: 256M
-    env_file: discordpy.txt
+    env_file: bjornify.txt
     environment:
       <<: *env
-      LIB_LOG_LEVEL: INFO
-      LOG_LEVEL: INFO
-    hostname: discordpy
+    hostname: bjornify
     image: "ghcr.io/ebertek/bjornify:latest"
     mac_address: "0e:be:00:da:00:52"
     networks:
@@ -123,8 +121,8 @@ services:
     user: "1028:100"
     volumes:
       - *tz
-      - "/volume2/docker/discordpy/logs:/app/logs"
-      - "/volume2/docker/discordpy/secrets:/app/secrets"
+      - "/volume2/docker/bjornify/logs:/app/logs"
+      - "/volume2/docker/bjornify/secrets:/app/secrets"
 
   tmm:
     <<: *common
