@@ -63,6 +63,8 @@ services:
       macvlan1:
         aliases:
           - core-matter-server
+          - matter-server.ext.tnt.photo
+          - matter-server.int.tnt.photo
         # driver_opts:
         #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
         ipv4_address: 10.4.21.66
@@ -97,8 +99,8 @@ services:
       macvlan1:
         aliases:
           - core-mosquitto
-          - mosquitto.int.tnt.photo
           - mosquitto.ext.tnt.photo
+          - mosquitto.int.tnt.photo
         ipv4_address: 10.4.21.67
     volumes:
       - *tz
@@ -202,7 +204,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.hass.entrypoints: websecure
-      traefik.http.routers.hass.rule: "Host(`hass.int.tnt.photo`) || Host(`hass.ext.tnt.photo`) || Host(`homeassistant.int.tnt.photo`) || Host(`homeassistant.ext.tnt.photo`)"
+      traefik.http.routers.hass.rule: "Host(`hass.ext.tnt.photo`) || Host(`hass.int.tnt.photo`) || Host(`homeassistant.ext.tnt.photo`) || Host(`homeassistant.int.tnt.photo`)"
       traefik.http.routers.hass.tls: true
       traefik.http.services.hass.loadbalancer.server.port: 443
       traefik.http.services.hass.loadbalancer.server.scheme: https
@@ -210,10 +212,10 @@ services:
     networks:
       macvlan1:
         aliases:
-          - hass.int.tnt.photo
           - hass.ext.tnt.photo
-          - homeassistant.int.tnt.photo
+          - hass.int.tnt.photo
           - homeassistant.ext.tnt.photo
+          - homeassistant.int.tnt.photo
         ipv4_address: 10.4.21.70
     privileged: true
     volumes:
@@ -238,7 +240,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.esphome.entrypoints: websecure
-      traefik.http.routers.esphome.rule: "Host(`esphome.int.tnt.photo`) || Host(`esp.int.tnt.photo`)"
+      traefik.http.routers.esphome.rule: "Host(`esp.int.tnt.photo`) || Host(`esphome.int.tnt.photo`)"
       traefik.http.routers.esphome.tls: true
       traefik.http.services.esphome.loadbalancer.server.port: 6052
       traefik.http.services.esphome.loadbalancer.server.scheme: http
@@ -247,6 +249,8 @@ services:
       macvlan1:
         aliases:
           - 5c53de3b-esphome
+          - esp.ext.tnt.photo
+          - esp.int.tnt.photo
         ipv4_address: 10.4.21.71
     privileged: true
     stop_signal: SIGINT

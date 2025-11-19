@@ -49,16 +49,12 @@ services:
       timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
-    labels:
-      traefik.enable: false
-      traefik.http.routers.irc.entrypoints: websecure
-      traefik.http.routers.irc.rule: "Host(`irc.int.tnt.photo`) || Host(`irc.ext.tnt.photo`)"
-      traefik.http.routers.irc.tls: true
-      traefik.http.services.irc.loadbalancer.server.port: 9000
-      traefik.http.services.irc.loadbalancer.server.scheme: https
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
+        aliases:
+          - irc.ext.tnt.photo
+          - irc.int.tnt.photo
         ipv4_address: 10.4.21.45
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
@@ -96,12 +92,17 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.vw.entrypoints: websecure
-      traefik.http.routers.vw.rule: "Host(`vw.int.tnt.photo`) || Host(`vw.ext.tnt.photo`) || Host(`vaultwarden.ext.tnt.photo`) || Host(`vaultwarden.ext.tnt.photo`)"
+      traefik.http.routers.vw.rule: "Host(`vaultwarden.ext.tnt.photo`) || Host(`vaultwarden.int.tnt.photo || Host(`vw.ext.tnt.photo`) || Host(`vw.int.tnt.photo`)`)"
       traefik.http.routers.vw.tls: true
       traefik.http.services.vw.loadbalancer.server.port: 80
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:
+        aliases:
+          - vaultwarden.ext.tnt.photo
+          - vaultwarden.int.tnt.photo
+          - vw.ext.tnt.photo
+          - vw.int.tnt.photo
         ipv4_address: 10.4.21.46
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80

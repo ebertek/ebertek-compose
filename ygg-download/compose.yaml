@@ -65,6 +65,9 @@ services:
     mac_address: "0e:be:00:da:00:39"
     networks:
       macvlan1:
+        aliases:
+          - download.ext.tnt.photo
+          - download.int.tnt.photo
         ipv4_address: 10.4.21.39
     privileged: true
     sysctls:
@@ -101,12 +104,6 @@ services:
     image: "lscr.io/linuxserver/qbittorrent:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
-      traefik.enable: false
-      traefik.http.routers.download.entrypoints: websecure
-      traefik.http.routers.download.rule: "Host(`download.int.tnt.photo`) || Host(`download.ext.tnt.photo`)"
-      traefik.http.routers.download.tls: true
-      traefik.http.services.download.loadbalancer.server.port: 8080
-      traefik.http.services.download.loadbalancer.server.scheme: https
     network_mode: "container:gluetun"
     volumes:
       - *tz

@@ -64,15 +64,15 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.immich.entrypoints: websecure
-      traefik.http.routers.immich.rule: "Host(`immich.int.tnt.photo`) || Host(`immich.ext.tnt.photo`)"
+      traefik.http.routers.immich.rule: "Host(`immich.ext.tnt.photo`) || Host(`immich.int.tnt.photo`)"
       traefik.http.routers.immich.tls: true
       traefik.http.services.immich.loadbalancer.server.port: 2283
     mac_address: "0e:be:00:da:00:48"
     networks:
       macvlan1:
         aliases:
-          - immich.int.tnt.photo
           - immich.ext.tnt.photo
+          - immich.int.tnt.photo
         ipv4_address: 10.4.21.48
     user: 1028:100
     volumes:

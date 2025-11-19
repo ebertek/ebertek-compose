@@ -46,7 +46,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.plex.entrypoints: websecure
-      traefik.http.routers.plex.rule: "Host(`plex.int.tnt.photo`) || Host(`plex.ext.tnt.photo`)"
+      traefik.http.routers.plex.rule: "Host(`plex.ext.tnt.photo`) || Host(`plex.int.tnt.photo`)"
       traefik.http.routers.plex.tls: true
       traefik.http.services.plex.loadbalancer.server.port: 32400
       traefik.http.services.plex.loadbalancer.server.scheme: https
@@ -54,8 +54,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - plex.int.tnt.photo
           - plex.ext.tnt.photo
+          - plex.int.tnt.photo
         ipv4_address: 10.4.21.40
     volumes:
       - *tz
@@ -79,18 +79,12 @@ services:
       <<: *env
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
-    labels:
-      traefik.enable: false
-      traefik.http.routers.tautulli.entrypoints: websecure
-      traefik.http.routers.tautulli.rule: "Host(`tautulli.int.tnt.photo`) || Host(`tautulli.ext.tnt.photo`)"
-      traefik.http.routers.tautulli.tls: true
-      traefik.http.services.tautulli.loadbalancer.server.port: 8181
     mac_address: "0e:be:00:da:00:41"
     networks:
       macvlan1:
         aliases:
-          - tautulli.int.tnt.photo
           - tautulli.ext.tnt.photo
+          - tautulli.int.tnt.photo
         ipv4_address: 10.4.21.41
     volumes:
       - *tz
@@ -193,12 +187,15 @@ services:
       traefik.enable: true
       traefik.http.routers.books.entrypoints: websecure
       traefik.http.routers.books.middlewares: sweden@file
-      traefik.http.routers.books.rule: "Host(`books.int.tnt.photo`) || Host(`books.ext.tnt.photo`)"
+      traefik.http.routers.books.rule: "Host(`books.ext.tnt.photo`) || Host(`books.int.tnt.photo`)"
       traefik.http.routers.books.tls: true
       traefik.http.services.books.loadbalancer.server.port: 8083
     mac_address: "0e:be:00:da:00:59"
     networks:
       macvlan1:
+        aliases:
+          - books.ext.tnt.photo
+          - books.int.tnt.photo
         ipv4_address: 10.4.21.59
     volumes:
       - *tz
