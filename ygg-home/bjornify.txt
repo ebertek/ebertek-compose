@@ -6,6 +6,7 @@ CHANNEL_ID=xxxxxxxxxxxxxxxxxxx
 GUILD_ID=xxxxxxxxxxxxxxxxxxx
 DEFAULT_DEVICE=Everywhere
 LOG_OUTPUT=console
+LOG_FORMAT=plain
 LOG_LEVEL=INFO
 LIB_LOG_LEVEL=WARNING
 HASS_DISCORD_BOT_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
