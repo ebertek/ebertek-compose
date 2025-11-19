@@ -26,38 +26,6 @@ secrets:
     file: hass-bearer-token.txt
 
 services:
-  loki:
-    <<: *common
-    command: -config.file=/etc/loki/config.yaml
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 1024M
-    environment:
-      <<: *env
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    hostname: loki
-    image: "docker.io/grafana/loki:latest"
-    mac_address: "0e:be:00:da:00:80"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.80
-    user: "1028:100"
-    volumes:
-      - *tz
-      - "/volume2/docker/loki/config.yaml:/etc/loki/config.yaml:ro"
-      - "/volume2/docker/loki/data:/loki"
-
   alloy:
     <<: *common
     cap_add:
@@ -83,14 +51,14 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
+      interval: 30s
+      retries: 5
       test:
         [
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1:12345/ || exit 1",
         ]
-      interval: 30s
       timeout: 5s
-      retries: 5
     hostname: alloy
     image: "docker.io/grafana/alloy:latest"
     mac_address: "0e:be:00:da:00:81"
@@ -154,14 +122,14 @@ services:
       GF_SERVER_PROTOCOL: http
       GF_SERVER_ROOT_URL: "http://grafana.ext.tnt.photo"
     healthcheck:
+      interval: 10s
+      retries: 5
       test:
         [
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
         ]
-      interval: 10s
       timeout: 5s
-      retries: 5
     image: "docker.io/grafana/grafana:latest"
     labels:
       traefik.enable: true
@@ -181,12 +149,44 @@ services:
       - *tz
       - "/volume2/docker/grafana:/var/lib/grafana"
 
+  loki:
+    <<: *common
+    command: -config.file=/etc/loki/config.yaml
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 1024M
+    environment:
+      <<: *env
+    healthcheck:
+      interval: 10s
+      retries: 5
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1",
+        ]
+      timeout: 5s
+    hostname: loki
+    image: "docker.io/grafana/loki:latest"
+    mac_address: "0e:be:00:da:00:80"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.80
+    user: "1028:100"
+    volumes:
+      - *tz
+      - "/volume2/docker/loki/config.yaml:/etc/loki/config.yaml:ro"
+      - "/volume2/docker/loki/data:/loki"
+
   prometheus:
     <<: *common
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--enable-feature=native-histograms"
       - "--web.enable-remote-write-receiver"
-      - --enable-feature=native-histograms
     cpu_count: 1
     depends_on:
       - alloy
@@ -198,14 +198,14 @@ services:
     environment:
       <<: *env
     healthcheck:
+      interval: 30s
+      retries: 5
       test:
         [
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready || exit 1",
         ]
-      interval: 30s
       timeout: 5s
-      retries: 5
     hostname: prometheus
     image: "docker.io/prom/prometheus:latest"
     mac_address: "0e:be:00:da:00:83"
@@ -217,6 +217,6 @@ services:
     user: "1028:100"
     volumes:
       - *tz
+      - "/volume2/docker/prometheus/data:/prometheus/data"
       - "/volume2/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
       - "/volume2/docker/prometheus/rules_compat.yml:/etc/prometheus/rules_compat.yml:ro"
-      - "/volume2/docker/prometheus/data:/prometheus/data"

@@ -42,38 +42,6 @@ services:
       - *tz
       - "/mnt/data/tntphoto_mariadb_data/_data:/var/lib/mysql"
 
-  wordpress:
-    <<: *common
-    command:
-      - sh
-      - -c
-      - |
-        apk add icu-dev
-        docker-php-ext-install pdo pdo_mysql intl
-        php-fpm
-    container_name: wordpress
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    env_file: wordpress.txt
-    environment:
-      <<: *env
-      PUID: 82
-      PGID: 82
-      WORDPRESS_DB_HOST: "mariadb:3306"
-    healthcheck:
-      <<: *hc
-      test: ["CMD-SHELL", "netstat -ltn | grep 9000"]
-    hostname: wordpress
-    image: "docker.io/wordpress:php8.3-fpm-alpine"
-    networks:
-      - wp_net
-    volumes:
-      - *tz
-      - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
-      - "/mnt/data/tntphoto_php_config/_data:/usr/local/etc/php/conf.d"
-      - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
-
   nginx:
     <<: *common
     container_name: nginx
@@ -112,6 +80,38 @@ services:
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
       - "/mnt/data/tntphoto_certbot_config/_data:/etc/nginx/ssl:ro"
       - "/mnt/data/tntphoto_certbot_data/_data:/var/www/certbot"
+      - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
+
+  wordpress:
+    <<: *common
+    command:
+      - sh
+      - -c
+      - |
+        apk add icu-dev
+        docker-php-ext-install pdo pdo_mysql intl
+        php-fpm
+    container_name: wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file: wordpress.txt
+    environment:
+      <<: *env
+      PUID: 82
+      PGID: 82
+      WORDPRESS_DB_HOST: "mariadb:3306"
+    healthcheck:
+      <<: *hc
+      test: ["CMD-SHELL", "netstat -ltn | grep 9000"]
+    hostname: wordpress
+    image: "docker.io/wordpress:php8.3-fpm-alpine"
+    networks:
+      - wp_net
+    volumes:
+      - *tz
+      - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
+      - "/mnt/data/tntphoto_php_config/_data:/usr/local/etc/php/conf.d"
       - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
 
 networks:

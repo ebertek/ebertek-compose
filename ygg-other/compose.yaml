@@ -22,6 +22,71 @@ x-env: &env
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 services:
+  acmesh:
+    <<: *common
+    command: daemon
+    container_name: acmesh
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 128M
+    env_file: acmesh.txt
+    environment:
+      <<: *env
+      PUID: 1028
+      PGID: 100
+    healthcheck:
+      interval: 1m
+      retries: 5
+      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf",
+        ]
+      timeout: 5s
+    hostname: acmesh
+    image: "docker.io/neilpang/acme.sh:latest"
+    mac_address: "0e:be:00:da:00:36"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.36
+    stdin_open: true
+    tty: true
+    volumes:
+      - *tz
+      - "/volume2/docker/acmesh:/acme.sh"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  dbeaver:
+    <<: *common
+    container_name: dbeaver
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: *env
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null"]
+      timeout: 5s
+    hostname: dbeaver
+    image: "docker.io/dbeaver/cloudbeaver:latest"
+    mac_address: "0e:be:00:da:00:43"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.43
+    volumes:
+      - *tz
+      - "/volume2/docker/dbeaver:/opt/cloudbeaver/workspace"
+
   irc:
     <<: *common
     cap_add:
@@ -63,6 +128,43 @@ services:
       - "/volume2/docker/irc:/var/opt/thelounge"
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/letsencrypt/privkey.pem"
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/letsencrypt/fullchain.pem"
+
+  smtp:
+    <<: *common
+    container_name: smtp
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 128M
+    env_file: smtp.txt
+    environment:
+      <<: *env
+      POSTCONF_compatibility_level: 2
+      POSTCONF_message_size_limit: 20480000
+      RELAY_DOMAINS: tnt.photo int.tnt.photo ext.tnt.photo
+      RELAY_HOST: "[smtp.gmail.com]:587"
+      RELAY_MODE: ALLOW_AUTH_NODOMAIN
+      RELAY_MYDOMAIN: tnt.photo
+      RELAY_MYHOSTNAME: smtp.int.tnt.photo
+      RELAY_MYNETWORKS: 10.4.20.0/23
+      RELAY_POSTMASTER: "postmaster@tnt.photo"
+      RELAY_STRICT_SENDER_MYDOMAIN: false
+      RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
+      RELAY_TLS_VERIFY: encrypt
+      RELAY_USE_TLS: "yes"
+    hostname: smtp
+    image: "docker.io/turgon37/smtp-relay:latest"
+    mac_address: "0e:be:00:da:00:60"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.60
+    volumes:
+      - *tz
+      - "/volume2/docker/smtp/data:/data"
+      - "/volume2/docker/smtp/spool:/var/spool/postfix"
+      - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
 
   vw:
     <<: *common
@@ -109,105 +211,3 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/vw:/data"
-
-  acmesh:
-    <<: *common
-    command: daemon
-    container_name: acmesh
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 128M
-    env_file: acmesh.txt
-    environment:
-      <<: *env
-      PUID: 1028
-      PGID: 100
-    healthcheck:
-      interval: 1m
-      retries: 5
-      start_period: 60s
-      test:
-        [
-          "CMD-SHELL",
-          "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf",
-        ]
-      timeout: 5s
-    hostname: acmesh
-    image: "docker.io/neilpang/acme.sh:latest"
-    mac_address: "0e:be:00:da:00:36"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.36
-    stdin_open: true
-    tty: true
-    volumes:
-      - *tz
-      - "/volume2/docker/acmesh:/acme.sh"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
-  smtp:
-    <<: *common
-    container_name: smtp
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 128M
-    env_file: smtp.txt
-    environment:
-      <<: *env
-      POSTCONF_compatibility_level: 2
-      POSTCONF_message_size_limit: 20480000
-      RELAY_DOMAINS: tnt.photo int.tnt.photo ext.tnt.photo
-      RELAY_HOST: "[smtp.gmail.com]:587"
-      RELAY_MODE: ALLOW_AUTH_NODOMAIN
-      RELAY_MYDOMAIN: tnt.photo
-      RELAY_MYHOSTNAME: smtp.int.tnt.photo
-      RELAY_MYNETWORKS: 10.4.20.0/23
-      RELAY_POSTMASTER: "postmaster@tnt.photo"
-      RELAY_STRICT_SENDER_MYDOMAIN: false
-      RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
-      RELAY_TLS_VERIFY: encrypt
-      RELAY_USE_TLS: "yes"
-    hostname: smtp
-    image: "docker.io/turgon37/smtp-relay:latest"
-    mac_address: "0e:be:00:da:00:60"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.60
-    volumes:
-      - *tz
-      - "/volume2/docker/smtp/data:/data"
-      - "/volume2/docker/smtp/spool:/var/spool/postfix"
-      - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
-
-  dbeaver:
-    <<: *common
-    container_name: dbeaver
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 512M
-    environment:
-      <<: *env
-    healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null"]
-      timeout: 5s
-    hostname: dbeaver
-    image: "docker.io/dbeaver/cloudbeaver:latest"
-    mac_address: "0e:be:00:da:00:43"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.43
-    volumes:
-      - *tz
-      - "/volume2/docker/dbeaver:/opt/cloudbeaver/workspace"

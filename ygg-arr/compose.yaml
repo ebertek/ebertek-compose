@@ -35,6 +35,79 @@ secrets:
     file: postgres-user.txt
 
 services:
+  bazarr:
+    <<: *common
+    container_name: bazarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: [*env, *env-arr]
+      WEBUI_PORTS: 6767/tcp,6767/udp
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test:
+        ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
+      timeout: 5s
+    hostname: lidarr
+    image: ghcr.io/hotio/bazarr
+    mac_address: "0e:be:00:da:00:57"
+    networks:
+      macvlan1:
+        aliases:
+          - bazarr.int.tnt.photo
+        ipv4_address: 10.4.21.57
+    volumes:
+      - *tz
+      - "/volume2/docker/bazarr:/config"
+      - "/volume1/Downloads:/downloads"
+
+  lidarr:
+    <<: *common
+    container_name: lidarr
+    cpu_count: 1
+    depends_on:
+      pg:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: [*env, *env-arr]
+      LIDARR__LOG__CONSOLEFORMAT: json
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8686/ping >/dev/null || exit 1",
+        ]
+      timeout: 5s
+    hostname: lidarr
+    image: ghcr.io/hotio/lidarr
+    mac_address: "0e:be:00:da:00:58"
+    networks:
+      macvlan1:
+        aliases:
+          - lidarr.int.tnt.photo
+        ipv4_address: 10.4.21.58
+    volumes:
+      - *tz
+      - "/volume2/docker/lidarr:/config"
+      - "/volume1/Downloads:/downloads"
+
   pg:
     <<: *common
     container_name: pg
@@ -150,13 +223,15 @@ services:
       - "/volume2/docker/radarr:/config"
       - "/volume1/Downloads:/downloads"
 
-  sonarr:
+  recyclarr:
     <<: *common
-    container_name: sonarr
+    container_name: recyclarr
     cpu_count: 1
     depends_on:
-      pg:
-        condition: service_healthy
+      radarr:
+        condition: service_started
+      sonarr:
+        condition: service_started
     deploy:
       resources:
         limits:
@@ -164,102 +239,26 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      SONARR__LOG__CONSOLEFORMAT: json
+      RECYCLARR_CREATE_CONFIG: true
     healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 60s
-      test:
-        [
-          "CMD-SHELL",
-          "curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1",
-        ]
+      interval: 1m
+      retries: 3
+      start_period: 30s
+      test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1"]
       timeout: 5s
-    hostname: sonarr
-    image: ghcr.io/hotio/sonarr
-    mac_address: "0e:be:00:da:00:56"
+    hostname: recyclarr
+    image: ghcr.io/recyclarr/recyclarr
+    mac_address: "0e:be:00:da:00:62"
     networks:
       macvlan1:
         aliases:
-          - sonarr.int.tnt.photo
-        ipv4_address: 10.4.21.56
+          - recyclarr.int.tnt.photo
+        ipv4_address: 10.4.21.62
+    security_opt: ["no-new-privileges:true"]
+    user: "1028:100"
     volumes:
       - *tz
-      - "/volume2/docker/sonarr:/config"
-      - "/volume1/Downloads:/downloads"
-
-  bazarr:
-    <<: *common
-    container_name: bazarr
-    cpu_count: 1
-    depends_on:
-      pg:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 512M
-    environment:
-      <<: [*env, *env-arr]
-      WEBUI_PORTS: 6767/tcp,6767/udp
-    healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 60s
-      test:
-        ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
-      timeout: 5s
-    hostname: lidarr
-    image: ghcr.io/hotio/bazarr
-    mac_address: "0e:be:00:da:00:57"
-    networks:
-      macvlan1:
-        aliases:
-          - bazarr.int.tnt.photo
-        ipv4_address: 10.4.21.57
-    volumes:
-      - *tz
-      - "/volume2/docker/bazarr:/config"
-      - "/volume1/Downloads:/downloads"
-
-  lidarr:
-    <<: *common
-    container_name: lidarr
-    cpu_count: 1
-    depends_on:
-      pg:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 512M
-    environment:
-      <<: [*env, *env-arr]
-      LIDARR__LOG__CONSOLEFORMAT: json
-    healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 60s
-      test:
-        [
-          "CMD-SHELL",
-          "curl -fsS http://127.0.0.1:8686/ping >/dev/null || exit 1",
-        ]
-      timeout: 5s
-    hostname: lidarr
-    image: ghcr.io/hotio/lidarr
-    mac_address: "0e:be:00:da:00:58"
-    networks:
-      macvlan1:
-        aliases:
-          - lidarr.int.tnt.photo
-        ipv4_address: 10.4.21.58
-    volumes:
-      - *tz
-      - "/volume2/docker/lidarr:/config"
-      - "/volume1/Downloads:/downloads"
+      - "/volume2/docker/recyclarr:/config"
 
   requestrr:
     <<: *common
@@ -299,15 +298,13 @@ services:
       - *tz
       - "/volume2/docker/requestrr:/config"
 
-  recyclarr:
+  sonarr:
     <<: *common
-    container_name: recyclarr
+    container_name: sonarr
     cpu_count: 1
     depends_on:
-      radarr:
-        condition: service_started
-      sonarr:
-        condition: service_started
+      pg:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -315,23 +312,26 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      RECYCLARR_CREATE_CONFIG: true
+      SONARR__LOG__CONSOLEFORMAT: json
     healthcheck:
-      interval: 1m
-      retries: 3
-      start_period: 30s
-      test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1"]
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1",
+        ]
       timeout: 5s
-    hostname: recyclarr
-    image: ghcr.io/recyclarr/recyclarr
-    mac_address: "0e:be:00:da:00:62"
+    hostname: sonarr
+    image: ghcr.io/hotio/sonarr
+    mac_address: "0e:be:00:da:00:56"
     networks:
       macvlan1:
         aliases:
-          - recyclarr.int.tnt.photo
-        ipv4_address: 10.4.21.62
-    security_opt: ["no-new-privileges:true"]
-    user: "1028:100"
+          - sonarr.int.tnt.photo
+        ipv4_address: 10.4.21.56
     volumes:
       - *tz
-      - "/volume2/docker/recyclarr:/config"
+      - "/volume2/docker/sonarr:/config"
+      - "/volume1/Downloads:/downloads"

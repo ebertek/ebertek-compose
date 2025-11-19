@@ -24,6 +24,79 @@ x-env: &env
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 services:
+  bjornify:
+    <<: *common
+    container_name: bjornify
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
+    env_file: bjornify.txt
+    environment:
+      <<: *env
+    hostname: bjornify
+    image: "ghcr.io/ebertek/bjornify:latest"
+    mac_address: "0e:be:00:da:00:52"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.52
+    stop_signal: SIGINT
+    user: "1028:100"
+    volumes:
+      - *tz
+      - "/volume2/docker/bjornify/logs:/app/logs"
+      - "/volume2/docker/bjornify/secrets:/app/secrets"
+
+  books:
+    <<: *common
+    container_name: books
+    cpu_count: 1
+    # depends_on:
+    #   calibre:
+    #     condition: service_started
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: *env
+      UMASK: 002
+      # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
+      DOCKER_MODS: >
+        lscr.io/linuxserver/mods:universal-calibre-v7.16.0|
+        lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata
+      OAUTHLIB_RELAX_TOKEN_SCOPE: 1
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      test:
+        ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/ >/dev/null || exit 1"]
+      timeout: 5s
+    hostname: books
+    image: "lscr.io/linuxserver/calibre-web:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.books.entrypoints: websecure
+      traefik.http.routers.books.middlewares: sweden@file
+      traefik.http.routers.books.rule: "Host(`books.ext.tnt.photo`) || Host(`books.int.tnt.photo`)"
+      traefik.http.routers.books.tls: true
+      traefik.http.services.books.loadbalancer.server.port: 8083
+    mac_address: "0e:be:00:da:00:59"
+    networks:
+      macvlan1:
+        aliases:
+          - books.ext.tnt.photo
+          - books.int.tnt.photo
+        ipv4_address: 10.4.21.59
+    volumes:
+      - *tz
+      - "/volume2/docker/calibre-web:/config"
+      - "/volume1/Downloads:/downloads"
+
   plex:
     <<: *common
     container_name: plex
@@ -93,31 +166,6 @@ services:
       - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
       - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 
-  bjornify:
-    <<: *common
-    container_name: bjornify
-    cpu_count: 1
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 256M
-    env_file: bjornify.txt
-    environment:
-      <<: *env
-    hostname: bjornify
-    image: "ghcr.io/ebertek/bjornify:latest"
-    mac_address: "0e:be:00:da:00:52"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.52
-    stop_signal: SIGINT
-    user: "1028:100"
-    volumes:
-      - *tz
-      - "/volume2/docker/bjornify/logs:/app/logs"
-      - "/volume2/docker/bjornify/secrets:/app/secrets"
-
   tmm:
     <<: *common
     container_name: tmm
@@ -152,52 +200,4 @@ services:
       - *tz
       - "/volume2/docker/tmm/data:/data"
       # - "/volume2/docker/tmm/app/addons:/app/addons"
-      - "/volume1/Downloads:/downloads"
-
-  books:
-    <<: *common
-    container_name: books
-    cpu_count: 1
-    # depends_on:
-    #   calibre:
-    #     condition: service_started
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 512M
-    environment:
-      <<: *env
-      UMASK: 002
-      # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
-      DOCKER_MODS: >
-        lscr.io/linuxserver/mods:universal-calibre-v7.16.0|
-        lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata
-      OAUTHLIB_RELAX_TOKEN_SCOPE: 1
-    healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 60s
-      test:
-        ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/ >/dev/null || exit 1"]
-      timeout: 5s
-    hostname: books
-    image: "lscr.io/linuxserver/calibre-web:latest"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.books.entrypoints: websecure
-      traefik.http.routers.books.middlewares: sweden@file
-      traefik.http.routers.books.rule: "Host(`books.ext.tnt.photo`) || Host(`books.int.tnt.photo`)"
-      traefik.http.routers.books.tls: true
-      traefik.http.services.books.loadbalancer.server.port: 8083
-    mac_address: "0e:be:00:da:00:59"
-    networks:
-      macvlan1:
-        aliases:
-          - books.ext.tnt.photo
-          - books.int.tnt.photo
-        ipv4_address: 10.4.21.59
-    volumes:
-      - *tz
-      - "/volume2/docker/calibre-web:/config"
       - "/volume1/Downloads:/downloads"

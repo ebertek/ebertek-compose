@@ -20,6 +20,41 @@ x-env: &env
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 services:
+  download:
+    <<: *common
+    container_name: download
+    cpu_count: 1
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
+    dns_search: int.tnt.photo
+    environment:
+      <<: *env
+      TORRENTING_PORT: 56213
+      WEBUI_PORT: 8080
+    healthcheck:
+      interval: 30s
+      retries: 1
+      start_period: 10s
+      test: ping -c 2 gluetun || kill 1
+      timeout: 2s
+    image: "lscr.io/linuxserver/qbittorrent:latest"
+    labels:
+      com.centurylinklabs.watchtower.depends-on: gluetun
+    network_mode: "container:gluetun"
+    volumes:
+      - *tz
+      - "/volume1/Downloads:/downloads"
+      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
+      - "/volume2/docker/qbittorrent:/config"
+      - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
+      - "/volume2/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
+
   gluetun:
     <<: *common
     cap_add:
@@ -77,38 +112,3 @@ services:
       - *tz
       - "/volume2/docker/gluetun:/gluetun"
       - "/lib/modules:/lib/modules:ro"
-
-  download:
-    <<: *common
-    container_name: download
-    cpu_count: 1
-    depends_on:
-      gluetun:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          # cpus: "1"
-          memory: 256M
-    dns_search: int.tnt.photo
-    environment:
-      <<: *env
-      TORRENTING_PORT: 56213
-      WEBUI_PORT: 8080
-    healthcheck:
-      interval: 30s
-      retries: 1
-      start_period: 10s
-      test: ping -c 2 gluetun || kill 1
-      timeout: 2s
-    image: "lscr.io/linuxserver/qbittorrent:latest"
-    labels:
-      com.centurylinklabs.watchtower.depends-on: gluetun
-    network_mode: "container:gluetun"
-    volumes:
-      - *tz
-      - "/volume1/Downloads:/downloads"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
-      - "/volume2/docker/qbittorrent:/config"
-      - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
-      - "/volume2/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
