@@ -12,7 +12,9 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 5m
 
@@ -47,7 +49,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.esphome.entrypoints: websecure
-      traefik.http.routers.esphome.rule: "Host(`esp.int.tnt.photo`) || Host(`esphome.int.tnt.photo`)"
+      traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`) || Host(`esphome.ygg.nu`)"
       traefik.http.routers.esphome.tls: true
       traefik.http.services.esphome.loadbalancer.server.port: 6052
       traefik.http.services.esphome.loadbalancer.server.scheme: http
@@ -56,8 +58,8 @@ services:
       macvlan1:
         aliases:
           - 5c53de3b-esphome
-          - esp.ext.tnt.photo
-          - esp.int.tnt.photo
+          - esphome.ebi.nu
+          - esphome.ygg.nu
         ipv4_address: 10.4.21.71
     privileged: true
     stop_signal: SIGINT
@@ -87,7 +89,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.hass.entrypoints: websecure
-      traefik.http.routers.hass.rule: "Host(`hass.ext.tnt.photo`) || Host(`hass.int.tnt.photo`) || Host(`homeassistant.ext.tnt.photo`) || Host(`homeassistant.int.tnt.photo`)"
+      traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`) || Host(`hass.ygg.nu`)"
       traefik.http.routers.hass.tls: true
       traefik.http.services.hass.loadbalancer.server.port: 443
       traefik.http.services.hass.loadbalancer.server.scheme: https
@@ -95,10 +97,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - hass.ext.tnt.photo
-          - hass.int.tnt.photo
-          - homeassistant.ext.tnt.photo
-          - homeassistant.int.tnt.photo
+          - hass.ebi.nu
+          - hass.ygg.nu
         ipv4_address: 10.4.21.70
     privileged: true
     volumes:
@@ -171,8 +171,8 @@ services:
       macvlan1:
         aliases:
           - core-matter-server
-          - matter-server.ext.tnt.photo
-          - matter-server.int.tnt.photo
+          - matter-server.ebi.nu
+          - matter-server.ygg.nu
         # driver_opts:
         #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
         ipv4_address: 10.4.21.66
@@ -207,8 +207,8 @@ services:
       macvlan1:
         aliases:
           - core-mosquitto
-          - mosquitto.ext.tnt.photo
-          - mosquitto.int.tnt.photo
+          - mosquitto.ebi.nu
+          - mosquitto.ygg.nu
         ipv4_address: 10.4.21.67
     volumes:
       - *tz

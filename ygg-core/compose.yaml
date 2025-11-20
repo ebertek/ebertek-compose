@@ -12,7 +12,9 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 2m
 

@@ -12,9 +12,12 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   extra_hosts:
-    - "download.int.tnt.photo:10.4.21.39"
+    - "download.ebi.nu:10.4.21.39"
+    - "download.ygg.nu:10.4.21.39"
   restart: "no"
   stop_grace_period: 2m
 
@@ -63,7 +66,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - bazarr.int.tnt.photo
+          - bazarr.ebi.nu
+          - bazarr.ygg.nu
         ipv4_address: 10.4.21.57
     volumes:
       - *tz
@@ -101,7 +105,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - lidarr.int.tnt.photo
+          - lidarr.ebi.nu
+          - lidarr.ygg.nu
         ipv4_address: 10.4.21.58
     volumes:
       - *tz
@@ -133,7 +138,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - pg.int.tnt.photo
+          - pg.ebi.nu
+          - pg.ygg.nu
         ipv4_address: 10.4.21.42
     secrets:
       - postgres-passwd
@@ -179,7 +185,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - prowlarr.int.tnt.photo
+          - prowlarr.ebi.nu
+          - prowlarr.ygg.nu
         ipv4_address: 10.4.21.54
     volumes:
       - *tz
@@ -216,7 +223,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - radarr.int.tnt.photo
+          - radarr.ebi.nu
+          - radarr.ygg.nu
         ipv4_address: 10.4.21.55
     volumes:
       - *tz
@@ -252,7 +260,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - recyclarr.int.tnt.photo
+          - recyclarr.ebi.nu
+          - recyclarr.ygg.nu
         ipv4_address: 10.4.21.62
     security_opt: ["no-new-privileges:true"]
     user: "1028:100"
@@ -292,7 +301,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - requestrr.int.tnt.photo
+          - requestrr.ebi.nu
+          - requestrr.ygg.nu
         ipv4_address: 10.4.21.61
     volumes:
       - *tz
@@ -329,7 +339,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - sonarr.int.tnt.photo
+          - sonarr.ebi.nu
+          - sonarr.ygg.nu
         ipv4_address: 10.4.21.56
     volumes:
       - *tz

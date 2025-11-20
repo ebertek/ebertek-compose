@@ -12,7 +12,9 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 3m
 
@@ -82,15 +84,15 @@ services:
       traefik.enable: true
       traefik.http.routers.books.entrypoints: websecure
       traefik.http.routers.books.middlewares: sweden@file
-      traefik.http.routers.books.rule: "Host(`books.ext.tnt.photo`) || Host(`books.int.tnt.photo`)"
+      traefik.http.routers.books.rule: "Host(`books.ebi.nu`) || Host(`books.ygg.nu`)"
       traefik.http.routers.books.tls: true
       traefik.http.services.books.loadbalancer.server.port: 8083
     mac_address: "0e:be:00:da:00:59"
     networks:
       macvlan1:
         aliases:
-          - books.ext.tnt.photo
-          - books.int.tnt.photo
+          - books.ebi.nu
+          - books.ygg.nu
         ipv4_address: 10.4.21.59
     volumes:
       - *tz
@@ -119,7 +121,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.plex.entrypoints: websecure
-      traefik.http.routers.plex.rule: "Host(`plex.ext.tnt.photo`) || Host(`plex.int.tnt.photo`)"
+      traefik.http.routers.plex.rule: "Host(`plex.ebi.nu`) || Host(`plex.ygg.nu`)"
       traefik.http.routers.plex.tls: true
       traefik.http.services.plex.loadbalancer.server.port: 32400
       traefik.http.services.plex.loadbalancer.server.scheme: https
@@ -127,8 +129,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - plex.ext.tnt.photo
-          - plex.int.tnt.photo
+          - plex.ebi.nu
+          - plex.ygg.nu
         ipv4_address: 10.4.21.40
     volumes:
       - *tz
@@ -156,8 +158,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - tautulli.ext.tnt.photo
-          - tautulli.int.tnt.photo
+          - tautulli.ebi.nu
+          - tautulli.ygg.nu
         ipv4_address: 10.4.21.41
     volumes:
       - *tz

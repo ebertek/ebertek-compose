@@ -12,7 +12,9 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 1.5m
 
@@ -110,10 +112,10 @@ services:
     environment:
       <<: *env
       GF_FEATURE_TOGGLES_ENABLE: "provisioning,kubernetesDashboards"
-      GF_SERVER_DOMAIN: grafana.ext.tnt.photo
+      GF_SERVER_DOMAIN: grafana.ebi.nu
       GF_SERVER_HTTP_PORT: 3000
       GF_SERVER_PROTOCOL: http
-      GF_SERVER_ROOT_URL: "http://grafana.ext.tnt.photo"
+      GF_SERVER_ROOT_URL: "http://grafana.ebi.nu"
     healthcheck:
       interval: 10s
       retries: 5
@@ -127,15 +129,15 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.grafana.entrypoints: websecure
-      traefik.http.routers.grafana.rule: "Host(`grafana.int.tnt.photo`) || Host(`grafana.ext.tnt.photo`)"
+      traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`) || Host(`grafana.ygg.nu`)"
       traefik.http.routers.grafana.tls: true
       traefik.http.services.grafana.loadbalancer.server.port: 3000
     mac_address: "0e:be:00:da:00:82"
     networks:
       macvlan1:
         aliases:
-          - grafana.ext.tnt.photo
-          - grafana.int.tnt.photo
+          - grafana.ebi.nu
+          - grafana.ygg.nu
         ipv4_address: 10.4.21.82
     user: "1028:100"
     volumes:

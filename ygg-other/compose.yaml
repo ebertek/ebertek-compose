@@ -12,7 +12,9 @@ x-common: &common
   dns:
     - 10.4.21.34
     - 1.1.1.1
-  dns_search: int.tnt.photo
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 2m
 
@@ -118,8 +120,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - irc.ext.tnt.photo
-          - irc.int.tnt.photo
+          - irc.ebi.nu
+          - irc.ygg.nu
         ipv4_address: 10.4.21.45
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
@@ -143,13 +145,13 @@ services:
       <<: *env
       POSTCONF_compatibility_level: 2
       POSTCONF_message_size_limit: 20480000
-      RELAY_DOMAINS: tnt.photo int.tnt.photo ext.tnt.photo
+      RELAY_DOMAINS: ebi.nu ygg.nu
       RELAY_HOST: "[smtp.gmail.com]:587"
       RELAY_MODE: ALLOW_AUTH_NODOMAIN
-      RELAY_MYDOMAIN: tnt.photo
-      RELAY_MYHOSTNAME: smtp.int.tnt.photo
+      RELAY_MYDOMAIN: ebi.nu
+      RELAY_MYHOSTNAME: smtp.ebi.nu
       RELAY_MYNETWORKS: 10.4.20.0/23
-      RELAY_POSTMASTER: "postmaster@tnt.photo"
+      RELAY_POSTMASTER: "postmaster@ebi.nu"
       RELAY_STRICT_SENDER_MYDOMAIN: false
       RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
       RELAY_TLS_VERIFY: encrypt
@@ -182,7 +184,7 @@ services:
       <<: *env
       PUID: 1028
       PGID: 100
-      DOMAIN: "https://vw.ext.tnt.photo"
+      DOMAIN: "https://vw.ebi.nu"
       PUSH_ENABLED: true
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
@@ -194,17 +196,15 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.vw.entrypoints: websecure
-      traefik.http.routers.vw.rule: "Host(`vaultwarden.ext.tnt.photo`) || Host(`vaultwarden.int.tnt.photo || Host(`vw.ext.tnt.photo`) || Host(`vw.int.tnt.photo`)`)"
+      traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`) || Host(`vw.ygg.nu`)"
       traefik.http.routers.vw.tls: true
       traefik.http.services.vw.loadbalancer.server.port: 80
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:
         aliases:
-          - vaultwarden.ext.tnt.photo
-          - vaultwarden.int.tnt.photo
-          - vw.ext.tnt.photo
-          - vw.int.tnt.photo
+          - vw.ebi.nu
+          - vw.ygg.nu
         ipv4_address: 10.4.21.46
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80

@@ -9,6 +9,9 @@ networks:
     external: true
 
 x-common: &common
+  dns_search:
+    - ebi.nu
+    - ygg.nu
   restart: "no"
   stop_grace_period: 1m
 
@@ -32,7 +35,6 @@ services:
         limits:
           # cpus: "1"
           memory: 256M
-    dns_search: int.tnt.photo
     environment:
       <<: *env
       TORRENTING_PORT: 56213
@@ -74,7 +76,6 @@ services:
       - 10.64.0.1
       - 10.4.21.34
       - 1.1.1.1
-    dns_search: int.tnt.photo
     env_file: gluetun.txt
     environment:
       <<: *env
@@ -101,8 +102,8 @@ services:
     networks:
       macvlan1:
         aliases:
-          - download.ext.tnt.photo
-          - download.int.tnt.photo
+          - download.ebi.nu
+          - download.ygg.nu
         ipv4_address: 10.4.21.39
     privileged: true
     sysctls:
