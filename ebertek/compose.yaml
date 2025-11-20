@@ -30,15 +30,6 @@ services:
       PROM_URL: "http://prometheus.ext.tnt.photo/api/v1/write"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://127.0.0.1:12345/ || exit 1",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 5
     hostname: alloy
     image: "docker.io/grafana/alloy:latest"
     volumes:
