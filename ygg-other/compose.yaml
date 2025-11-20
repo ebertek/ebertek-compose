@@ -117,11 +117,7 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test:
-        [
-          "CMD-SHELL",
-          "wget -qO- http://127.0.0.1:9000/ >/dev/null",
-        ]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/ >/dev/null"]
       timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
