@@ -52,7 +52,6 @@ services:
     volumes:
       - *tz
       - "/volume1/Downloads:/downloads"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
       - "/volume2/docker/qbittorrent:/config"
       - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
       - "/volume2/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
@@ -98,6 +97,12 @@ services:
       timeout: 5s
     hostname: gluetun
     image: "docker.io/qmcgaw/gluetun:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.download.entrypoints: websecure
+      traefik.http.routers.download.rule: "Host(`download.ebi.nu`) || Host(`download.ygg.nu`)"
+      traefik.http.routers.download.tls: true
+      traefik.http.services.download.loadbalancer.server.port: 8080
     mac_address: "0e:be:00:da:00:39"
     networks:
       macvlan1:

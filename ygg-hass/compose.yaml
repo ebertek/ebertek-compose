@@ -91,8 +91,7 @@ services:
       traefik.http.routers.hass.entrypoints: websecure
       traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`) || Host(`hass.ygg.nu`)"
       traefik.http.routers.hass.tls: true
-      traefik.http.services.hass.loadbalancer.server.port: 443
-      traefik.http.services.hass.loadbalancer.server.scheme: https
+      traefik.http.services.hass.loadbalancer.server.port: 8123
     mac_address: "0e:be:00:da:00:70"
     networks:
       macvlan1:
@@ -125,9 +124,18 @@ services:
       DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb2-admin-username
     hostname: influxdb
     image: "docker.io/library/influxdb:2"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.influxdb.entrypoints: websecure
+      traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`) || Host(`influxdbvw.ygg.nu`)"
+      traefik.http.routers.influxdb.tls: true
+      traefik.http.services.influxdb.loadbalancer.server.port: 8086
     mac_address: "0e:be:00:da:00:72"
     networks:
       macvlan1:
+        aliases:
+          - influxdb.ebi.nu
+          - influxdb.ygg.nu
         ipv4_address: 10.4.21.72
     secrets:
       - influxdb2-admin-username
@@ -278,11 +286,18 @@ services:
     image: "docker.io/koenkk/zigbee2mqtt:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: mosquitto
+      traefik.enable: true
+      traefik.http.routers.zigbee2mqtt.entrypoints: websecure
+      traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`) || Host(`zigbee2mqtt.ygg.nu`)"
+      traefik.http.routers.zigbee2mqtt.tls: true
+      traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8099
     mac_address: "0e:be:00:da:00:69"
     networks:
       macvlan1:
         aliases:
           - 45df7312-zigbee2mqtt
+          - zigbee2mqtt.ebi.nu
+          - zigbee2mqtt.ygg.nu
         ipv4_address: 10.4.21.69
     restart: on-failure
     volumes:

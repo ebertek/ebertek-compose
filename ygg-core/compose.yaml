@@ -79,16 +79,24 @@ services:
       timeout: 5s
     hostname: dns
     image: "docker.io/technitium/dns-server:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.dns.entrypoints: websecure
+      traefik.http.routers.dns.rule: "Host(`dns.ebi.nu`) || Host(`dns.ygg.nu`)"
+      traefik.http.routers.dns.tls: true
+      traefik.http.services.dns.loadbalancer.server.port: 5380
     mac_address: "0e:be:00:da:00:34"
     networks:
       macvlan1:
+        aliases:
+          - dns.ebi.nu
+          - dns.ygg.nu
         ipv4_address: 10.4.21.34
     sysctls:
       net.ipv4.ip_local_port_range: "1024 65000"
     volumes:
       - *tz
       - "/volume2/docker/dns:/etc/dns"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/etc/dns/tnt.photo.pfx"
 
   traefik:
     <<: *common

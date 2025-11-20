@@ -81,9 +81,18 @@ services:
       timeout: 5s
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.dbeaver.entrypoints: websecure
+      traefik.http.routers.dbeaver.rule: "Host(`dbeaver.ebi.nu`) || Host(`dbeaver.ygg.nu`)"
+      traefik.http.routers.dbeaver.tls: true
+      traefik.http.services.dbeaver.loadbalancer.server.port: 8978
     mac_address: "0e:be:00:da:00:43"
     networks:
       macvlan1:
+        aliases:
+          - dbeaver.ebi.nu
+          - dbeaver.ygg.nu
         ipv4_address: 10.4.21.43
     volumes:
       - *tz
@@ -111,11 +120,17 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --no-check-certificate -qO- https://127.0.0.1:9000/ >/dev/null",
+          "wget -qO- http://127.0.0.1:9000/ >/dev/null",
         ]
       timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.irc.entrypoints: websecure
+      traefik.http.routers.irc.rule: "Host(`irc.ebi.nu`) || Host(`irc.ygg.nu`)"
+      traefik.http.routers.irc.tls: true
+      traefik.http.services.irc.loadbalancer.server.port: 9000
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
@@ -128,8 +143,6 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/irc:/var/opt/thelounge"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/etc/letsencrypt/privkey.pem"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/etc/letsencrypt/fullchain.pem"
 
   smtp:
     <<: *common

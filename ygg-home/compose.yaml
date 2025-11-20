@@ -124,7 +124,6 @@ services:
       traefik.http.routers.plex.rule: "Host(`plex.ebi.nu`) || Host(`plex.ygg.nu`)"
       traefik.http.routers.plex.tls: true
       traefik.http.services.plex.loadbalancer.server.port: 32400
-      traefik.http.services.plex.loadbalancer.server.scheme: https
     mac_address: "0e:be:00:da:00:40"
     networks:
       macvlan1:
@@ -135,7 +134,6 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/plex/config:/config"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.pfx:/config/tnt.photo.pfx"
       - "/volume2/docker/plex/transcode:/transcode"
       - "/volume1/Downloads:/data"
 
@@ -154,6 +152,12 @@ services:
       <<: *env
     hostname: tautulli
     image: "ghcr.io/tautulli/tautulli:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.tautulli.entrypoints: websecure
+      traefik.http.routers.tautulli.rule: "Host(`tautulli.ebi.nu`) || Host(`tautulli.ygg.nu`)"
+      traefik.http.routers.tautulli.tls: true
+      traefik.http.services.tautulli.loadbalancer.server.port: 8181
     mac_address: "0e:be:00:da:00:41"
     networks:
       macvlan1:
@@ -165,8 +169,6 @@ services:
       - *tz
       - "/volume2/docker/tautulli:/config"
       - "/volume2/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro" # yamllint disable-line
-      - "/volume2/docker/acmesh/tnt.photo_ecc/tnt.photo.key:/config/server.key"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/fullchain.cer:/config/server.crt"
 
   tmm:
     <<: *common
@@ -194,9 +196,18 @@ services:
       timeout: 10s
     hostname: tmm
     image: "docker.io/tinymediamanager/tinymediamanager:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.tmm.entrypoints: websecure
+      traefik.http.routers.tmm.rule: "Host(`tmm.ebi.nu`) || Host(`tmm.ygg.nu`)"
+      traefik.http.routers.tmm.tls: true
+      traefik.http.services.tmm.loadbalancer.server.port: 4000
     mac_address: "0e:be:00:da:00:53"
     networks:
       macvlan1:
+        aliases:
+          - tmm.ebi.nu
+          - tmm.ygg.nu
         ipv4_address: 10.4.21.53
     volumes:
       - *tz
