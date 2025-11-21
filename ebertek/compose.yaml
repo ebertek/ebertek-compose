@@ -27,8 +27,8 @@ services:
       <<: *env
       ALLOY_DEPLOY_MODE: docker
       ALLOY_HOST: hc
-      LOKI_URL: "http://loki.ebi.nu/loki/api/v1/push"
-      PROM_URL: "http://prometheus.ebi.nu/api/v1/write"
+      LOKI_URL: "https://loki.ebi.nu/loki/api/v1/push"
+      PROM_URL: "https://prometheus.ebi.nu/api/v1/write"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: alloy
