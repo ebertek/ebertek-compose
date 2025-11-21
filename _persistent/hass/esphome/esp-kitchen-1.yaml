@@ -1,9 +1,9 @@
 ---
 esphome:
   area: Kitchen
-  friendly_name: esp-6
+  friendly_name: esp-kitchen-1
   min_version: 2025.2.0
-  name: esp-6
+  name: esp-kitchen-1
 
 esp32:
   board: esp32-c6-devkitm-1
@@ -26,13 +26,13 @@ external_components:
 
 api:
   encryption:
-    key: !secret api_6
+    key: !secret api_5
   reboot_timeout: 0s
 
 ota:
   - platform: esphome
     id: ota_esphome
-    password: !secret ota_6
+    password: !secret ota_5
 
 logger:
 
@@ -97,11 +97,11 @@ light:
       - addressable_rainbow:
       - flicker:
       - random:
-    #      - strobe:
+      - strobe:
     id: rgb
     is_rgbw: true
     name: RGB
-    num_leds: 1 #4
+    num_leds: 4
     pin: GPIO20
     power_supply: rgbpwr
     restore_mode: RESTORE_DEFAULT_OFF

@@ -1,9 +1,9 @@
 ---
 esphome:
   area: Guest Room
-  friendly_name: esp-2
+  friendly_name: esp-guest-1
   min_version: 2025.5.0
-  name: esp-2
+  name: esp-guest-1
   platformio_options:
     board_build.arduino.memory_type: opi_opi
 

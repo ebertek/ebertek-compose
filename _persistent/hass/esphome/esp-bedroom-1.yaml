@@ -1,9 +1,9 @@
 ---
 esphome:
   area: Bedroom
-  friendly_name: esp-4
+  friendly_name: esp-bedroom-1
   min_version: 2025.2.0
-  name: esp-4
+  name: esp-bedroom-1
   platformio_options:
     board_build.f_cpu: 240000000L
     board_build.mcu: esp32s3

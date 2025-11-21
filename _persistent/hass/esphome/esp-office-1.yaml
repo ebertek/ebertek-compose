@@ -1,9 +1,9 @@
 ---
 esphome:
   area: Office
-  friendly_name: esp-1
+  friendly_name: esp-office-1
   min_version: 2025.2.0
-  name: esp-1
+  name: esp-office-1
   platformio_options:
     board_build.flash_mode: dio
 

@@ -1,31 +1,38 @@
 ---
 esphome:
-  area: Hall
-  friendly_name: esp-3
+  area: Kitchen
+  friendly_name: esp-kitchen-2
   min_version: 2025.2.0
-  name: esp-3
-  platformio_options:
-    board_build.f_cpu: 240000000L
-    board_build.mcu: esp32s3
+  name: esp-kitchen-2
 
 esp32:
-  board: m5stack-atoms3
-  flash_size: 8MB
+  board: esp32-c6-devkitm-1
+  flash_size: 4MB
   framework:
     platform_version: 6.9.0
+    sdkconfig_options:
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
     type: esp-idf
     version: 5.3.1
-  variant: esp32s3
+  variant: esp32c6
+
+external_components:
+  - source:
+      ref: adc_oneshot
+      type: git
+      url: https://github.com/lboue/esphome
+    components: [adc]
+    refresh: 0s
 
 api:
   encryption:
-    key: !secret api_3
+    key: !secret api_6
   reboot_timeout: 0s
 
 ota:
   - platform: esphome
     id: ota_esphome
-    password: !secret ota_3
+    password: !secret ota_6
 
 logger:
 
@@ -45,16 +52,17 @@ binary_sensor:
       - delayed_off: 10ms
     name: Button
     pin:
+      ignore_strapping_warning: true
       inverted: true
       mode:
         input: true
         pullup: true
-      number: GPIO41
+      number: GPIO9
   - platform: gpio
     filters:
       - delayed_off: 1000ms
       - delayed_on: 10ms
-    name: Illuminance hit
+    name: Moisture hit
     pin:
       inverted: true
       mode:
@@ -78,19 +86,38 @@ esp32_ble_tracker:
     active: true
 
 light:
-  - platform: esp32_rmt_led_strip
-    chipset: ws2812
+  - platform: status_led
+    entity_category: diagnostic
     id: led
     name: LED
-    num_leds: 4
-    pin: GPIO35
+    pin: GPIO7
+  - platform: esp32_rmt_led_strip
+    chipset: ws2812
+    effects:
+      - addressable_rainbow:
+      - flicker:
+      - random:
+    #      - strobe:
+    id: rgb
+    is_rgbw: true
+    name: RGB
+    num_leds: 1 #4
+    pin: GPIO20
+    power_supply: rgbpwr
     restore_mode: RESTORE_DEFAULT_OFF
     rgb_order: GRB
-#    rmt_channel: 2
+#    rmt_channel: 1
+
+power_supply:
+  - id: rgbpwr
+    enable_on_boot: true
+    enable_time: 10ms
+    keep_on_time: 10ms
+    pin: GPIO19
 
 remote_transmitter:
   carrier_duty_percent: 50%
-  pin: GPIO4
+  pin: GPIO3
 
 sensor:
   - platform: uptime
@@ -112,16 +139,18 @@ sensor:
     unit_of_measurement: dBm
     update_interval: 60s
   - platform: adc
-    device_class: illuminance
+    accuracy_decimals: 3
     filters:
-      - lambda: |-
-          return 200 - (x / 10000.0) * 2000000.0;
+      - multiply: 3.3
+      - sliding_window_moving_average:
+          send_every: 30
+          window_size: 30
     id: porta_g1
-    name: Illuminance
+    name: Moisture
     pin:
       mode:
         input: true
         pullup: true
       number: GPIO1
-    unit_of_measurement: "lx"
-    update_interval: 1s
+    unit_of_measurement: V
+    update_interval: 2s

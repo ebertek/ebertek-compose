@@ -51,12 +51,12 @@ A collection of Docker Compose files and shell scripts.
 - **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
 - **[hass](https://github.com/home-assistant/core)**: Home automation.
 - **[esphome](https://github.com/esphome/esphome)**: Control ESP32 devices.
-  - **[esp-1](_persistent/hass/esphome/esp-1.yaml)**: Espressif ESP32-S3-BOX-3
-  - **[esp-2](_persistent/hass/esphome/esp-2.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V + Microphone Unit
-  - **[esp-3](_persistent/hass/esphome/esp-3.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + Light Unit
-  - **[esp-4](_persistent/hass/esphome/esp-4.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + AtomPortABC + ENVIV Unit (SHT40/BMP280) + PA.HUB 2 Unit + Mini TVOC/eCO2 Ga Unit
-  - **[esp-5](_persistent/hass/esphome/esp-5.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
-  - **[esp-6](_persistent/hass/esphome/esp-6.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
+  - **[esp-office-1](_persistent/hass/esphome/esp-office-1.yaml)**: Espressif ESP32-S3-BOX-3
+  - **[esp-guest-1](_persistent/hass/esphome/esp-guest-1.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V + Microphone Unit
+  - **[esp-hall-1](_persistent/hass/esphome/esp-hall-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + Light Unit
+  - **[esp-bedroom-1](_persistent/hass/esphome/esp-bedroom-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + AtomPortABC + ENVIV Unit (SHT40/BMP280) + PA.HUB 2 Unit + Mini TVOC/eCO2 Ga Unit
+  - **[esp-kitchen-1](_persistent/hass/esphome/esp-kitchen-1.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
+  - **[esp-kitchen-2](_persistent/hass/esphome/esp-kitchen-2.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
 
 ### [ygg-home/](ygg-home/)
 
