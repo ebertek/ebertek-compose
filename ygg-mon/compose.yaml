@@ -55,6 +55,12 @@ services:
       - "host.docker.internal:host-gateway"
     hostname: alloy
     image: "docker.io/grafana/alloy:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.alloy.entrypoints: websecure
+      traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`) || Host(`alloy.ygg.nu`)"
+      traefik.http.routers.alloy.tls: true
+      traefik.http.services.alloy.loadbalancer.server.port: 12345
     mac_address: "0e:be:00:da:00:81"
     networks:
       macvlan1:
@@ -158,6 +164,12 @@ services:
       <<: *env
     hostname: loki
     image: "docker.io/grafana/loki:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.loki.entrypoints: websecure
+      traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`) || Host(`loki.ygg.nu`)"
+      traefik.http.routers.loki.tls: true
+      traefik.http.services.loki.loadbalancer.server.port: 3100
     mac_address: "0e:be:00:da:00:80"
     networks:
       macvlan1:
@@ -196,6 +208,12 @@ services:
       timeout: 5s
     hostname: prometheus
     image: "docker.io/prom/prometheus:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prometheus.entrypoints: websecure
+      traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`) || Host(`prometheus.ygg.nu`)"
+      traefik.http.routers.prometheus.tls: true
+      traefik.http.services.prometheus.loadbalancer.server.port: 9090
     mac_address: "0e:be:00:da:00:83"
     networks:
       macvlan1:
