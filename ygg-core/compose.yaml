@@ -37,14 +37,9 @@ services:
     env_file: cloudflared.txt
     environment:
       <<: *env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     hostname: cloudflared
     image: "docker.io/cloudflare/cloudflared:latest"
-    mac_address: "0e:be:00:da:00:37"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.37
+    network_mode: host
     sysctls:
       net.ipv4.ip_local_port_range: "11000 60999"
     ulimits:
