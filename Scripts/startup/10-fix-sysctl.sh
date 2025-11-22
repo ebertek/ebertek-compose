@@ -9,5 +9,6 @@ sysctl -w net.ipv4.conf.all.src_valid_mark=1
 sysctl -w net.ipv6.conf.all.accept_ra=2
 sysctl -w net.ipv6.conf.default.accept_ra=2
 sysctl -w fs.inotify.max_user_watches=524288
+sysctl -w net.ipv4.ping_group_range="0 65535"
 bash /volume2/docker/synology-docker/syno_docker_update.sh update -f
 bash /volume1/homes/Hannibal/Synology_HDD_db-main/syno_hdd_db.sh -nr
