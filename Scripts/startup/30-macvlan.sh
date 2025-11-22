@@ -1,7 +1,29 @@
 #!/bin/bash
-sleep 10
+set -euo pipefail
 
-ip link add macvlan1 link ovs_bond0 type macvlan mode bridge
-ip addr add 10.4.21.1/32 dev macvlan1
-ip link set macvlan1 up
-ip route add 10.4.21.0/24 dev macvlan1
+IFACE="macvlan1"
+PARENT="ovs_bond0"
+ADDR4="10.4.21.1/24"
+
+# Wait for parent interface to exist and be up (timeout: 30s)
+for _ in {1..30}; do
+	if ip link show "$PARENT" &>/dev/null; then
+		state=$(ip -o link show "$PARENT" | awk '{print $9}')
+		if [[ "$state" == "UP" || "$state" == "LOWER_UP" ]]; then
+			break
+		fi
+	fi
+	sleep 1
+done
+
+# Create macvlan only if it doesn't exist yet
+if ! ip link show "$IFACE" &>/dev/null; then
+	ip link add "$IFACE" link "$PARENT" type macvlan mode bridge
+fi
+
+# Ensure the IPv4 address is present
+if ! ip -4 addr show dev "$IFACE" | grep -q " $ADDR4"; then
+	ip addr add "$ADDR4" dev "$IFACE" || true
+fi
+
+ip link set "$IFACE" up
