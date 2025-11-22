@@ -22,8 +22,7 @@ if ! ip link show "$IFACE" &>/dev/null; then
 fi
 
 # Ensure the IPv4 address is present
-if ! ip -4 addr show dev "$IFACE" | grep -q " $ADDR4"; then
-	ip addr add "$ADDR4" dev "$IFACE" || true
-fi
+ip -4 addr flush dev "$IFACE"
+ip addr add "$ADDR4" dev "$IFACE"
 
 ip link set "$IFACE" up
