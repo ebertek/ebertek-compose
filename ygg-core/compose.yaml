@@ -133,5 +133,5 @@ services:
       - *tz
       - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml"
       - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
-      - "/volume2/docker/acmesh/tnt.photo_ecc/:/certs:ro"
+      - "/volume2/docker/acmesh/ebi.nu_ecc/:/certs:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
