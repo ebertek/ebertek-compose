@@ -35,11 +35,11 @@ services:
   esphome:
     <<: *common
     container_name: esphome
-    cpu_count: 1
+    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          # cpus: "2"
           memory: 2048M
     env_file: esphome.txt
     environment:
