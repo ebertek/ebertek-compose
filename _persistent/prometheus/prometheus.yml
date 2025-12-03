@@ -13,22 +13,22 @@ scrape_configs:
       credentials_file: /run/secrets/hass-bearer-token
     scheme: https
     static_configs:
-      - targets: ["hass:8123"]
+      - targets: ["hass.ygg.nu:8123"]
   - job_name: "immich_api"
     static_configs:
-      - targets: ["immich-server:8081"]
+      - targets: ["immich-server.ygg.nu:8081"]
   - job_name: "immich_microservices"
     static_configs:
-      - targets: ["immich-server:8082"]
+      - targets: ["immich-server.ygg.nu:8082"]
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
   - job_name: "traefik"
     metrics_path: /metrics
     static_configs:
-      - targets: ["traefik:8080"]
+      - targets: ["traefik.ygg.nu:8080"]
   - job_name: "watchtower"
     metrics_path: /v1/metrics
     bearer_token: demotoken
     static_configs:
-      - targets: ["watchtower:8080"]
+      - targets: ["watchtower.ygg.nu:8080"]
