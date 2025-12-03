@@ -40,7 +40,7 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 2048M
+          memory: 2560M
     env_file: esphome.txt
     environment:
       <<: *env
