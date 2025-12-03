@@ -85,7 +85,7 @@ light:
       - addressable_rainbow:
       - flicker:
       - random:
-    #      - strobe:
+      - strobe:
     id: rgb
     is_rgbw: true
     name: RGB
@@ -94,7 +94,6 @@ light:
     power_supply: rgbpwr
     restore_mode: RESTORE_DEFAULT_OFF
     rgb_order: GRB
-#    rmt_channel: 1
 
 power_supply:
   - id: rgbpwr
