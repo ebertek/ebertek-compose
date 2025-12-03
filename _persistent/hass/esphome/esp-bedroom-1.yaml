@@ -1,8 +1,9 @@
 ---
 esphome:
   area: Bedroom
+  compile_process_limit: 1
   friendly_name: esp-bedroom-1
-  min_version: 2025.2.0
+  min_version: 2025.11.0
   name: esp-bedroom-1
   platformio_options:
     board_build.f_cpu: 240000000L
@@ -86,6 +87,7 @@ light:
 
 remote_transmitter:
   carrier_duty_percent: 50%
+  non_blocking: true
   pin: GPIO4
 
 sensor:
