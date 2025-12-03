@@ -1,7 +1,7 @@
 ---
 esphome:
   area: Guest Room
-  compile_process_limit: 1
+  compile_process_limit: 2
   friendly_name: esp-guest-1
   min_version: 2025.11.0
   name: esp-guest-1

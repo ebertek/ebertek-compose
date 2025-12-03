@@ -1,7 +1,7 @@
 ---
 esphome:
   area: Bedroom
-  compile_process_limit: 1
+  compile_process_limit: 2
   friendly_name: esp-bedroom-1
   min_version: 2025.11.0
   name: esp-bedroom-1
