@@ -47,9 +47,10 @@ binary_sensor:
         pullup: true
       number: GPIO9
   - platform: gpio
+    device_class: moisture
     filters:
       - delayed_off: 1000ms
-      - delayed_on: 10ms
+      - delayed_on: 100ms
     name: Moisture hit
     pin:
       inverted: true
@@ -123,17 +124,38 @@ sensor:
     update_interval: 60s
   - platform: adc
     accuracy_decimals: 3
+    attenuation: 0db
     filters:
       - multiply: 3.3
-      - sliding_window_moving_average:
-          send_every: 30
-          window_size: 30
-    id: porta_g1
-    name: Moisture
+    id: soil_voltage
+    name: "Soil Moisture Voltage"
     pin:
       mode:
         input: true
-        pullup: true
       number: GPIO1
-    unit_of_measurement: V
-    update_interval: 2s
+    unit_of_measurement: "V"
+    update_interval: 10s
+  - platform: template
+    accuracy_decimals: 0
+    device_class: moisture
+    filters:
+      - median:
+          send_every: 1
+          send_first_at: 1
+          window_size: 5
+      - sliding_window_moving_average:
+          send_every: 3
+          window_size: 9
+    id: soil_percent
+    lambda: |-
+      float v = id(soil_voltage).state;
+      const float V_dry = 3.28;
+      const float V_wet = 1.45;
+      float pct = (V_dry - v) * 100.0f / (V_dry - V_wet);
+      if (pct < 0.0f) pct = 0.0f;
+      if (pct > 100.0f) pct = 100.0f;
+      return pct;
+    name: "Soil Moisture"
+    state_class: measurement
+    unit_of_measurement: "%"
+    update_interval: 10s
