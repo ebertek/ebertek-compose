@@ -7,17 +7,10 @@ esphome:
   name: esp-kitchen-2
 
 esp32:
+  board: esp32-c6-devkitm-1
   framework:
     type: esp-idf
   variant: esp32c6
-
-external_components:
-  - source:
-      ref: adc_oneshot
-      type: git
-      url: https://github.com/lboue/esphome
-    components: [adc]
-    refresh: 0s
 
 api:
   encryption:
@@ -96,7 +89,7 @@ light:
     id: rgb
     is_rgbw: true
     name: RGB
-    num_leds: 1 #4
+    num_leds: 1
     pin: GPIO20
     power_supply: rgbpwr
     restore_mode: RESTORE_DEFAULT_OFF
