@@ -124,9 +124,7 @@ sensor:
     update_interval: 60s
   - platform: adc
     accuracy_decimals: 3
-    attenuation: 0db
-    filters:
-      - multiply: 3.3
+    attenuation: 12db
     id: soil_voltage
     name: "Soil Moisture Voltage"
     pin:
