@@ -81,7 +81,8 @@ light:
     pin: GPIO35
     restore_mode: RESTORE_DEFAULT_OFF
     rgb_order: GRB
-#    rmt_channel: 2
+    rmt_symbols: 192
+    use_dma: true
 
 remote_transmitter:
   carrier_duty_percent: 50%
