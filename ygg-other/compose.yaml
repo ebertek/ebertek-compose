@@ -198,6 +198,8 @@ services:
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
       SIGNUPS_ALLOWED: true
+      SSO_AUTHORITY: "https://keycloak.ebi.nu/realms/ygg"
+      SSO_ENABLED: true
       TRASH_AUTO_DELETE_DAYS: 30
       WEBSOCKET_ENABLED: true
     hostname: vw
