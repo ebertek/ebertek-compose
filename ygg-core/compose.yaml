@@ -101,7 +101,7 @@ services:
 
   keycloak:
     <<: *common
-    command: start --optimized
+    command: start
     container_name: keycloak
     cpu_count: 2
     depends_on:
