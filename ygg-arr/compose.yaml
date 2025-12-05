@@ -139,8 +139,8 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
       POSTGRES_USER_FILE: /run/secrets/postgres-user
     healthcheck:
-      interval: 1s
-      retries: 10
+      interval: 10s
+      retries: 5
       start_period: 15s
       test: [CMD, pg_isready]
       timeout: 5s
