@@ -23,6 +23,12 @@ x-env: &env
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
+secrets:
+  postgres-passwd:
+    file: postgres-passwd.txt
+  postgres-user:
+    file: postgres-user.txt
+
 services:
   cloudflared:
     <<: *common
@@ -92,6 +98,40 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/dns:/etc/dns"
+
+  postgres:
+    <<: *common
+    container_name: postgres
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 1024M
+    environment:
+      <<: *env
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+    healthcheck:
+      interval: 10s
+      retries: 5
+      start_period: 15s
+      test: [CMD, pg_isready]
+      timeout: 5s
+    hostname: postgres
+    image: "docker.io/library/postgres:17"
+    mac_address: "0e:be:00:da:00:90"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.90
+    secrets:
+      - postgres-passwd
+      - postgres-user
+    shm_size: 128mb
+    user: "999:999"
+    volumes:
+      - *tz
+      - "/volume2/docker/postgres:/var/lib/postgresql/data"
 
   traefik:
     <<: *common
