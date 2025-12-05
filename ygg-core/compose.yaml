@@ -127,7 +127,8 @@ services:
     healthcheck:
       interval: 15s
       retries: 15
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready || exit 1"]
       timeout: 5s
     hostname: keycloak
     image: "quay.io/keycloak/keycloak:latest"
