@@ -151,6 +151,7 @@ services:
         hard: 1024000
     volumes:
       - *tz
+      - "/volume2/docker/keycloak/providers:/opt/keycloak/providers"
 
   postgres:
     <<: *common
