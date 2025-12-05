@@ -99,6 +99,56 @@ services:
       - *tz
       - "/volume2/docker/dns:/etc/dns"
 
+  keycloak:
+    <<: *common
+    command: start --optimized
+    container_name: keycloak
+    cpu_count: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 2048M
+    env_file: keycloak.txt
+    environment:
+      <<: *env
+      KC_DB: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_URL_HOST: postgres
+      KC_HEALTH_ENABLED: true
+      KC_HOSTNAME: keycloak.ebi.nu
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
+    healthcheck:
+      interval: 15s
+      retries: 15
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready || exit 1"]
+      timeout: 5s
+    hostname: keycloak
+    image: "quay.io/keycloak/keycloak:latest"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.keycloak.entrypoints: websecure
+      traefik.http.routers.keycloak.rule: "Host(`keycloak.ebi.nu`) || Host(`keycloak.ygg.nu`)"
+      traefik.http.routers.keycloak.tls: true
+      traefik.http.services.keycloak.loadbalancer.passhostheader: true
+      traefik.http.services.keycloak.loadbalancer.server.port: 8080
+    mac_address: "0e:be:00:da:00:91"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.91
+    ulimits:
+      nofile:
+        soft: 1024000
+        hard: 1024000
+    volumes:
+      - *tz
+
   postgres:
     <<: *common
     container_name: postgres
