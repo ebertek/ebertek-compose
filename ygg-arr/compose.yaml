@@ -32,10 +32,10 @@ x-env-arr: &env-arr
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 secrets:
-  postgres-passwd:
-    file: postgres-passwd.txt
-  postgres-user:
-    file: postgres-user.txt
+  pg-passwd:
+    file: pg-passwd.txt
+  pg-user:
+    file: pg-user.txt
 
 services:
   bazarr:
@@ -136,8 +136,8 @@ services:
           memory: 1024M
     environment:
       <<: *env
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
-      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg-passwd
+      POSTGRES_USER_FILE: /run/secrets/pg-user
     healthcheck:
       interval: 10s
       retries: 5
@@ -154,8 +154,8 @@ services:
           - pg.ygg.nu
         ipv4_address: 10.4.21.42
     secrets:
-      - postgres-passwd
-      - postgres-user
+      - pg-passwd
+      - pg-user
     shm_size: 128mb
     user: "999:999"
     volumes:
