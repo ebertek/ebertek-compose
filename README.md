@@ -36,6 +36,8 @@ A collection of Docker Compose files and shell scripts.
 
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
+- **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
+- **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
 
 ### [ygg-download/](ygg-download/)
@@ -50,6 +52,7 @@ A collection of Docker Compose files and shell scripts.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
 - **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
 - **[hass](https://github.com/home-assistant/core)**: Home automation.
+- **[influxdb](https://github.com/influxdata/influxdb/tree/main-2.x)**: Time series database built for real-time analytic workloads.
 - **[esphome](https://github.com/esphome/esphome)**: Control ESP32 devices.
   - **[esp-office-1](_persistent/hass/esphome/esp-office-1.yaml)**: Espressif ESP32-S3-BOX-3
   - **[esp-guest-1](_persistent/hass/esphome/esp-guest-1.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V + Microphone Unit
