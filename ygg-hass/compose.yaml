@@ -50,7 +50,7 @@ services:
       traefik.enable: true
       traefik.http.routers.esphome.entrypoints: websecure
       traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`) || Host(`esphome.ygg.nu`)"
-      traefik.http.routers.esphome.tls: true
+      traefik.http.routers.esphome.tls: "true"
       traefik.http.services.esphome.loadbalancer.server.port: 6052
       traefik.http.services.esphome.loadbalancer.server.scheme: http
     mac_address: "0e:be:00:da:00:71"
@@ -91,7 +91,7 @@ services:
       traefik.enable: true
       traefik.http.routers.hass.entrypoints: websecure
       traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`) || Host(`hass.ygg.nu`)"
-      traefik.http.routers.hass.tls: true
+      traefik.http.routers.hass.tls: "true"
       traefik.http.services.hass.loadbalancer.server.port: 8123
     mac_address: "0e:be:00:da:00:70"
     networks:
@@ -129,7 +129,7 @@ services:
       traefik.enable: true
       traefik.http.routers.influxdb.entrypoints: websecure
       traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`) || Host(`influxdbvw.ygg.nu`)"
-      traefik.http.routers.influxdb.tls: true
+      traefik.http.routers.influxdb.tls: "true"
       traefik.http.services.influxdb.loadbalancer.server.port: 8086
     mac_address: "0e:be:00:da:00:72"
     networks:
@@ -290,7 +290,7 @@ services:
       traefik.enable: true
       traefik.http.routers.zigbee2mqtt.entrypoints: websecure
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`) || Host(`zigbee2mqtt.ygg.nu`)"
-      traefik.http.routers.zigbee2mqtt.tls: true
+      traefik.http.routers.zigbee2mqtt.tls: "true"
       traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8099
     mac_address: "0e:be:00:da:00:69"
     networks:

@@ -84,7 +84,7 @@ services:
       traefik.enable: true
       traefik.http.routers.dns.entrypoints: websecure
       traefik.http.routers.dns.rule: "Host(`dns.ebi.nu`) || Host(`dns.ygg.nu`)"
-      traefik.http.routers.dns.tls: true
+      traefik.http.routers.dns.tls: "true"
       traefik.http.services.dns.loadbalancer.server.port: 5380
     mac_address: "0e:be:00:da:00:34"
     networks:
@@ -138,7 +138,7 @@ services:
       traefik.enable: true
       traefik.http.routers.keycloak.entrypoints: websecure
       traefik.http.routers.keycloak.rule: "Host(`keycloak.ebi.nu`) || Host(`keycloak.ygg.nu`)"
-      traefik.http.routers.keycloak.tls: true
+      traefik.http.routers.keycloak.tls: "true"
       traefik.http.services.keycloak.loadbalancer.passhostheader: true
       traefik.http.services.keycloak.loadbalancer.server.port: 8080
     mac_address: "0e:be:00:da:00:91"
@@ -192,7 +192,7 @@ services:
       traefik.enable: "true"
       traefik.http.routers.oauth2-proxy.entrypoints: websecure
       traefik.http.routers.oauth2-proxy.rule: "Host(`oauth2-proxy.ebi.nu`) || Host(`oauth2-proxy.ygg.nu`)"
-      traefik.http.routers.oauth2-proxy.tls: true
+      traefik.http.routers.oauth2-proxy.tls: "true"
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
       traefik.http.middlewares.kc-auth.forwardauth.address: "http://oauth2-proxy:4180/oauth2/auth"
       traefik.http.middlewares.kc-auth.forwardauth.trustForwardHeader: "true"
