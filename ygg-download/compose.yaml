@@ -43,7 +43,7 @@ services:
       interval: 30s
       retries: 1
       start_period: 10s
-      test: ping -c 2 gluetun || kill 1
+      test: ["CMD-SHELL", "ping -c 2 gluetun || exit 1"]
       timeout: 2s
     image: "lscr.io/linuxserver/qbittorrent:latest"
     labels:
