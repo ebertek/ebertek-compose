@@ -16,7 +16,7 @@ x-common: &common
     - ebi.nu
     - ygg.nu
   restart: "no"
-  stop_grace_period: 1.5m
+  stop_grace_period: 90s
 
 x-env: &env
   TZ: Etc/UTC
