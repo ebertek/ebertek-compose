@@ -128,7 +128,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.influxdb.entrypoints: websecure
-      traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`) || Host(`influxdbvw.ygg.nu`)"
+      traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`) || Host(`influxdb.ygg.nu`)"
       traefik.http.routers.influxdb.tls: "true"
       traefik.http.services.influxdb.loadbalancer.server.port: 8086
     mac_address: "0e:be:00:da:00:72"
