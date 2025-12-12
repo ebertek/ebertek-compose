@@ -155,7 +155,6 @@ services:
 
   oauth2-proxy:
     <<: *common
-    command: --config /oauth2-proxy.cfg
     container_name: oauth2-proxy
     cpu_count: 1
     depends_on:
