@@ -81,7 +81,7 @@ services:
     hostname: dns
     image: "docker.io/technitium/dns-server:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.dns.entrypoints: websecure
       traefik.http.routers.dns.rule: "Host(`dns.ebi.nu`) || Host(`dns.ygg.nu`)"
       traefik.http.routers.dns.tls: "true"
@@ -135,7 +135,7 @@ services:
     hostname: keycloak
     image: "quay.io/keycloak/keycloak:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.keycloak.entrypoints: websecure
       traefik.http.routers.keycloak.rule: "Host(`keycloak.ebi.nu`) || Host(`keycloak.ygg.nu`)"
       traefik.http.routers.keycloak.tls: "true"

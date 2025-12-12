@@ -98,7 +98,7 @@ services:
     hostname: gluetun
     image: "docker.io/qmcgaw/gluetun:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.download.entrypoints: websecure
       traefik.http.routers.download.rule: "Host(`download.ebi.nu`) || Host(`download.ygg.nu`)"
       traefik.http.routers.download.tls: "true"

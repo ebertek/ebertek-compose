@@ -56,7 +56,7 @@ services:
     hostname: alloy
     image: "docker.io/grafana/alloy:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.alloy.entrypoints: websecure
       traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`) || Host(`alloy.ygg.nu`)"
       traefik.http.routers.alloy.tls: "true"
@@ -148,7 +148,7 @@ services:
     hostname: grafana
     image: "docker.io/grafana/grafana:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.grafana.entrypoints: websecure
       traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`) || Host(`grafana.ygg.nu`)"
       traefik.http.routers.grafana.tls: "true"
@@ -180,7 +180,7 @@ services:
     hostname: loki
     image: "docker.io/grafana/loki:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.loki.entrypoints: websecure
       traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`) || Host(`loki.ygg.nu`)"
       traefik.http.routers.loki.tls: "true"
@@ -224,7 +224,7 @@ services:
     hostname: prometheus
     image: "docker.io/prom/prometheus:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.prometheus.entrypoints: websecure
       traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`) || Host(`prometheus.ygg.nu`)"
       traefik.http.routers.prometheus.tls: "true"

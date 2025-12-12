@@ -60,7 +60,7 @@ services:
     hostname: bazarr
     image: ghcr.io/hotio/bazarr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.bazarr.entrypoints: websecure
       traefik.http.routers.bazarr.middlewares: "kc-auth@docker"
       traefik.http.routers.bazarr.rule: "Host(`bazarr.ebi.nu`) || Host(`bazarr.ygg.nu`)"
@@ -106,7 +106,7 @@ services:
     hostname: lidarr
     image: ghcr.io/hotio/lidarr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.lidarr.entrypoints: websecure
       traefik.http.routers.lidarr.middlewares: "kc-auth@docker"
       traefik.http.routers.lidarr.rule: "Host(`lidarr.ebi.nu`) || Host(`lidarr.ygg.nu`)"
@@ -193,7 +193,7 @@ services:
     hostname: prowlarr
     image: ghcr.io/hotio/prowlarr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.prowlarr.entrypoints: websecure
       traefik.http.routers.prowlarr.middlewares: "kc-auth@docker"
       traefik.http.routers.prowlarr.rule: "Host(`prowlarr.ebi.nu`) || Host(`prowlarr.ygg.nu`)"
@@ -238,7 +238,7 @@ services:
     hostname: radarr
     image: ghcr.io/hotio/radarr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.radarr.entrypoints: websecure
       traefik.http.routers.radarr.middlewares: "kc-auth@docker"
       traefik.http.routers.radarr.rule: "Host(`radarr.ebi.nu`) || Host(`radarr.ygg.nu`)"
@@ -323,7 +323,7 @@ services:
     hostname: requestrr
     image: ghcr.io/hotio/requestrr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.requestrr.entrypoints: websecure
       traefik.http.routers.requestrr.rule: "Host(`requestrr.ebi.nu`) || Host(`requestrr.ygg.nu`)"
       traefik.http.routers.requestrr.tls: "true"
@@ -367,7 +367,7 @@ services:
     hostname: sonarr
     image: ghcr.io/hotio/sonarr
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.sonarr.entrypoints: websecure
       traefik.http.routers.sonarr.middlewares: "kc-auth@docker"
       traefik.http.routers.sonarr.rule: "Host(`sonarr.ebi.nu`) || Host(`sonarr.ygg.nu`)"

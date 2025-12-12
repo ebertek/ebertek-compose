@@ -98,7 +98,7 @@ services:
     hostname: immich
     image: "ghcr.io/immich-app/immich-server:release"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.immich.entrypoints: websecure
       traefik.http.routers.immich.rule: "Host(`immich.ebi.nu`) || Host(`immich.ygg.nu`)"
       traefik.http.routers.immich.tls: "true"

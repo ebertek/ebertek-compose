@@ -82,7 +82,7 @@ services:
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.dbeaver.entrypoints: websecure
       traefik.http.routers.dbeaver.rule: "Host(`dbeaver.ebi.nu`) || Host(`dbeaver.ygg.nu`)"
       traefik.http.routers.dbeaver.tls: "true"
@@ -122,7 +122,7 @@ services:
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.irc.entrypoints: websecure
       traefik.http.routers.irc.rule: "Host(`irc.ebi.nu`) || Host(`irc.ygg.nu`)"
       traefik.http.routers.irc.tls: "true"
@@ -207,7 +207,7 @@ services:
     hostname: vw
     image: "docker.io/vaultwarden/server:testing"
     labels:
-      traefik.enable: true
+      traefik.enable: "true"
       traefik.http.routers.vw.entrypoints: websecure
       traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`) || Host(`vw.ygg.nu`)"
       traefik.http.routers.vw.tls: "true"
