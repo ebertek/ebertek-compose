@@ -130,7 +130,7 @@ services:
       test:
         - CMD-SHELL
         - |
-          bash -c '{ printf "HEAD /health/ready HTTP/1.0\r\n\r\n" >&0; grep "HTTP/1.0 200"; } 0<>/dev/tcp/localhost/9000'
+          bash -c '{ printf "HEAD /health/ready HTTP/1.0\r\n\r\n" >&0; grep -q "HTTP/1.0 200"; } 0<>/dev/tcp/localhost/9000' || exit 1
       timeout: 5s
     hostname: keycloak
     image: "quay.io/keycloak/keycloak:latest"
