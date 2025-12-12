@@ -15,9 +15,6 @@ x-common: &common
   dns_search:
     - ebi.nu
     - ygg.nu
-  extra_hosts:
-    - "download.ebi.nu:10.4.21.39"
-    - "download.ygg.nu:10.4.21.39"
   restart: "no"
   stop_grace_period: 2m
 
