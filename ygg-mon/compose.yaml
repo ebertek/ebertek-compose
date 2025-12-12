@@ -142,7 +142,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health >/dev/null 2>&1 || exit 1",
         ]
       timeout: 5s
     hostname: grafana
@@ -218,7 +218,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready || exit 1",
+          "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready >/dev/null 2>&1 || exit 1",
         ]
       timeout: 5s
     hostname: prometheus
