@@ -153,6 +153,30 @@ services:
       - *tz
       - "/volume2/docker/keycloak/providers:/opt/keycloak/providers"
 
+  oauth2-proxy:
+    <<: *common
+    command: --config /oauth2-proxy.cfg
+    container_name: oauth2-proxy
+    cpu_count: 1
+    depends_on:
+      - keycloak
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: *env
+    hostname: oauth2-proxy
+    image: "quay.io/oauth2-proxy/oauth2-proxy:latest"
+    mac_address: "0e:be:00:da:00:92"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.92
+    volumes:
+      - *tz
+      - "/volume2/docker/traefik/oauth2-proxy.cfg:/oauth2-proxy.cfg"
+
   postgres:
     <<: *common
     container_name: postgres
@@ -197,6 +221,8 @@ services:
       - "--providers.docker=true"
     container_name: traefik
     cpu_count: 1
+    depends_on:
+      - oauth2-proxy
     deploy:
       resources:
         limits:
