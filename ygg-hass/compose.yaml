@@ -41,7 +41,7 @@ services:
         limits:
           # cpus: "2"
           memory: 2560M
-    env_file: esphome.txt
+    # env_file: esphome.txt
     environment:
       <<: *env
     hostname: esphome
@@ -242,10 +242,11 @@ services:
       CONFIG_PATH: /config/options.json
       DEBUG: "@ha:ps5:*"
     healthcheck:
-      interval: 5m00s
+      interval: 5m
       retries: 2
       start_period: 30s
-      test: ls -l /proc/*/exe | grep node
+      test:
+        ["CMD-SHELL", "ls -l /proc/*/exe 2>/dev/null | grep -q node || exit 1"]
       timeout: 10s
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
@@ -281,7 +282,11 @@ services:
       interval: 30s
       retries: 3
       start_period: 30s
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8099"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8099/ >/dev/null 2>&1 || exit 1",
+        ]
       timeout: 5s
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
