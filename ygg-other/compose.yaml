@@ -201,7 +201,7 @@ services:
       SSO_AUTH_ONLY_NOT_SESSION: true
       SSO_AUTHORITY: "https://keycloak.ebi.nu/realms/ygg"
       SSO_ENABLED: true
-      SSO_SCOPES: "email offline_access profile"
+      SSO_SCOPES: "email offline_access openid profile"
       TRASH_AUTO_DELETE_DAYS: 30
       WEBSOCKET_ENABLED: true
     hostname: vw
