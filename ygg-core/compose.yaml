@@ -197,12 +197,12 @@ services:
       traefik.http.routers.oauth2-proxy.rule: "Host(`oauth2-proxy.ebi.nu`)"
       traefik.http.routers.oauth2-proxy.tls: "true"
       traefik.http.services.oauth2-proxy.loadbalancer.server.port: 4180
-      traefik.http.middlewares.arr-chain.chain.middlewares: "kc-auth@docker,kc-auth-errors@docker,arr-basic@docker"
+      traefik.http.middlewares.arr-chain.chain.middlewares: "kc-auth,kc-auth-errors,arr-basic"
       traefik.http.middlewares.kc-auth.forwardauth.address: "http://oauth2-proxy:4180/oauth2/auth"
       traefik.http.middlewares.kc-auth.forwardauth.trustForwardHeader: "true"
       traefik.http.middlewares.kc-auth.forwardauth.authResponseHeaders: "Authorization,Remote-Email,Remote-Groups,Remote-Name,Remote-User,X-Auth-Request-Email,X-Auth-Request-Preferred-Username,X-Auth-Request-Redirect,X-Auth-Request-User,X-Forwarded-User"
       traefik.http.middlewares.kc-auth-errors.errors.query: "/oauth2/start?rd={url}"
-      traefik.http.middlewares.kc-auth-errors.errors.service: "oauth2-proxy@docker"
+      traefik.http.middlewares.kc-auth-errors.errors.service: "oauth2-proxy"
       traefik.http.middlewares.kc-auth-errors.errors.status: "401-403"
     mac_address: "0e:be:00:da:00:92"
     networks:
