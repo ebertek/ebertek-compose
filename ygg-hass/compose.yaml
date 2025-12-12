@@ -245,7 +245,8 @@ services:
       interval: 5m
       retries: 2
       start_period: 30s
-      test: ["CMD-SHELL", "ls -l /proc/*/exe 2>/dev/null | grep -q node || exit 1"]
+      test:
+        ["CMD-SHELL", "ls -l /proc/*/exe 2>/dev/null | grep -q node || exit 1"]
       timeout: 10s
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
@@ -281,7 +282,11 @@ services:
       interval: 30s
       retries: 3
       start_period: 30s
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8099/ >/dev/null 2>&1 || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8099/ >/dev/null 2>&1 || exit 1",
+        ]
       timeout: 5s
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
