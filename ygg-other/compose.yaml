@@ -165,7 +165,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.60
     volumes:
-      - *tz
       - "/volume2/docker/smtp/data:/data"
       - "/volume2/docker/smtp/spool:/var/spool/postfix"
       - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
