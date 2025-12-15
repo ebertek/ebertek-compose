@@ -155,7 +155,8 @@ services:
     container_name: oauth2-proxy
     cpu_count: 1
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_healthy
     deploy:
       resources:
         limits:
