@@ -15,7 +15,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   labels:
     com.centurylinklabs.watchtower.monitor-only: true
@@ -100,15 +99,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.immich.entrypoints: websecure
-      traefik.http.routers.immich.rule: "Host(`immich.ebi.nu`) || Host(`immich.ygg.nu`)"
+      traefik.http.routers.immich.rule: "Host(`immich.ebi.nu`)"
       traefik.http.routers.immich.tls: "true"
       traefik.http.services.immich.loadbalancer.server.port: 2283
     mac_address: "0e:be:00:da:00:48"
     networks:
       macvlan1:
-        aliases:
-          - immich.ebi.nu
-          - immich.ygg.nu
         ipv4_address: 10.4.21.48
     user: 1028:100
     volumes:

@@ -13,7 +13,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   restart: "no"
   stop_grace_period: 90s
@@ -58,7 +57,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.alloy.entrypoints: websecure
-      traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`) || Host(`alloy.ygg.nu`)"
+      traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`)"
       traefik.http.routers.alloy.tls: "true"
       traefik.http.services.alloy.loadbalancer.server.port: 12345
     mac_address: "0e:be:00:da:00:81"
@@ -150,15 +149,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.grafana.entrypoints: websecure
-      traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`) || Host(`grafana.ygg.nu`)"
+      traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`)"
       traefik.http.routers.grafana.tls: "true"
       traefik.http.services.grafana.loadbalancer.server.port: 3000
     mac_address: "0e:be:00:da:00:82"
     networks:
       macvlan1:
-        aliases:
-          - grafana.ebi.nu
-          - grafana.ygg.nu
         ipv4_address: 10.4.21.82
     user: "1028:100"
     volumes:
@@ -182,7 +178,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.loki.entrypoints: websecure
-      traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`) || Host(`loki.ygg.nu`)"
+      traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`)"
       traefik.http.routers.loki.tls: "true"
       traefik.http.services.loki.loadbalancer.server.port: 3100
     mac_address: "0e:be:00:da:00:80"
@@ -226,7 +222,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.prometheus.entrypoints: websecure
-      traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`) || Host(`prometheus.ygg.nu`)"
+      traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`)"
       traefik.http.routers.prometheus.tls: "true"
       traefik.http.services.prometheus.loadbalancer.server.port: 9090
     mac_address: "0e:be:00:da:00:83"

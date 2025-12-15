@@ -13,7 +13,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   restart: "no"
   stop_grace_period: 5m
@@ -49,17 +48,13 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.esphome.entrypoints: websecure
-      traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`) || Host(`esphome.ygg.nu`)"
+      traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`)"
       traefik.http.routers.esphome.tls: "true"
       traefik.http.services.esphome.loadbalancer.server.port: 6052
       traefik.http.services.esphome.loadbalancer.server.scheme: http
     mac_address: "0e:be:00:da:00:71"
     networks:
       macvlan1:
-        aliases:
-          - 5c53de3b-esphome
-          - esphome.ebi.nu
-          - esphome.ygg.nu
         ipv4_address: 10.4.21.71
     privileged: true
     stop_signal: SIGINT
@@ -90,15 +85,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.hass.entrypoints: websecure
-      traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`) || Host(`hass.ygg.nu`)"
+      traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`)"
       traefik.http.routers.hass.tls: "true"
       traefik.http.services.hass.loadbalancer.server.port: 8123
     mac_address: "0e:be:00:da:00:70"
     networks:
       macvlan1:
-        aliases:
-          - hass.ebi.nu
-          - hass.ygg.nu
         ipv4_address: 10.4.21.70
     privileged: true
     volumes:
@@ -128,15 +120,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.influxdb.entrypoints: websecure
-      traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`) || Host(`influxdb.ygg.nu`)"
+      traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`)"
       traefik.http.routers.influxdb.tls: "true"
       traefik.http.services.influxdb.loadbalancer.server.port: 8086
     mac_address: "0e:be:00:da:00:72"
     networks:
       macvlan1:
-        aliases:
-          - influxdb.ebi.nu
-          - influxdb.ygg.nu
         ipv4_address: 10.4.21.72
     secrets:
       - influxdb2-admin-username
@@ -178,10 +167,6 @@ services:
     mac_address: "0e:be:00:da:00:66"
     networks:
       macvlan1:
-        aliases:
-          - core-matter-server
-          - matter-server.ebi.nu
-          - matter-server.ygg.nu
         # driver_opts:
         #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
         ipv4_address: 10.4.21.66
@@ -214,10 +199,6 @@ services:
     mac_address: "0e:be:00:da:00:67"
     networks:
       macvlan1:
-        aliases:
-          - core-mosquitto
-          - mosquitto.ebi.nu
-          - mosquitto.ygg.nu
         ipv4_address: 10.4.21.67
     volumes:
       - *tz
@@ -294,16 +275,12 @@ services:
       com.centurylinklabs.watchtower.depends-on: mosquitto
       traefik.enable: "true"
       traefik.http.routers.zigbee2mqtt.entrypoints: websecure
-      traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`) || Host(`zigbee2mqtt.ygg.nu`)"
+      traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"
       traefik.http.routers.zigbee2mqtt.tls: "true"
       traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8099
     mac_address: "0e:be:00:da:00:69"
     networks:
       macvlan1:
-        aliases:
-          - 45df7312-zigbee2mqtt
-          - zigbee2mqtt.ebi.nu
-          - zigbee2mqtt.ygg.nu
         ipv4_address: 10.4.21.69
     restart: on-failure
     volumes:

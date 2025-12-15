@@ -13,7 +13,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   restart: "no"
   stop_grace_period: 2m
@@ -84,15 +83,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.dbeaver.entrypoints: websecure
-      traefik.http.routers.dbeaver.rule: "Host(`dbeaver.ebi.nu`) || Host(`dbeaver.ygg.nu`)"
+      traefik.http.routers.dbeaver.rule: "Host(`dbeaver.ebi.nu`)"
       traefik.http.routers.dbeaver.tls: "true"
       traefik.http.services.dbeaver.loadbalancer.server.port: 8978
     mac_address: "0e:be:00:da:00:43"
     networks:
       macvlan1:
-        aliases:
-          - dbeaver.ebi.nu
-          - dbeaver.ygg.nu
         ipv4_address: 10.4.21.43
     volumes:
       - *tz
@@ -124,15 +120,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.irc.entrypoints: websecure
-      traefik.http.routers.irc.rule: "Host(`irc.ebi.nu`) || Host(`irc.ygg.nu`)"
+      traefik.http.routers.irc.rule: "Host(`irc.ebi.nu`)"
       traefik.http.routers.irc.tls: "true"
       traefik.http.services.irc.loadbalancer.server.port: 9000
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
-        aliases:
-          - irc.ebi.nu
-          - irc.ygg.nu
         ipv4_address: 10.4.21.45
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
@@ -209,15 +202,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.vw.entrypoints: websecure
-      traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`) || Host(`vw.ygg.nu`)"
+      traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`)"
       traefik.http.routers.vw.tls: "true"
       traefik.http.services.vw.loadbalancer.server.port: 80
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:
-        aliases:
-          - vw.ebi.nu
-          - vw.ygg.nu
         ipv4_address: 10.4.21.46
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80

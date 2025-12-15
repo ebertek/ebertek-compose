@@ -13,7 +13,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   restart: "no"
   stop_grace_period: 2m
@@ -63,15 +62,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.bazarr.entrypoints: websecure
       traefik.http.routers.bazarr.middlewares: "arr-chain@docker"
-      traefik.http.routers.bazarr.rule: "Host(`bazarr.ebi.nu`) || Host(`bazarr.ygg.nu`)"
+      traefik.http.routers.bazarr.rule: "Host(`bazarr.ebi.nu`)"
       traefik.http.routers.bazarr.tls: "true"
       traefik.http.services.bazarr.loadbalancer.server.port: 6767
     mac_address: "0e:be:00:da:00:57"
     networks:
       macvlan1:
-        aliases:
-          - bazarr.ebi.nu
-          - bazarr.ygg.nu
         ipv4_address: 10.4.21.57
     volumes:
       - *tz
@@ -109,15 +105,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.lidarr.entrypoints: websecure
       traefik.http.routers.lidarr.middlewares: "arr-chain@docker"
-      traefik.http.routers.lidarr.rule: "Host(`lidarr.ebi.nu`) || Host(`lidarr.ygg.nu`)"
+      traefik.http.routers.lidarr.rule: "Host(`lidarr.ebi.nu`)"
       traefik.http.routers.lidarr.tls: "true"
       traefik.http.services.lidarr.loadbalancer.server.port: 8686
     mac_address: "0e:be:00:da:00:58"
     networks:
       macvlan1:
-        aliases:
-          - lidarr.ebi.nu
-          - lidarr.ygg.nu
         ipv4_address: 10.4.21.58
     volumes:
       - *tz
@@ -148,9 +141,6 @@ services:
     mac_address: "0e:be:00:da:00:42"
     networks:
       macvlan1:
-        aliases:
-          - pg.ebi.nu
-          - pg.ygg.nu
         ipv4_address: 10.4.21.42
     secrets:
       - pg-passwd
@@ -196,15 +186,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.prowlarr.entrypoints: websecure
       traefik.http.routers.prowlarr.middlewares: "arr-chain@docker"
-      traefik.http.routers.prowlarr.rule: "Host(`prowlarr.ebi.nu`) || Host(`prowlarr.ygg.nu`)"
+      traefik.http.routers.prowlarr.rule: "Host(`prowlarr.ebi.nu`)"
       traefik.http.routers.prowlarr.tls: "true"
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
     mac_address: "0e:be:00:da:00:54"
     networks:
       macvlan1:
-        aliases:
-          - prowlarr.ebi.nu
-          - prowlarr.ygg.nu
         ipv4_address: 10.4.21.54
     volumes:
       - *tz
@@ -241,15 +228,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.radarr.entrypoints: websecure
       traefik.http.routers.radarr.middlewares: "arr-chain@docker"
-      traefik.http.routers.radarr.rule: "Host(`radarr.ebi.nu`) || Host(`radarr.ygg.nu`)"
+      traefik.http.routers.radarr.rule: "Host(`radarr.ebi.nu`)"
       traefik.http.routers.radarr.tls: "true"
       traefik.http.services.radarr.loadbalancer.server.port: 7878
     mac_address: "0e:be:00:da:00:55"
     networks:
       macvlan1:
-        aliases:
-          - radarr.ebi.nu
-          - radarr.ygg.nu
         ipv4_address: 10.4.21.55
     volumes:
       - *tz
@@ -284,9 +268,6 @@ services:
     mac_address: "0e:be:00:da:00:62"
     networks:
       macvlan1:
-        aliases:
-          - recyclarr.ebi.nu
-          - recyclarr.ygg.nu
         ipv4_address: 10.4.21.62
     security_opt: ["no-new-privileges:true"]
     user: "1028:100"
@@ -325,15 +306,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.requestrr.entrypoints: websecure
-      traefik.http.routers.requestrr.rule: "Host(`requestrr.ebi.nu`) || Host(`requestrr.ygg.nu`)"
+      traefik.http.routers.requestrr.rule: "Host(`requestrr.ebi.nu`)"
       traefik.http.routers.requestrr.tls: "true"
       traefik.http.services.requestrr.loadbalancer.server.port: 4545
     mac_address: "0e:be:00:da:00:61"
     networks:
       macvlan1:
-        aliases:
-          - requestrr.ebi.nu
-          - requestrr.ygg.nu
         ipv4_address: 10.4.21.61
     volumes:
       - *tz
@@ -370,15 +348,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.sonarr.entrypoints: websecure
       traefik.http.routers.sonarr.middlewares: "arr-chain@docker"
-      traefik.http.routers.sonarr.rule: "Host(`sonarr.ebi.nu`) || Host(`sonarr.ygg.nu`)"
+      traefik.http.routers.sonarr.rule: "Host(`sonarr.ebi.nu`)"
       traefik.http.routers.sonarr.tls: "true"
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
     mac_address: "0e:be:00:da:00:56"
     networks:
       macvlan1:
-        aliases:
-          - sonarr.ebi.nu
-          - sonarr.ygg.nu
         ipv4_address: 10.4.21.56
     volumes:
       - *tz

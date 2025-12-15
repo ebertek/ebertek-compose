@@ -13,7 +13,6 @@ x-common: &common
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
-    - ebi.nu
     - ygg.nu
   restart: "no"
   stop_grace_period: 3m
@@ -84,15 +83,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: websecure
       traefik.http.routers.books.middlewares: sweden@file
-      traefik.http.routers.books.rule: "Host(`books.ebi.nu`) || Host(`books.ygg.nu`)"
+      traefik.http.routers.books.rule: "Host(`books.ebi.nu`)"
       traefik.http.routers.books.tls: "true"
       traefik.http.services.books.loadbalancer.server.port: 8083
     mac_address: "0e:be:00:da:00:59"
     networks:
       macvlan1:
-        aliases:
-          - books.ebi.nu
-          - books.ygg.nu
         ipv4_address: 10.4.21.59
     volumes:
       - *tz
@@ -121,15 +117,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.plex.entrypoints: websecure
-      traefik.http.routers.plex.rule: "Host(`plex.ebi.nu`) || Host(`plex.ygg.nu`)"
+      traefik.http.routers.plex.rule: "Host(`plex.ebi.nu`)"
       traefik.http.routers.plex.tls: "true"
       traefik.http.services.plex.loadbalancer.server.port: 32400
     mac_address: "0e:be:00:da:00:40"
     networks:
       macvlan1:
-        aliases:
-          - plex.ebi.nu
-          - plex.ygg.nu
         ipv4_address: 10.4.21.40
     volumes:
       - *tz
@@ -155,15 +148,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.tautulli.entrypoints: websecure
-      traefik.http.routers.tautulli.rule: "Host(`tautulli.ebi.nu`) || Host(`tautulli.ygg.nu`)"
+      traefik.http.routers.tautulli.rule: "Host(`tautulli.ebi.nu`)"
       traefik.http.routers.tautulli.tls: "true"
       traefik.http.services.tautulli.loadbalancer.server.port: 8181
     mac_address: "0e:be:00:da:00:41"
     networks:
       macvlan1:
-        aliases:
-          - tautulli.ebi.nu
-          - tautulli.ygg.nu
         ipv4_address: 10.4.21.41
     volumes:
       - *tz
@@ -199,15 +189,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.tmm.entrypoints: websecure
-      traefik.http.routers.tmm.rule: "Host(`tmm.ebi.nu`) || Host(`tmm.ygg.nu`)"
+      traefik.http.routers.tmm.rule: "Host(`tmm.ebi.nu`)"
       traefik.http.routers.tmm.tls: "true"
       traefik.http.services.tmm.loadbalancer.server.port: 4000
     mac_address: "0e:be:00:da:00:53"
     networks:
       macvlan1:
-        aliases:
-          - tmm.ebi.nu
-          - tmm.ygg.nu
         ipv4_address: 10.4.21.53
     volumes:
       - *tz
