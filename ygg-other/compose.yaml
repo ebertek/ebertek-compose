@@ -186,6 +186,7 @@ services:
       PUID: 1028
       PGID: 100
       DOMAIN: "https://vw.ebi.nu"
+      EXPERIMENTAL_CLIENT_FEATURE_FLAGS: "fido2-vault-credentials,inline-menu-positioning-improvements,inline-menu-totp,ssh-agent,ssh-key-vault-item"
       PUSH_ENABLED: "true"
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
