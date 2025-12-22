@@ -150,10 +150,10 @@ services:
       RELAY_DOMAINS: ebi.nu ygg.nu
       RELAY_HOST: "[smtp.gmail.com]:587"
       RELAY_MODE: ALLOW_AUTH_NODOMAIN
-      RELAY_MYDOMAIN: ebi.nu
-      RELAY_MYHOSTNAME: smtp.ebi.nu
+      RELAY_MYDOMAIN: ygg.nu
+      RELAY_MYHOSTNAME: smtp.ygg.nu
       RELAY_MYNETWORKS: 10.4.20.0/23
-      RELAY_POSTMASTER: "postmaster@ebi.nu"
+      RELAY_POSTMASTER: "postmaster@ygg.nu"
       RELAY_STRICT_SENDER_MYDOMAIN: false
       RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
       RELAY_TLS_VERIFY: encrypt
@@ -166,6 +166,7 @@ services:
         ipv4_address: 10.4.21.60
     volumes:
       - "/volume2/docker/smtp/data:/data"
+      - "/volume2/docker/smtp/client_sasl_passwd:/etc/postfix/client_sasl_passwd"
       - "/volume2/docker/smtp/spool:/var/spool/postfix"
       - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
 
@@ -191,6 +192,11 @@ services:
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
       SIGNUPS_ALLOWED: "true"
+      SMTP_FROM: "vw@ebi.nu"
+      SMTP_HOST: "smtp.ygg.nu"
+      SMTP_PORT: 25
+      SMTP_SECURITY: "off"
+      SMTP_USERNAME: "vw@ebi.nu"
       SSO_AUTH_ONLY_NOT_SESSION: "true"
       SSO_AUTHORITY: "https://keycloak.ebi.nu/realms/ygg"
       SSO_ENABLED: "true"

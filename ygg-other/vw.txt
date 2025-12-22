@@ -1,4 +1,5 @@
 PUSH_INSTALLATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 PUSH_INSTALLATION_KEY=xxxxxxxxxxxxxxxxxxxx
+SMTP_PASSWORD=password
 SSO_CLIENT_ID=vw
 SSO_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
