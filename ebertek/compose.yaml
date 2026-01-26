@@ -76,7 +76,6 @@ services:
       NO_COLOR: true
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_LOG_FORMAT: JSON
-      WATCHTOWER_ROLLING_RESTART: true
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
     volumes:
