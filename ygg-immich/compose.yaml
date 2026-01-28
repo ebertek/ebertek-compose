@@ -162,7 +162,7 @@ services:
       test: [CMD, valkey-cli, -h, 127.0.0.1, ping]
       timeout: 10s
     hostname: redis
-    image: "docker.io/valkey/valkey:8-bookworm@sha256:fea8b3e67b15729d4bb70589eb03367bab9ad1ee89c876f54327fc7c6e618571" # yamllint disable-line
+    image: "docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63" # yamllint disable-line
     mac_address: "0e:be:00:da:00:50"
     networks:
       macvlan1:
