@@ -17,7 +17,7 @@ done <"$ENV_FILE"
 
 echo "Preparing all variables:"
 
-# Fetch Mater Server conainer ID based on service name
+# Fetch Matter Server container ID based on service name
 MATTER_SERVER_CONTAINER=$(docker ps --filter "label=com.docker.compose.service=${MATTER_SERVER_SERVICE}" --format '{{.ID}}' | head -n1)
 if [ -z "$MATTER_SERVER_CONTAINER" ]; then
 	echo "Error: No running container found for service '$MATTER_SERVER_SERVICE'"

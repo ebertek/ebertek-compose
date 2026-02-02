@@ -25,7 +25,7 @@ A collection of Docker Compose files and shell scripts.
 
 - **[bazarr](https://hotio.dev/containers/bazarr/)**: Subtitle manager for Sonarr/Radarr.
 - **[lidarr](https://hotio.dev/containers/lidarr/)**: Music collection manager.
-- **[pg](https://hub.docker.com/_/postgres)**: Object-relational database sytem for \*arr.
+- **[pg](https://hub.docker.com/_/postgres)**: Object-relational database system for \*arr.
 - **[prowlarr](https://hotio.dev/containers/prowlarr/)**: Indexer manager for \*arr.
 - **[radarr](https://hotio.dev/containers/radarr/)**: Movie organizer/manager.
 - **[recyclarr](https://github.com/recyclarr/recyclarr)**: Automatically sync [TRaSH Guides](https://trash-guides.info) to your Sonarr/Radarr instances.
