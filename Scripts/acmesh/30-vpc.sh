@@ -21,15 +21,15 @@ ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<
 	sudo cp -R /root/acmesh/* /mnt/data/tntphoto_certbot_config/_data/archive/
 	sudo rm -r /root/acmesh
 	sudo mv /mnt/data/tntphoto_certbot_config/_data/archive/ebertek.com_ecc /mnt/data/tntphoto_certbot_config/_data/archive/ebertek.com
-	sudo mv /mnt/data/tntphoto_certbot_config/_data/archive/melindaban.com_ecc /mnt/data/tntphoto_certbot_config/_data/archive/melindaban.com
+	sudo mv /mnt/data/tntphoto_certbot_config/_data/archive/linda-ebert.com_ecc /mnt/data/tntphoto_certbot_config/_data/archive/linda-ebert.com
 	sudo mv /mnt/data/tntphoto_certbot_config/_data/archive/tnt.photo_ecc /mnt/data/tntphoto_certbot_config/_data/archive/tnt.photo
 	sudo mv /mnt/data/tntphoto_certbot_config/_data/archive/ld25.se_ecc /mnt/data/tntphoto_certbot_config/_data/archive/ld25.se
 	sudo chmod 644 /mnt/data/tntphoto_certbot_config/_data/archive/ebertek.com/*
-	sudo chmod 644 /mnt/data/tntphoto_certbot_config/_data/archive/melindaban.com/*
+	sudo chmod 644 /mnt/data/tntphoto_certbot_config/_data/archive/linda-ebert.com/*
 	sudo chmod 644 /mnt/data/tntphoto_certbot_config/_data/archive/tnt.photo/*
 	sudo chmod 644 /mnt/data/tntphoto_certbot_config/_data/archive/ld25.se/*
 	sudo chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/ebertek.com/ebertek.com.key
-	sudo chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/melindaban.com/melindaban.com.key
+	sudo chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/linda-ebert.com/linda-ebert.com.key
 	sudo chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/tnt.photo/tnt.photo.key
 	sudo chmod 600 /mnt/data/tntphoto_certbot_config/_data/archive/ld25.se/ld25.se.key
 	sudo chown -R 101:101 /mnt/data/tntphoto_certbot_config/_data/archive
