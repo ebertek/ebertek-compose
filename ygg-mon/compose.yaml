@@ -177,7 +177,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 30s
-      test: [ "CMD", "/usr/bin/loki", "-health" ]
+      test: ["CMD", "/usr/bin/loki", "-health"]
       timeout: 5s
     hostname: loki
     image: "docker.io/grafana/loki:latest"
