@@ -173,6 +173,12 @@ services:
           memory: 1024M
     environment:
       <<: *env
+    healthcheck:
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      test: [ "CMD", "/usr/bin/loki", "-health" ]
+      timeout: 5s
     hostname: loki
     image: "docker.io/grafana/loki:latest"
     labels:
