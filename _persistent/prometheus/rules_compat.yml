@@ -1,3 +1,4 @@
+---
 groups:
   - name: compat_node_memory
     rules:
