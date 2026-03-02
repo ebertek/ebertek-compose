@@ -151,6 +151,7 @@ services:
       <<: *env
       BLUETOOTH_ADAPTER: 0
       PRIMARY_INTERFACE: eth0
+      PRODUCTION_MODE: "true"
     healthcheck:
       interval: 30s
       retries: 5
