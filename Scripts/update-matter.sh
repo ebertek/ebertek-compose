@@ -28,11 +28,11 @@ fi
 PREFIX_PART="${ULA_PREFIX%%::*}:"
 
 # Fetch the Matter devices' IPv6 addresses
-echo "Fetching the Matter devices' IPv6 addresses..."
+echo "Fetching the IPv6 addresses of all Matter devices..."
 ULA_ADDRESSES=$(avahi-browse -rpt _matter._tcp | grep -E "=;.*${PREFIX_PART}" | awk -F ";" '{print $8}' | sort -u)
 
 # Fetch the Thread Border Router's link-local address
-echo "Fetching the Thread Border Router's link-local address..."
+echo "Fetching the link-local address of the Thread Border Router..."
 THREAD_BR=$(rdisc6 ovs_bond0 | grep -A4 "$ULA_PREFIX" | grep "from" | head -1 | awk '{print $2}')
 
 # Check if rdisc6 failed to fetch the address
@@ -49,7 +49,7 @@ if [ -z "$THREAD_BR" ]; then
 fi
 
 # Get the dynamic IPv6 address of eth0 inside the Docker container
-echo "Getting the dynamic IPv6 address of eth0 inside the Docker container..."
+echo "Fetching the dynamic IPv6 address of eth0 of Matter Server..."
 DYNAMIC_IPV6=$(docker exec matter-server sh -lc \
 	"hostname -I | tr ' ' '\n' | grep -E '^[0-9a-fA-F]*:.*' | grep -vE '^(fe80:|fd|fc)' | head -n1")
 
@@ -59,41 +59,54 @@ if [ -z "$DYNAMIC_IPV6" ]; then
 	exit 1
 fi
 
+# Pick a helper image that has iproute2
+HELPER_IMAGE=${HELPER_IMAGE:-nicolaka/netshoot}
+
 echo ""
 echo "============== IPv6 Route Setup Summary =============="
-echo "ULA Prefix:          ${ULA_PREFIX}"
-echo "Thread BR Address:   ${THREAD_BR}"
-echo "Dynamic IPv6 (eth0): ${DYNAMIC_IPV6}"
+echo "Matter Server Container: ${MATTER_SERVER_CONTAINER}"
+echo "Helper Image:            ${HELPER_IMAGE}"
+echo "ULA Prefix:              ${ULA_PREFIX}"
+echo "Thread BR Address:       ${THREAD_BR}"
+echo "Dynamic IPv6 (eth0):     ${DYNAMIC_IPV6}"
 echo "Matter Devices:"
 echo "${ULA_ADDRESSES}" | sed 's/^/  - /'
 echo "======================================================"
 echo ""
 
-# Run the route management commands inside the Docker container
+# Run the route management commands using a helper container in the same network namespace
 echo "Running the route management commands inside the Docker container:"
-docker exec "$MATTER_SERVER_CONTAINER" sh -c "
-	ULA_PREFIX=\"$ULA_PREFIX\"
-	THREAD_BR=\"$THREAD_BR\"
-	DYNAMIC_IPV6=\"$DYNAMIC_IPV6\"
-	ULA_ADDRESSES=\"$ULA_ADDRESSES\"
 
-	echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
-	if ip -6 route show | grep -q \"\$ULA_PREFIX\"; then
-		echo \"Removing old route...\"
-		ip -6 route del \"\$ULA_PREFIX\"
-	fi
+docker run --rm \
+	--network "container:${MATTER_SERVER_CONTAINER}" \
+	--cap-add NET_ADMIN \
+	"$HELPER_IMAGE" sh -lc "
+		set -e
 
-	echo \"Adding the new route via \${THREAD_BR} with source address \${DYNAMIC_IPV6}...\"
-	if [ -n \"\$DYNAMIC_IPV6\" ]; then
-		ip -6 route add \"\$ULA_PREFIX\" via \"\$THREAD_BR\" dev eth0 src \"\$DYNAMIC_IPV6\"
-	fi
+		ULA_PREFIX=\"$ULA_PREFIX\"
+		THREAD_BR=\"$THREAD_BR\"
+		DYNAMIC_IPV6=\"$DYNAMIC_IPV6\"
+		ULA_ADDRESSES=\"$ULA_ADDRESSES\"
 
-	echo \"Checking connectivity...\"
-	for ip in \${ULA_ADDRESSES}; do
-		if ping6 -q -c 1 \$ip >/dev/null 2>&1; then
-			echo \"\$ip is reachable.\"
-		else
-			echo \"\$ip is not reachable.\"
+		echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
+		if ip -6 route show | grep -q \"\$ULA_PREFIX\"; then
+			echo \"Removing old route...\"
+			ip -6 route del \"\$ULA_PREFIX\"
 		fi
-	done
-"
+
+		echo \"Adding the new route via \${THREAD_BR} with source address \${DYNAMIC_IPV6}...\"
+		if [ -n \"\$DYNAMIC_IPV6\" ]; then
+			ip -6 route add \"\$ULA_PREFIX\" via \"\$THREAD_BR\" dev eth0 src \"\$DYNAMIC_IPV6\"
+		fi
+
+		echo \"Checking connectivity...\"
+		for ipaddr in \$ULA_ADDRESSES; do
+			if ping6 -q -c 1 \"\$ipaddr\" >/dev/null 2>&1; then
+				echo \"\$ipaddr is reachable.\"
+			else
+				echo \"\$ipaddr is not reachable.\"
+			fi
+		done
+	"
+
+echo "Done."
