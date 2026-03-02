@@ -169,7 +169,7 @@ services:
         ipv4_address: 10.4.21.66
     security_opt:
       - "apparmor:unconfined"
-    user: "1028:100"
+    user: "1000:1000"
     volumes:
       - *tz
       - "/volume2/docker/hass/matter-server:/data"
