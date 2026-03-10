@@ -15,10 +15,13 @@ while IFS='=' read -r key value; do
 	export "$key=$value"
 done <"$ENV_FILE"
 
-if [ -z "$HOST_IFACE" ]; then
-	echo "Error: HOST_IFACE not set in $ENV_FILE"
-	exit 1
-fi
+for var in MATTER_SERVER_SERVICE ULA_PREFIX HOST_IFACE THREAD_BR_MAC; do
+	eval "value=\${$var}"
+	if [ -z "$value" ]; then
+		echo "Error: $var not set in $ENV_FILE"
+		exit 1
+	fi
+done
 
 echo "Preparing all variables:"
 
