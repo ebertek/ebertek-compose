@@ -47,7 +47,13 @@ fi
 
 # Fetch the Thread Border Router's link-local address
 echo "Fetching the link-local address of the Thread Border Router..."
-THREAD_BR=$(rdisc6 "$HOST_IFACE" | grep -A4 "$ULA_PREFIX" | grep "from" | head -n1 | awk '{print $2}')
+THREAD_BR=$(
+	rdisc6 "$OVS_IFACE" |
+		awk -v prefix="$ULA_PREFIX" '
+			index($0, prefix) { want_from = 1; next }
+			want_from && $1 == "from" { print $2; exit }
+		'
+)
 
 # Check if rdisc6 failed to fetch the address
 if [ -z "$THREAD_BR" ]; then
