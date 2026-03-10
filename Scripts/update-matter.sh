@@ -134,7 +134,7 @@ EOF
 )
 
 		echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
-		if ip -6 route show | grep -q \"^\${ULA_PREFIX}\"; then
+		if ip -6 route show \"\${ULA_PREFIX}\" >/dev/null 2>&1; then
 			echo \"Removing old route...\"
 			ip -6 route del \"\${ULA_PREFIX}\"
 		fi
