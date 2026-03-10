@@ -30,9 +30,9 @@ PREFIX_PART="${ULA_PREFIX%%::*}:"
 # Fetch the Matter devices' hostnames and IPv6 ULA addresses
 echo "Fetching the IPv6 addresses of all Matter devices..."
 ULA_DEVICES=$(
-	avahi-browse -rpt _matter._tcp \
-	| awk -F ";" -v prefix="$PREFIX_PART" '$8 ~ "^" prefix {print $7 ";" $8}' \
-	| sort -u
+	avahi-browse -rpt _matter._tcp |
+		awk -F ";" -v prefix="$PREFIX_PART" '$8 ~ "^" prefix { print $7 ";" $8 }' |
+		sort -u
 )
 
 if [ -z "$ULA_DEVICES" ]; then
