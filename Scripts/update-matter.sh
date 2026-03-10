@@ -50,7 +50,7 @@ fi
 
 # Get the dynamic IPv6 address of eth0 inside the Docker container
 echo "Fetching the dynamic IPv6 address of eth0 of Matter Server..."
-DYNAMIC_IPV6=$(docker exec matter-server sh -lc \
+DYNAMIC_IPV6=$(docker exec "$MATTER_SERVER_CONTAINER" sh -lc \
 	"hostname -I | tr ' ' '\n' | grep -E '^[0-9a-fA-F]*:.*' | grep -vE '^(fe80:|fd|fc)' | head -n1")
 
 # Ensure DYNAMIC_IPV6 is not empty
