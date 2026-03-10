@@ -134,8 +134,11 @@ EOF
 )
 
 		echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
-		if ip -6 route show \"\${ULA_PREFIX}\" >/dev/null 2>&1; then
-			echo \"Removing old route...\"
+		OLD_ROUTES=\$(ip -6 route show \"\${ULA_PREFIX}\" 2>/dev/null || true)
+
+		if [ -n \"\$OLD_ROUTES\" ]; then
+			echo \"Removing old route(s):\"
+			echo \"\$OLD_ROUTES\" | sed 's/^/  - /'
 			ip -6 route del \"\${ULA_PREFIX}\"
 		fi
 
