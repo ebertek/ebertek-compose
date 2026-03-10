@@ -103,7 +103,7 @@ fi
 HELPER_IMAGE=${HELPER_IMAGE:-nicolaka/netshoot}
 
 echo ""
-echo "============== IPv6 Route Setup Summary =============="
+echo "=================== IPv6 Route Setup Summary ==================="
 echo "Matter Server Container: ${MATTER_SERVER_CONTAINER}"
 echo "Helper Image:            ${HELPER_IMAGE}"
 echo "Host Interface:          ${HOST_IFACE}"
@@ -111,8 +111,8 @@ echo "ULA Prefix:              ${ULA_PREFIX}"
 echo "Thread BR Address:       ${THREAD_BR}"
 echo "Dynamic IPv6 (eth0):     ${DYNAMIC_IPV6}"
 echo "Matter Devices:"
-echo "$ULA_DEVICES" | awk -F ';' '{printf "  - %-24s %s\n", $1, $2}'
-echo "======================================================"
+echo "$ULA_DEVICES" | awk -F ';' '{printf " - %-24s %s\n", $1, $2}'
+echo "================================================================"
 echo ""
 
 # Run the route management commands using a helper container in the same network namespace
