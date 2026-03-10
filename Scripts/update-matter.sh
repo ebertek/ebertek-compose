@@ -126,7 +126,7 @@ EOF
 		echo \"\${ULA_DEVICES}\" | while IFS=';' read -r host ipaddr; do
 			[ -n \"\$host\" ] || continue
 
-			if ping6 -q -c 1 \"\$ipaddr\" >/dev/null 2>&1; then
+			if ping6 -q -c 1 -W 5 \"\$ipaddr\" >/dev/null 2>&1; then
 				printf '[ OK ] %-24s %s\n' \"\$host\" \"\$ipaddr\"
 			else
 				printf '[FAIL] %-24s %s\n' \"\$host\" \"\$ipaddr\"
