@@ -15,6 +15,11 @@ while IFS='=' read -r key value; do
 	export "$key=$value"
 done <"$ENV_FILE"
 
+if [ -z "$HOST_IFACE" ]; then
+	echo "Error: HOST_IFACE not set in $ENV_FILE"
+	exit 1
+fi
+
 echo "Preparing all variables:"
 
 # Fetch Matter Server container ID based on service name
@@ -42,7 +47,7 @@ fi
 
 # Fetch the Thread Border Router's link-local address
 echo "Fetching the link-local address of the Thread Border Router..."
-THREAD_BR=$(rdisc6 ovs_bond0 | grep -A4 "$ULA_PREFIX" | grep "from" | head -n1 | awk '{print $2}')
+THREAD_BR=$(rdisc6 "$HOST_IFACE" | grep -A4 "$ULA_PREFIX" | grep "from" | head -n1 | awk '{print $2}')
 
 # Check if rdisc6 failed to fetch the address
 if [ -z "$THREAD_BR" ]; then
@@ -75,6 +80,7 @@ echo ""
 echo "============== IPv6 Route Setup Summary =============="
 echo "Matter Server Container: ${MATTER_SERVER_CONTAINER}"
 echo "Helper Image:            ${HELPER_IMAGE}"
+echo "Host Interface:          ${HOST_IFACE}"
 echo "ULA Prefix:              ${ULA_PREFIX}"
 echo "Thread BR Address:       ${THREAD_BR}"
 echo "Dynamic IPv6 (eth0):     ${DYNAMIC_IPV6}"

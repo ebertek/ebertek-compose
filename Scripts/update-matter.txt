@@ -1,5 +1,6 @@
+MATTER_SERVER_SERVICE=matter-server
+HOST_IFACE=ovs_bond0
 ULA_PREFIX=fd49:2203:740f::/64
 UNIFI_HOST=ucg.local
 UNIFI_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 THREAD_BR_MAC=a8:51:ab:00:00:00
-MATTER_SERVER_SERVICE=matter-server
