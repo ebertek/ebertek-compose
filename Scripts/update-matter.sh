@@ -27,13 +27,22 @@ fi
 # Define the Unique Local Address (ULA) prefix
 PREFIX_PART="${ULA_PREFIX%%::*}:"
 
-# Fetch the Matter devices' IPv6 addresses
+# Fetch the Matter devices' hostnames and IPv6 ULA addresses
 echo "Fetching the IPv6 addresses of all Matter devices..."
-ULA_ADDRESSES=$(avahi-browse -rpt _matter._tcp | grep -E "=;.*${PREFIX_PART}" | awk -F ";" '{print $8}' | sort -u)
+ULA_DEVICES=$(
+	avahi-browse -rpt _matter._tcp \
+	| awk -F ";" -v prefix="$PREFIX_PART" '$8 ~ "^" prefix {print $7 ";" $8}' \
+	| sort -u
+)
+
+if [ -z "$ULA_DEVICES" ]; then
+	echo "Error: No Matter devices found with prefix '$PREFIX_PART'"
+	exit 1
+fi
 
 # Fetch the Thread Border Router's link-local address
 echo "Fetching the link-local address of the Thread Border Router..."
-THREAD_BR=$(rdisc6 ovs_bond0 | grep -A4 "$ULA_PREFIX" | grep "from" | head -1 | awk '{print $2}')
+THREAD_BR=$(rdisc6 ovs_bond0 | grep -A4 "$ULA_PREFIX" | grep "from" | head -n1 | awk '{print $2}')
 
 # Check if rdisc6 failed to fetch the address
 if [ -z "$THREAD_BR" ]; then
@@ -70,7 +79,7 @@ echo "ULA Prefix:              ${ULA_PREFIX}"
 echo "Thread BR Address:       ${THREAD_BR}"
 echo "Dynamic IPv6 (eth0):     ${DYNAMIC_IPV6}"
 echo "Matter Devices:"
-echo "${ULA_ADDRESSES}" | sed 's/^/  - /'
+echo "$ULA_DEVICES" | awk -F ';' '{printf "  - %-24s %s\n", $1, $2}'
 echo "======================================================"
 echo ""
 
@@ -86,25 +95,29 @@ docker run --rm \
 		ULA_PREFIX=\"$ULA_PREFIX\"
 		THREAD_BR=\"$THREAD_BR\"
 		DYNAMIC_IPV6=\"$DYNAMIC_IPV6\"
-		ULA_ADDRESSES=\"$ULA_ADDRESSES\"
+		ULA_DEVICES=\$(
+cat <<'EOF'
+$ULA_DEVICES
+EOF
+)
 
 		echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
-		if ip -6 route show | grep -q \"\$ULA_PREFIX\"; then
+		if ip -6 route show | grep -q \"^\${ULA_PREFIX}\"; then
 			echo \"Removing old route...\"
-			ip -6 route del \"\$ULA_PREFIX\"
+			ip -6 route del \"\${ULA_PREFIX}\"
 		fi
 
 		echo \"Adding the new route via \${THREAD_BR} with source address \${DYNAMIC_IPV6}...\"
-		if [ -n \"\$DYNAMIC_IPV6\" ]; then
-			ip -6 route add \"\$ULA_PREFIX\" via \"\$THREAD_BR\" dev eth0 src \"\$DYNAMIC_IPV6\"
-		fi
+		ip -6 route add \"\${ULA_PREFIX}\" via \"\${THREAD_BR}\" dev eth0 src \"\${DYNAMIC_IPV6}\"
 
 		echo \"Checking connectivity...\"
-		for ipaddr in \$ULA_ADDRESSES; do
+		echo \"\${ULA_DEVICES}\" | while IFS=';' read -r host ipaddr; do
+			[ -n \"\$host\" ] || continue
+
 			if ping6 -q -c 1 \"\$ipaddr\" >/dev/null 2>&1; then
-				echo \"\$ipaddr is reachable.\"
+				printf '[ OK ] %-24s %s\n' \"\$host\" \"\$ipaddr\"
 			else
-				echo \"\$ipaddr is not reachable.\"
+				printf '[FAIL] %-24s %s\n' \"\$host\" \"\$ipaddr\"
 			fi
 		done
 	"
