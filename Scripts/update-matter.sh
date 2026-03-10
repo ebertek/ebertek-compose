@@ -60,11 +60,28 @@ THREAD_BR=$(
 
 # Check if rdisc6 failed to fetch the address
 if [ -z "$THREAD_BR" ]; then
-	# Fallback to using curl to fetch the Thread Border Router's IPv6 address
-	echo "rdisc6 failed to fetch Thread Border Router's IPv6 address, attempting fallback with curl..."
-	THREAD_BR=$(curl -k -X GET "https://$UNIFI_HOST/proxy/network/api/s/default/stat/sta" -H "X-API-KEY: $UNIFI_KEY" -H "Accept: application/json" | jq -r --arg MAC "$THREAD_BR_MAC" '.data[] | select(.mac == $MAC) | .ipv6_addresses | if type == "array" then . | map(select(startswith("fe80::"))) | .[0] else select(startswith("fe80::")) end')
+	if [ -n "${UNIFI_HOST:-}" ] && [ -n "${UNIFI_KEY:-}" ]; then
+		echo "rdisc6 failed to fetch Thread Border Router's IPv6 address, attempting fallback with curl..."
 
-	# Ensure THREAD_BR is not empty after fallback
+		THREAD_BR=$(
+			curl -k -X GET "https://$UNIFI_HOST/proxy/network/api/s/default/stat/sta" \
+				-H "X-API-KEY: $UNIFI_KEY" \
+				-H "Accept: application/json" |
+				jq -r --arg MAC "$THREAD_BR_MAC" '
+					.data[]
+					| select(.mac == $MAC)
+					| .ipv6_addresses
+					| if type == "array" then
+						map(select(startswith("fe80::"))) | .[0]
+					else
+						select(startswith("fe80::"))
+					end
+				'
+		)
+	else
+		echo "rdisc6 failed and UNIFI_HOST / UNIFI_KEY not set — skipping UniFi fallback."
+	fi
+
 	if [ -z "$THREAD_BR" ]; then
 		echo "Error: Unable to fetch Thread Border Router's IPv6 address."
 		exit 1
