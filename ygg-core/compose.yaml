@@ -122,7 +122,8 @@ services:
       KC_PROXY_HEADERS: xforwarded
     healthcheck:
       interval: 15s
-      retries: 15
+      retries: 5
+      start_period: 120s
       test:
         [
           "CMD-SHELL",
