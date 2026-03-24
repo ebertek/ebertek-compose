@@ -133,25 +133,16 @@ $ULA_DEVICES
 EOF
 )
 
-		echo \"Checking if a route to \${ULA_PREFIX} already exists...\"
+		echo \"Ensuring route exists...\"
 		OLD_ROUTE=\$(ip -6 route show \"\${ULA_PREFIX}\" 2>/dev/null | head -n1 || true)
 
 		if [ -n \"\$OLD_ROUTE\" ]; then
 			echo \"Existing route: \$OLD_ROUTE\"
 
-			if printf '%s\n' \"\$OLD_ROUTE\" | grep -Fq \"via \${THREAD_BR} dev eth0 src \${DYNAMIC_IPV6}\"; then
-				echo \"Existing route already matches the desired route, keeping it.\"
-			else
-				echo \"Existing route is different, removing it...\"
-				ip -6 route del \"\${ULA_PREFIX}\"
+		ip -6 route replace \"\${ULA_PREFIX}\" via \"\${THREAD_BR}\" dev eth0 src \"\${DYNAMIC_IPV6}\"
 
-				echo \"Adding the new route via \${THREAD_BR} with source address \${DYNAMIC_IPV6}...\"
-				ip -6 route add \"\${ULA_PREFIX}\" via \"\${THREAD_BR}\" dev eth0 src \"\${DYNAMIC_IPV6}\"
-			fi
-		else
-			echo \"No existing route found, adding the new route...\"
-			ip -6 route add \"\${ULA_PREFIX}\" via \"\${THREAD_BR}\" dev eth0 src \"\${DYNAMIC_IPV6}\"
-		fi
+		NEW_ROUTE=\$(ip -6 route show \"\${ULA_PREFIX}\" 2>/dev/null | head -n1 || true)
+		echo \"Effective route: \$NEW_ROUTE\"
 
 		echo \"Checking connectivity...\"
 		echo \"\${ULA_DEVICES}\" | while IFS=';' read -r host ipaddr; do
