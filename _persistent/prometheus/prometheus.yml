@@ -33,3 +33,6 @@ scrape_configs:
     bearer_token: demotoken
     static_configs:
       - targets: ["watchtower.ygg.nu:8080"]
+  - job_name: "birdnet"
+    static_configs:
+      - targets: ["birdnet.ygg.nu:8090"]
