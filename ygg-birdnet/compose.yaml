@@ -2,7 +2,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
 ---
 # version: "3.9"
-name: ygg-core
+name: ygg-birdnet
 
 networks:
   macvlan1:
