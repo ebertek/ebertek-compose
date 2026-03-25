@@ -1,0 +1,66 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-core
+
+networks:
+  macvlan1:
+    external: true
+
+x-common: &common
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search:
+    - ygg.nu
+  restart: "no"
+  stop_grace_period: 2m
+
+x-env: &env
+  TZ: Etc/UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
+services:
+  birdnet:
+    <<: *common
+    container_name: birdnet
+    cpu_count: 4
+    deploy:
+      resources:
+        limits:
+          # cpus: "4"
+          memory: 1024M
+    # devices:
+    #   - /dev/snd:/dev/snd
+    environment:
+      <<: *env
+      BIRDNET_UID: 1028
+      BIRDNET_GID: 100
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    hostname: birdnet
+    image: "ghcr.io/tphakala/birdnet-go:nightly"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.birdnet.entrypoints: websecure
+      traefik.http.routers.birdnet.rule: "Host(`birdnet.ebi.nu`)"
+      traefik.http.routers.birdnet.tls: "true"
+      traefik.http.services.birdnet.loadbalancer.server.port: 8080
+    mac_address: "0e:be:00:da:00:75"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.75
+    tmpfs:
+      - /config/hls:exec,size=50M,uid=1028,gid=100,mode=0755
+    volumes:
+      - *tz
+      - "/volume2/docker/birdnet/config:/config"
+      - "/volume2/docker/birdnet/data:/data"
+
+volumes:
+  config:
+    driver: local
+  data:
+    driver: local
