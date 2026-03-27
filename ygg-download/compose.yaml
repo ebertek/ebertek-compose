@@ -92,7 +92,7 @@ services:
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun
-    image: "docker.io/qmcgaw/gluetun:latest"
+    image: "docker.io/qmcgaw/gluetun:v3.40.4"
     labels:
       traefik.enable: "true"
       traefik.http.routers.download.entrypoints: websecure
