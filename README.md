@@ -38,6 +38,7 @@ A collection of Docker Compose files and shell scripts.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
 - **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
+- **[postgres](https://github.com/docker-library/postgres)**: Object-relational database system for Keycloak.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
 
 ### [ygg-download/](ygg-download/)
@@ -59,6 +60,7 @@ A collection of Docker Compose files and shell scripts.
 - **[matter-server](https://github.com/matter-js/python-matter-server)**: Matter Controller Server.
 - **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
+- **[scrypted](https://github.com/koush/scrypted)**: High performance video integration and automation platform.
 - **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
 
 ### [ygg-home/](ygg-home/)
