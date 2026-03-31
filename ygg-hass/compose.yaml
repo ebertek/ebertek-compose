@@ -242,6 +242,42 @@ services:
       - *tz
       - "/volume2/docker/hass/ps5-mqtt:/config"
 
+  scrypted:
+    <<: *common
+    container_name: scrypted
+    cpu_count: 4
+    deploy:
+      resources:
+        limits:
+          # cpus: "4"
+          memory: 4096M
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      <<: *env
+      SCRYPTED_DOCKER_AVAHI: true
+      SCRYPTED_NVR_VOLUME: /nvr
+      SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
+      SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer c94451c71d887bcc6f0b73c0"
+    hostname: scrypted
+    image: "ghcr.io/koush/scrypted:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.scrypted.entrypoints: websecure
+      traefik.http.routers.scrypted.rule: "Host(`scrypted.ebi.nu`)"
+      traefik.http.routers.scrypted.tls: "true"
+      traefik.http.services.scrypted.loadbalancer.server.port: 80
+    logging:
+      driver: "none"
+    mac_address: "0e:be:00:da:00:76"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.76
+    volumes:
+      - *tz
+      - "/volume2/docker/hass/scrypted/nvr:/nvr"
+      - "/volume2/docker/hass/scrypted/volume:/server/volume"
+
   zigbee2mqtt:
     <<: *common
     container_name: zigbee2mqtt
