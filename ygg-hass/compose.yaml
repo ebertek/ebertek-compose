@@ -259,6 +259,20 @@ services:
       SCRYPTED_NVR_VOLUME: /nvr
       SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
       SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer demotoken"
+    healthcheck:
+      interval: 1m30s
+      retries: 3
+      start_period: 40s
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "-k",
+          "-L",
+          "http://127.0.0.1:11080/endpoint/@scrypted/core/public/#/",
+        ]
+      timeout: 10s
     hostname: scrypted
     image: "ghcr.io/koush/scrypted:latest"
     labels:
