@@ -258,7 +258,7 @@ services:
       SCRYPTED_DOCKER_AVAHI: true
       SCRYPTED_NVR_VOLUME: /nvr
       SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
-      SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer c94451c71d887bcc6f0b73c0"
+      SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer demotoken"
     hostname: scrypted
     image: "ghcr.io/koush/scrypted:latest"
     labels:

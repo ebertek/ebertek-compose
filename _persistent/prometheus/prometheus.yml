@@ -30,7 +30,7 @@ scrape_configs:
       - targets: ["traefik.ygg.nu:8080"]
   - job_name: "watchtower"
     metrics_path: /v1/metrics
-    bearer_token: c94451c71d887bcc6f0b73c0
+    bearer_token: demotoken
     static_configs:
       - targets: ["watchtower.ygg.nu:8080"]
   - job_name: "birdnet"
