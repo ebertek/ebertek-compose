@@ -32,6 +32,10 @@ A collection of Docker Compose files and shell scripts.
 - **[requestrr](https://hotio.dev/containers/requestrr/)**: Discord chatbot for \*arr.
 - **[sonarr](https://hotio.dev/containers/sonarr/)**: Smart PVR.
 
+### [ygg-birdnet/](ygg-birdnet/)
+
+- **[birdnet](https://github.com/tphakala/birdnet-go)**: AI solution for continuous avian monitoring and identification.
+
 ### [ygg-core/](ygg-core/)
 
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
