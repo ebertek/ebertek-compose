@@ -58,9 +58,3 @@ services:
       - *tz
       - "/volume2/docker/birdnet/config:/config"
       - "/volume2/docker/birdnet/data:/data"
-
-volumes:
-  config:
-    driver: local
-  data:
-    driver: local
