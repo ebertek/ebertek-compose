@@ -281,8 +281,8 @@ services:
       traefik.http.routers.scrypted.rule: "Host(`scrypted.ebi.nu`)"
       traefik.http.routers.scrypted.tls: "true"
       traefik.http.services.scrypted.loadbalancer.server.port: 11080
-    # logging:
-    # driver: "none"
+    logging:
+      driver: "none"
     mac_address: "0e:be:00:da:00:76"
     networks:
       macvlan1:
