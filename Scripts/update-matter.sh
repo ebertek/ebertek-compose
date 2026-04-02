@@ -138,6 +138,7 @@ EOF
 
 		if [ -n \"\$OLD_ROUTE\" ]; then
 			echo \"Existing route: \$OLD_ROUTE\"
+		fi
 
 		ip -6 route replace \"\${ULA_PREFIX}\" via \"\${THREAD_BR}\" dev eth0 src \"\${DYNAMIC_IPV6}\"
 
