@@ -46,18 +46,6 @@ binary_sensor:
         input: true
         pullup: true
       number: GPIO9
-  - platform: gpio
-    device_class: moisture
-    filters:
-      - delayed_off: 1000ms
-      - delayed_on: 100ms
-    name: Moisture hit
-    pin:
-      inverted: true
-      mode:
-        input: true
-        pullup: true
-      number: GPIO2
 
 bluetooth_proxy:
   active: true
@@ -96,6 +84,26 @@ light:
     restore_mode: RESTORE_DEFAULT_OFF
     rgb_order: GRB
 
+number:
+  - platform: template
+    id: adc_dry
+    initial_value: 1550
+    max_value: 3000
+    min_value: 1000
+    name: "ADC Dry"
+    optimistic: true
+    restore_value: true
+    step: 1
+  - platform: template
+    id: adc_wet
+    initial_value: 1450
+    max_value: 3000
+    min_value: 1000
+    name: "ADC Wet"
+    optimistic: true
+    restore_value: true
+    step: 1
+
 power_supply:
   - id: rgbpwr
     enable_on_boot: true
@@ -123,37 +131,60 @@ sensor:
     unit_of_measurement: dBm
     update_interval: 60s
   - platform: adc
-    accuracy_decimals: 3
-    attenuation: 12db
-    id: soil_voltage
-    name: "Soil Moisture Voltage"
-    pin:
-      mode:
-        input: true
-      number: GPIO1
-    unit_of_measurement: "V"
-    update_interval: 10s
-  - platform: template
-    accuracy_decimals: 0
-    device_class: moisture
+    attenuation: auto
     filters:
       - median:
           send_every: 1
           send_first_at: 1
-          window_size: 5
-      - sliding_window_moving_average:
-          send_every: 3
-          window_size: 9
-    id: soil_percent
+          window_size: 7
+    id: voltage
+    name: "Voltage"
+    pin: GPIO1
+    update_interval: 10s
+  - platform: template
+    id: adc_reading
     lambda: |-
-      float v = id(soil_voltage).state;
-      const float V_dry = 3.28;
-      const float V_wet = 1.45;
-      float pct = (V_dry - v) * 100.0f / (V_dry - V_wet);
+      return roundf( id(voltage).state * 1000.0f );
+    name: "ADC Reading"
+    unit_of_measurement: "mV"
+    update_interval: 10s
+  - platform: template
+    accuracy_decimals: 0
+    id: soil_moisture_percent
+    lambda: |-
+      const float adc = id(adc_reading).state;
+
+      float pct = (id(adc_dry).state - adc) / (id(adc_dry).state - id(adc_wet).state) * 100.0f;
       if (pct < 0.0f) pct = 0.0f;
       if (pct > 100.0f) pct = 100.0f;
       return pct;
     name: "Soil Moisture"
-    state_class: measurement
     unit_of_measurement: "%"
     update_interval: 10s
+
+text_sensor:
+  - platform: template
+    icon: "mdi:water-percent"
+    lambda: |-
+      const float adc = id(adc_reading).state;
+
+      if (adc >= id(adc_dry).state) {
+        return {"Dry"};
+      } else if (adc >= id(adc_wet).state) {
+        return {"Wet"};
+      } else {
+        return {"Saturated"};
+      }
+    name: "Soil Moisture"
+    update_interval: 10s
+
+switch:
+  - platform: gpio
+    icon: "mdi:water-pump"
+    id: water_pump
+    name: "Water pump"
+    on_turn_on:
+    - delay: 30s
+    - switch.turn_off: water_pump
+    pin: GPIO2
+    restore_mode: RESTORE_DEFAULT_OFF
