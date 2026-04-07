@@ -35,6 +35,12 @@ services:
       GRAMPSWEB_RATELIMIT_STORAGE_URI: redis://grampsweb-redis:6379/1
       GRAMPSWEB_TREE: "Gramps"
       GUNICORN_NUM_WORKERS: 3
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_period: 90s
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5000' || exit 1"]
+      timeout: 5s
     hostname: gramps
     image: "ghcr.io/gramps-project/grampsweb:latest"
     labels:
