@@ -1,0 +1,84 @@
+# %YAML 1.2
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json  # yamllint disable-line
+---
+# version: "3.9"
+name: ygg-gramps
+
+networks:
+  macvlan1:
+    external: true
+
+x-common: &common
+  dns:
+    - 10.4.21.34
+    - 1.1.1.1
+  dns_search:
+    - ygg.nu
+  restart: "no"
+  stop_grace_period: 2m
+
+x-env: &env
+  TZ: UTC
+
+x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+
+services:
+  gramps: &gramps
+    <<: *common
+    depends_on:
+      - grampsweb-redis
+    environment:
+      <<: *env
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://grampsweb-redis:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://grampsweb-redis:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: redis://grampsweb-redis:6379/1
+      GRAMPSWEB_TREE: "Gramps"
+    hostname: gramps
+    image: "ghcr.io/gramps-project/grampsweb:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gramps.entrypoints: websecure
+      traefik.http.routers.gramps.rule: "Host(`gramps.ebi.nu`)"
+      traefik.http.routers.gramps.tls: "true"
+      traefik.http.services.gramps.loadbalancer.server.port: 80
+    mac_address: "0e:be:00:da:00:87"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.87
+    volumes:
+      - *tz
+      - "/volume2/docker/gramps/cache:/app/cache"
+      - "/volume2/docker/gramps/grampsdb:/root/.gramps/grampsdb"
+      - "/volume2/docker/gramps/indexdir:/app/indexdir"
+      - "/volume2/docker/gramps/media:/app/media"
+      - "/volume2/docker/gramps/secret:/app/secret"
+      - "/volume2/docker/gramps/thumbnail_cache:/app/thumbnail_cache"
+      - "/volume2/docker/gramps/tmp:/tmp"
+      - "/volume2/docker/gramps/users:/app/users"
+
+  grampsweb-celery:
+    <<: *gramps
+    command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
+    container_name: grampsweb-celery
+    depends_on:
+      - gramps
+      - grampsweb-redis
+    hostname: grampsweb-celery
+    mac_address: "0e:be:00:da:00:88"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.88
+
+  grampsweb-redis:
+    <<: *common
+    container_name: grampsweb-redis
+    environment:
+      <<: *env
+    hostname: grapmsweb-redis
+    image: "docker.io/library/redis:7.2.4-alpine"
+    mac_address: "0e:be:00:da:00:89"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.89
+    volumes:
+      - *tz
