@@ -81,5 +81,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.89
+    sysctls:
+      net.core.somaxconn: 512
     volumes:
       - *tz
