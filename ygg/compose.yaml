@@ -4,11 +4,6 @@
 # version: "3.9"
 name: ygg
 
-configs:
-  etc_timezone:
-    content: |
-      Etc/UTC
-
 networks:
   macvlan1:
     driver: macvlan
