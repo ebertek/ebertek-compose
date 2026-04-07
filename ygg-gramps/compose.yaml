@@ -92,3 +92,4 @@ services:
       net.core.somaxconn: 512
     volumes:
       - *tz
+      - /volume2/docker/gramps/redis:/data
