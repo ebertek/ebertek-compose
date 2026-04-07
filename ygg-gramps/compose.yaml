@@ -57,7 +57,6 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.87
-    user: 1028:100
     volumes:
       - *tz
       - "/volume2/docker/gramps/cache:/app/cache"
@@ -81,7 +80,6 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.88
-    user: 1028:100
 
   grampsweb-redis:
     <<: *common
