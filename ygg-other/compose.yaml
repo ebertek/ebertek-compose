@@ -4,11 +4,21 @@
 # version: "3.9"
 name: ygg-other
 
+configs:
+  etc_timezone:
+    external: true
+
 networks:
   macvlan1:
     external: true
 
 x-common: &common
+  configs:
+    - source: etc_timezone
+      gid: "0"
+      mode: 0644
+      target: /etc/timezone
+      uid: "0"
   dns:
     - 10.4.21.34
     - 1.1.1.1
