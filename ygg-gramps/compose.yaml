@@ -34,6 +34,7 @@ services:
       GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://grampsweb-redis:6379/0"
       GRAMPSWEB_RATELIMIT_STORAGE_URI: redis://grampsweb-redis:6379/1
       GRAMPSWEB_TREE: "Gramps"
+      GUNICORN_NUM_WORKERS: 3
     hostname: gramps
     image: "ghcr.io/gramps-project/grampsweb:latest"
     labels:
