@@ -18,7 +18,7 @@ x-common: &common
   stop_grace_period: 2m
 
 x-env: &env
-  TZ: Etc/UTC
+  TZ: UTC
 
 x-env-arr: &env-arr
   PUID: 1028

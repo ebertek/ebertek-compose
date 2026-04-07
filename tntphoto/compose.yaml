@@ -9,7 +9,7 @@ x-common: &common
   stop_grace_period: 1m
 
 x-env: &env
-  TZ: Etc/UTC
+  TZ: UTC
 
 x-hc: &hc
   interval: 3m

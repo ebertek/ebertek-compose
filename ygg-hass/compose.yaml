@@ -18,7 +18,7 @@ x-common: &common
   stop_grace_period: 5m
 
 x-env: &env
-  TZ: Etc/UTC
+  TZ: UTC
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 

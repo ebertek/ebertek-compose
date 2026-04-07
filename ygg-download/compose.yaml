@@ -17,7 +17,7 @@ x-common: &common
 x-env: &env
   PUID: 1028
   PGID: 100
-  TZ: Etc/UTC
+  TZ: UTC
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 

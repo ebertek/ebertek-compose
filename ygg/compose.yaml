@@ -29,7 +29,7 @@ services:
           # cpus: "1"
           memory: 128M
     environment:
-      TZ: Etc/UTC
+      TZ: UTC
       NO_COLOR: true
       WATCHTOWER_CLEANUP: true
       WATCHTOWER_HTTP_API_METRICS: true

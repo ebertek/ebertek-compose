@@ -25,7 +25,7 @@ x-env: &env
   DB_DATABASE_NAME: immich
   DB_HOSTNAME: database
   REDIS_HOSTNAME: redis
-  TZ: Etc/UTC
+  TZ: UTC
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
