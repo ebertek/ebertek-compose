@@ -25,6 +25,7 @@ x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 services:
   gramps: &gramps
     <<: *common
+    container_name: gramps
     depends_on:
       - grampsweb-redis
     environment:
