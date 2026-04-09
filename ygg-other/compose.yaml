@@ -45,7 +45,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf",
+          "acme.sh --version >/dev/null 2>&1 && test -s /acme.sh/account.conf || exit 1",
         ]
       timeout: 5s
     hostname: acmesh
@@ -77,7 +77,7 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
@@ -114,7 +114,7 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/ >/dev/null"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: irc
     image: "ghcr.io/thelounge/thelounge:latest"
