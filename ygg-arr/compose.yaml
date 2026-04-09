@@ -134,7 +134,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 15s
-      test: [CMD, pg_isready]
+      test: ["CMD", "pg_isready"]
       timeout: 5s
     hostname: pg
     image: "docker.io/library/postgres:14"
@@ -261,7 +261,7 @@ services:
       interval: 1m
       retries: 3
       start_period: 30s
-      test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1 || exit 1"]
       timeout: 5s
     hostname: recyclarr
     image: ghcr.io/recyclarr/recyclarr
