@@ -199,7 +199,7 @@ services:
       interval: 30s
       retries: 5
       start_period: 30s
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 1883"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 1883 || exit 1"]
       timeout: 5s
     hostname: mosquitto
     image: "docker.io/library/eclipse-mosquitto:latest"
