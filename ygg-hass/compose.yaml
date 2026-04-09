@@ -291,7 +291,9 @@ services:
       traefik.http.routers.scrypted.tls: "true"
       traefik.http.services.scrypted.loadbalancer.server.port: 11080
     logging:
-      driver: "none"
+      options:
+        max-file: "2"
+        max-size: "5m"
     mac_address: "0e:be:00:da:00:76"
     networks:
       macvlan1:
