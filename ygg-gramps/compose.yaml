@@ -87,6 +87,16 @@ services:
         limits:
           # cpus: "2"
           memory: 1024M
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 90s
+      test:
+        [
+          "CMD-SHELL",
+          "pgrep -f 'celery -A gramps_webapi.celery worker' >/dev/null || exit 1",
+        ]
+      timeout: 10s
     hostname: grampsweb-celery
     mac_address: "0e:be:00:da:00:88"
     networks:
