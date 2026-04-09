@@ -16,8 +16,6 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
-  labels:
-    com.centurylinklabs.watchtower.monitor-only: true
   restart: "no"
   stop_grace_period: 1m
 
