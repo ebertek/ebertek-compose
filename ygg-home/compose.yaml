@@ -171,13 +171,14 @@ services:
           memory: 1536M
     environment:
       <<: *env
-      USER_ID: 1028
-      GROUP_ID: 100
-      UMASK: 002
       ALLOW_DIRECT_VNC: false
+      GROUP_ID: 100
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       LC_TIME: C.UTF-8
+      UMASK: 002
+      USER_ID: 1028
     healthcheck:
       interval: 1m
       retries: 3
