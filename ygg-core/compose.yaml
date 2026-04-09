@@ -42,6 +42,21 @@ services:
     env_file: cloudflared.txt
     environment:
       <<: *env
+      TUNNEL_METRICS: "0.0.0.0:60123"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      test:
+        [
+          "CMD",
+          "cloudflared",
+          "tunnel",
+          "--metrics",
+          "localhost:60123",
+          "ready",
+        ]
+      timeout: 30s
     hostname: cloudflared
     image: "docker.io/cloudflare/cloudflared:latest"
     network_mode: host
