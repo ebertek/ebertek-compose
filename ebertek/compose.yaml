@@ -53,11 +53,15 @@ services:
       PUID: 100
       PGID: 101
     healthcheck:
-      test: "bash -c 'exec 6<> /dev/tcp/localhost/53'"
-      interval: 5m
-      timeout: 10s
+      interval: 1m
       retries: 5
       start_period: 20s
+      test:
+        [
+          "CMD-SHELL",
+          "bash -c 'exec 6<> /dev/tcp/127.0.0.1/53' || exit 1",
+        ]
+      timeout: 10s
     hostname: bind9
     image: "docker.io/ubuntu/bind9:latest"
     network_mode: host
