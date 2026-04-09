@@ -23,7 +23,7 @@ x-env: &env
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 services:
-  gramps: &gramps
+  gramps:
     <<: *common
     container_name: gramps
     cpu_count: 4
@@ -75,7 +75,6 @@ services:
       - "/volume2/docker/gramps/users:/app/users"
 
   grampsweb-celery:
-    <<: *gramps
     command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
     container_name: grampsweb-celery
     cpu_count: 2
@@ -87,6 +86,13 @@ services:
         limits:
           # cpus: "2"
           memory: 1024M
+    environment:
+      <<: *env
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://grampsweb-redis:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://grampsweb-redis:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: redis://grampsweb-redis:6379/1
+      GRAMPSWEB_TREE: "Gramps"
+      GUNICORN_NUM_WORKERS: 3
     healthcheck:
       interval: 30s
       retries: 3
@@ -98,10 +104,21 @@ services:
         ]
       timeout: 10s
     hostname: grampsweb-celery
+    image: "ghcr.io/gramps-project/grampsweb:latest"
     mac_address: "0e:be:00:da:00:88"
     networks:
       macvlan1:
         ipv4_address: 10.4.21.88
+    volumes:
+      - *tz
+      - "/volume2/docker/gramps/cache:/app/cache"
+      - "/volume2/docker/gramps/grampsdb:/root/.gramps/grampsdb"
+      - "/volume2/docker/gramps/indexdir:/app/indexdir"
+      - "/volume2/docker/gramps/media:/app/media"
+      - "/volume2/docker/gramps/secret:/app/secret"
+      - "/volume2/docker/gramps/thumbnail_cache:/app/thumbnail_cache"
+      - "/volume2/docker/gramps/tmp:/tmp"
+      - "/volume2/docker/gramps/users:/app/users"
 
   grampsweb-redis:
     <<: *common
