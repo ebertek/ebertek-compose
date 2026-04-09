@@ -117,12 +117,7 @@ services:
     healthcheck:
       interval: 30s
       retries: 3
-      test:
-        [
-          "CMD",
-          "redis-cli",
-          "ping",
-        ]
+      test: ["CMD", "redis-cli", "ping"]
       timeout: 10s
     hostname: grampsweb-redis
     image: "docker.io/library/redis:7.2.4-alpine"
