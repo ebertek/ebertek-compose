@@ -52,6 +52,12 @@ services:
       PROM_URL: "http://prometheus:9090/api/v1/write"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/12345' || exit 1"]
+      timeout: 5s
     hostname: alloy
     image: "docker.io/grafana/alloy:latest"
     labels:
