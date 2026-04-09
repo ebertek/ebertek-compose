@@ -121,7 +121,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -sf http://localhost:8086/health | grep -q '\"status\":\"pass\"'",
+          'curl -sf http://localhost:8086/health | grep -q ''"status":"pass"''',
         ]
       timeout: 10s
     hostname: influxdb
