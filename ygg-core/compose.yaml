@@ -264,7 +264,7 @@ services:
     command:
       - "--api=true"
       - "--api.insecure=true"
-      - "--log.level=DEBUG"
+      - "--log.level=WARN"
       - "--metrics.prometheus=true"
       - "--providers.docker=true"
     container_name: traefik
