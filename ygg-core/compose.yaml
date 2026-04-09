@@ -242,7 +242,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 15s
-      test: [CMD, pg_isready]
+      test: ["CMD", "pg_isready"]
       timeout: 5s
     hostname: postgres
     image: "docker.io/library/postgres:17"
@@ -283,7 +283,8 @@ services:
       interval: 30s
       retries: 3
       start_period: 30s
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080"]
+      test:
+        ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080 >/dev/null || exit 1"]
       timeout: 5s
     hostname: traefik
     image: "docker.io/library/traefik:v3"
