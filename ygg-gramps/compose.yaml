@@ -26,8 +26,14 @@ services:
   gramps: &gramps
     <<: *common
     container_name: gramps
+    cpu_count: 4
     depends_on:
       - grampsweb-redis
+    deploy:
+      resources:
+        limits:
+          # cpus: "4"
+          memory: 1536M
     environment:
       <<: *env
       GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://grampsweb-redis:6379/0"
@@ -72,9 +78,15 @@ services:
     <<: *gramps
     command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
     container_name: grampsweb-celery
+    cpu_count: 2
     depends_on:
       - gramps
       - grampsweb-redis
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 1024M
     hostname: grampsweb-celery
     mac_address: "0e:be:00:da:00:88"
     networks:
@@ -84,6 +96,12 @@ services:
   grampsweb-redis:
     <<: *common
     container_name: grampsweb-redis
+    cpu_count: 2
+    deploy:
+      resources:
+        limits:
+          # cpus: "2"
+          memory: 1024M
     environment:
       <<: *env
     hostname: grapmsweb-redis
