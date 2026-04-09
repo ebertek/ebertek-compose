@@ -101,7 +101,7 @@ services:
       WORDPRESS_DB_HOST: "mariadb:3306"
     healthcheck:
       <<: *hc
-      test: ["CMD-SHELL", "netstat -ltn | grep 9000"]
+      test: ["CMD-SHELL", "php-fpm -t >/dev/null 2>&1 || exit 1"]
     hostname: wordpress
     image: "docker.io/wordpress:php8.3-fpm-alpine"
     networks:
