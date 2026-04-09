@@ -115,6 +115,15 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: docs
       DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb2-admin-password
       DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb2-admin-username
+    healthcheck:
+      interval: 30s
+      retries: 5
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8086/health | grep -q '\"status\":\"pass\"'",
+        ]
+      timeout: 10s
     hostname: influxdb
     image: "docker.io/library/influxdb:2"
     labels:
