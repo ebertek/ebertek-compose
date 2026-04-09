@@ -72,6 +72,7 @@ services:
           memory: 512M
     environment:
       <<: *env
+      JAVA_OPTS: "-Xms128m -Xmx256m"
     healthcheck:
       interval: 30s
       retries: 5
