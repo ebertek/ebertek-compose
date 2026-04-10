@@ -141,6 +141,8 @@ services:
       GF_SERVER_HTTP_PORT: 3000
       GF_SERVER_PROTOCOL: http
       GF_SERVER_ROOT_URL: "https://grafana.ebi.nu"
+      GF_UNIFIED_STORAGE_DASHBOARDS_DASHBOARD_GRAFANA_APP_ENABLEMIGRATION: "true"
+      GF_UNIFIED_STORAGE_FOLDERS_FOLDER_GRAFANA_APP_ENABLEMIGRATION: "true"
     healthcheck:
       interval: 10s
       retries: 5
