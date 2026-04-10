@@ -11,12 +11,15 @@ networks:
     external: true
 
 x-common: &common
+  cap_drop:
+    - NET_RAW
   dns:
     - 10.4.21.34
     - 1.1.1.1
   dns_search:
     - ygg.nu
   restart: "no"
+  security_opt: ["no-new-privileges:true"]
   stop_grace_period: 1m
 
 x-env: &env
@@ -126,6 +129,8 @@ services:
     volumes:
       - *tz
       - /volume2/docker/immich/cache:/cache
+      - /volume2/docker/immich/ml-cache:/.cache
+      - /volume2/docker/immich/ml-config:/.config
       - /dev/bus/usb:/dev/bus/usb
 
   redis:
