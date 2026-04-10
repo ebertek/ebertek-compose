@@ -70,8 +70,10 @@ services:
     container_name: immich
     cpu_count: 4
     depends_on:
-      - redis
-      - database
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         limits:
