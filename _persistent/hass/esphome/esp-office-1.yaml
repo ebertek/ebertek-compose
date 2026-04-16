@@ -3,7 +3,7 @@ esphome:
   area: Office
   compile_process_limit: 2
   friendly_name: esp-office-1
-  min_version: 2025.11.0
+  min_version: 2026.4.0
   name: esp-office-1
   platformio_options:
     board_build.flash_mode: dio
@@ -181,9 +181,16 @@ media_player:
       format: FLAC
       num_channels: 1
       sample_rate: 48000
-      speaker: box_speaker
-    id: s3_media_player
+      speaker: announcement_resampling_speaker
+    id: speaker_media_player
+    media_pipeline:
+      format: FLAC
+      num_channels: 2
+      sample_rate: 48000
+      speaker: media_resampling_speaker
     name: Media Player
+    task_stack_in_psram: true
+    volume_increment: 0.05
     volume_max: 0.8
     volume_min: 0.5
 
@@ -302,11 +309,26 @@ speaker:
   - platform: i2s_audio
     audio_dac: es8311_dac
     bits_per_sample: 16bit
-    buffer_duration: 100ms
+    buffer_duration: 500ms
     channel: left
     dac_type: external
+    i2s_audio_id: i2s_audio_bus
     i2s_dout_pin: GPIO15
-    id: box_speaker
+    id: i2s_audio_speaker
+    sample_rate: 48000
+  - platform: mixer
+    id: mixing_speaker
+    output_speaker: i2s_audio_speaker
+    source_speakers:
+      - id: announcement_mixing_input
+      - id: media_mixing_input
+  - platform: resampler
+    id: announcement_resampling_speaker
+    output_speaker: announcement_mixing_input
+    sample_rate: 48000
+  - platform: resampler
+    id: media_resampling_speaker
+    output_speaker: media_mixing_input
     sample_rate: 48000
 
 spi:
@@ -326,6 +348,7 @@ switch:
   - platform: gpio
     disabled_by_default: true
     entity_category: config
+    id: speaker_enable
     name: Speaker Enable
     pin:
       ignore_strapping_warning: true
