@@ -153,8 +153,14 @@ sensor:
     id: soil_moisture_percent
     lambda: |-
       const float adc = id(adc_reading).state;
+      const float dry = id(adc_dry).state;
+      const float wet = id(adc_wet).state;
 
-      float pct = (id(adc_dry).state - adc) / (id(adc_dry).state - id(adc_wet).state) * 100.0f;
+      if (dry == wet || isnan(adc) || isnan(dry) || isnan(wet)) {
+        return NAN;
+      }
+
+      float pct = (dry - adc) / (dry - wet) * 100.0f;
       if (pct < 0.0f) pct = 0.0f;
       if (pct > 100.0f) pct = 100.0f;
       return pct;
@@ -167,10 +173,16 @@ text_sensor:
     icon: "mdi:water-percent"
     lambda: |-
       const float adc = id(adc_reading).state;
+      const float dry = id(adc_dry).state;
+      const float wet = id(adc_wet).state;
 
-      if (adc >= id(adc_dry).state) {
+      if (isnan(adc) || isnan(dry) || isnan(wet) || dry == wet) {
+        return {"Unknown"};
+      }
+
+      if (adc >= dry) {
         return {"Dry"};
-      } else if (adc >= id(adc_wet).state) {
+      } else if (adc >= wet) {
         return {"Wet"};
       } else {
         return {"Saturated"};
