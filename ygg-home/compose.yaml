@@ -43,6 +43,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.52
+        ipv6_address: 2001:9b1:25fc:6900::52
     stop_signal: SIGINT
     user: "1028:100"
     volumes:
@@ -90,6 +91,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.59
+        ipv6_address: 2001:9b1:25fc:6900::59
     volumes:
       - *tz
       - "/volume2/docker/calibre-web:/config"
@@ -124,6 +126,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.40
+        ipv6_address: 2001:9b1:25fc:6900::40
     volumes:
       - *tz
       - "/volume2/docker/plex/config:/config"
@@ -156,6 +159,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.41
+        ipv6_address: 2001:9b1:25fc:6900::41
     volumes:
       - *tz
       - "/volume2/docker/tautulli:/config"
@@ -198,6 +202,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.53
+        ipv6_address: 2001:9b1:25fc:6900::53
     volumes:
       - *tz
       - "/volume2/docker/tmm/data:/data"

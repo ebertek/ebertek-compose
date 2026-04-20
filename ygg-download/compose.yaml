@@ -103,6 +103,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.39
+        ipv6_address: 2001:9b1:25fc:6900::39
     privileged: true
     sysctls:
       net.ipv4.conf.all.src_valid_mark: 1

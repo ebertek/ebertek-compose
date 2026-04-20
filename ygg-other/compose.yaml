@@ -54,6 +54,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.36
+        ipv6_address: 2001:9b1:25fc:6900::36
     stdin_open: true
     tty: true
     volumes:
@@ -92,6 +93,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.43
+        ipv6_address: 2001:9b1:25fc:6900::43
     volumes:
       - *tz
       - "/volume2/docker/dbeaver:/opt/cloudbeaver/workspace"
@@ -130,6 +132,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.45
+        ipv6_address: 2001:9b1:25fc:6900::45
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
     volumes:
@@ -167,6 +170,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.60
+        ipv6_address: 2001:9b1:25fc:6900::60
     volumes:
       - "/volume2/docker/smtp/data:/data"
       - "/volume2/docker/smtp/client_sasl_passwd:/etc/postfix/client_sasl_passwd"
@@ -218,6 +222,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.46
+        ipv6_address: 2001:9b1:25fc:6900::46
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80
     volumes:

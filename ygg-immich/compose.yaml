@@ -59,6 +59,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.51
+        ipv6_address: 2001:9b1:25fc:6900::51
     shm_size: 128mb
     # user: 1028:100
     volumes:
@@ -98,6 +99,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.48
+        ipv6_address: 2001:9b1:25fc:6900::48
     user: 1028:100
     volumes:
       - *tz
@@ -127,6 +129,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.49
+        ipv6_address: 2001:9b1:25fc:6900::49
     user: 1028:100
     volumes:
       - *tz
@@ -159,6 +162,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.50
+        ipv6_address: 2001:9b1:25fc:6900::50
     sysctls:
       net.core.somaxconn: 512
     # user: 1028:100

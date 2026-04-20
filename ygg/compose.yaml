@@ -17,6 +17,8 @@ networks:
             host: 10.4.21.1
           gateway: 10.4.20.1
           ip_range: 10.4.21.0/24
+        - subnet: 2001:9b1:25fc:6900::/64
+          gateway: 2001:9b1:25fc:6900::1
     name: macvlan1
 
 services:
@@ -44,6 +46,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.47
+        ipv6_address: 2001:9b1:25fc:6900::47
     privileged: true
     restart: always
     stop_grace_period: 1m

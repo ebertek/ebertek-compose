@@ -69,6 +69,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.57
+        ipv6_address: 2001:9b1:25fc:6900::57
     volumes:
       - *tz
       - "/volume2/docker/bazarr:/config"
@@ -112,6 +113,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.58
+        ipv6_address: 2001:9b1:25fc:6900::58
     volumes:
       - *tz
       - "/volume2/docker/lidarr:/config"
@@ -142,6 +144,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.42
+        ipv6_address: 2001:9b1:25fc:6900::42
     secrets:
       - pg-passwd
       - pg-user
@@ -193,6 +196,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.54
+        ipv6_address: 2001:9b1:25fc:6900::54
     volumes:
       - *tz
       - "/volume2/docker/prowlarr:/config"
@@ -235,6 +239,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.55
+        ipv6_address: 2001:9b1:25fc:6900::55
     volumes:
       - *tz
       - "/volume2/docker/radarr:/config"
@@ -269,6 +274,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.62
+        ipv6_address: 2001:9b1:25fc:6900::62
     security_opt: ["no-new-privileges:true"]
     user: "1028:100"
     volumes:
@@ -313,6 +319,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.61
+        ipv6_address: 2001:9b1:25fc:6900::61
     volumes:
       - *tz
       - "/volume2/docker/requestrr:/config"
@@ -355,6 +362,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.56
+        ipv6_address: 2001:9b1:25fc:6900::56
     volumes:
       - *tz
       - "/volume2/docker/sonarr:/config"
