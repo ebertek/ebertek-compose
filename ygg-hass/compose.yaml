@@ -29,6 +29,8 @@ secrets:
     file: influxdb2-admin-token.txt
   influxdb2-admin-username:
     file: influxdb2-admin-username.txt
+  private.key:
+    file: private.key
 
 services:
   esphome:
@@ -311,6 +313,40 @@ services:
       - *tz
       - "/volume2/docker/hass/scrypted/nvr:/nvr"
       - "/volume2/docker/hass/scrypted/volume:/server/volume"
+
+  vonage:
+    <<: *common
+    container_name: vonage
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 128M
+    env_file: vonage.txt
+    environment:
+      <<: *env
+      BASE_URL: "https://vonage.ebi.nu"
+      HA_BASE_URL: "http://hass:8123"
+      VALIDATE_VONAGE_SMS_SIGNATURE: "true"
+    hostname: vonage
+    image: "ghcr.io/ebertek/vonage-ha-bridge:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.vonage.entrypoints: websecure
+      traefik.http.routers.vonage.rule: "Host(`vonage.ebi.nu`)"
+      traefik.http.routers.vonage.tls: "true"
+      traefik.http.services.vonage.loadbalancer.server.port: 3000
+    mac_address: "0e:be:00:da:00:73"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.73
+        ipv6_address: 2001:9b1:25fc:6900::73
+    restart: unless-stopped
+    secrets:
+      - private.key
+    volumes:
+      - *tz
 
   zigbee2mqtt:
     <<: *common
