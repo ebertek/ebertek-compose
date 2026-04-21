@@ -328,6 +328,7 @@ services:
       <<: *env
       BASE_URL: "https://vonage.ebi.nu"
       HA_BASE_URL: "http://hass:8123"
+      REDACT_LOGS: "false"
       VALIDATE_VONAGE_SMS_SIGNATURE: "true"
     hostname: vonage
     image: "ghcr.io/ebertek/vonage-ha-bridge:latest"
