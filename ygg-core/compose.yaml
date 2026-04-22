@@ -246,7 +246,11 @@ services:
       interval: 10s
       retries: 5
       start_period: 15s
-      test: ["CMD", "pg_isready"]
+      test:
+        [
+          "CMD-SHELL",
+          'pg_isready -h 127.0.0.1 -p 5432 -U "$(cat /run/secrets/postgres-user)" -d postgres',
+        ]
       timeout: 5s
     hostname: postgres
     image: "docker.io/library/postgres:17"
