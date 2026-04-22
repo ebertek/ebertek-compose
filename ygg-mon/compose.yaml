@@ -199,6 +199,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.loki.entrypoints: websecure
+      traefik.http.routers.loki.observability.accesslogs: "false"
       traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`)"
       traefik.http.routers.loki.tls: "true"
       traefik.http.services.loki.loadbalancer.server.port: 3100
