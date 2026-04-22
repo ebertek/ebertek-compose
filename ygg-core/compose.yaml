@@ -265,12 +265,6 @@ services:
 
   traefik:
     <<: *common
-    command:
-      - "--api=true"
-      - "--api.insecure=true"
-      - "--log.level=WARN"
-      - "--metrics.prometheus=true"
-      - "--providers.docker=true"
     container_name: traefik
     cpu_count: 1
     deploy:
@@ -280,7 +274,41 @@ services:
           memory: 256M
     environment:
       <<: *env
-      TRAEFIK_LOG_FORMAT: json
+      TRAEFIK_API_DASHBOARD: "true"
+      TRAEFIK_API_INSECURE: "true"
+
+      TRAEFIK_LOG_LEVEL: "WARN"
+      TRAEFIK_LOG_FORMAT: "json"
+
+      TRAEFIK_ACCESSLOG: "true"
+      TRAEFIK_ACCESSLOG_FORMAT: "json"
+
+      TRAEFIK_METRICS_PROMETHEUS: "true"
+      TRAEFIK_METRICS_PROMETHEUS_ADDENTRYPOINTSLABELS: "true"
+      TRAEFIK_METRICS_PROMETHEUS_ADDROUTERSLABELS: "true"
+      TRAEFIK_METRICS_PROMETHEUS_ADDSERVICESLABELS: "true"
+      TRAEFIK_METRICS_PROMETHEUS_BUCKETS: "0.1,0.3,1.2,5.0"
+
+      TRAEFIK_PROVIDERS_DOCKER: "true"
+      TRAEFIK_PROVIDERS_DOCKER_ENDPOINT: "unix:///var/run/docker.sock"
+      TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: "false"
+      TRAEFIK_PROVIDERS_DOCKER_NETWORK: "macvlan1"
+      TRAEFIK_PROVIDERS_DOCKER_DEFAULTRULE: "Host(`{{ trimPrefix `/` .Name }}.ebi.nu`)"
+
+      TRAEFIK_PROVIDERS_FILE_FILENAME: "/etc/traefik/dynamic.yml"
+      TRAEFIK_PROVIDERS_FILE_WATCH: "true"
+
+      TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: ":80"
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO: "websecure"
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME: "https"
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_PERMANENT: "true"
+
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS: ":443"
+
+      TRAEFIK_SERVERSTRANSPORT_INSECURESKIPVERIFY: "true"
+
+      TRAEFIK_EXPERIMENTAL_PLUGINS_GEOBLOCK_MODULENAME: "github.com/PascalMinder/geoblock"
+      TRAEFIK_EXPERIMENTAL_PLUGINS_GEOBLOCK_VERSION: "v0.3.7"
     healthcheck:
       interval: 30s
       retries: 3
@@ -302,7 +330,7 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/traefik/geoblock:/var/lib/geoblock"
-      - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml"
-      - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
+      - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
+      # - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
       - "/volume2/docker/acmesh/ebi.nu_ecc/:/certs:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
