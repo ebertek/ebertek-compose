@@ -290,6 +290,10 @@ services:
       timeout: 5s
     hostname: traefik
     image: "docker.io/library/traefik:v3"
+    logging:
+      options:
+        max-file: "2"
+        max-size: "5m"
     mac_address: "0e:be:00:da:00:44"
     networks:
       macvlan1:
