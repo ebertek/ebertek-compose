@@ -53,7 +53,6 @@ services:
       - "/volume1/Downloads:/downloads"
       - "/volume2/docker/qbittorrent:/config"
       - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
-      - "/volume2/docker/qbittorrent/mam-update.sh:/etc/periodic/hourly/mam-update.sh"
 
   gluetun:
     <<: *common
@@ -79,6 +78,7 @@ services:
       <<: *env
       BLOCK_MALICIOUS: off
       DNS_UNBLOCK_HOSTNAMES: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
+      FIREWALL_VPN_INPUT_PORTS: "56213"
       SERVER_CITIES: Gothenburg
       UPDATER_PERIOD: 24h
       VPN_SERVICE_PROVIDER: mullvad
@@ -112,3 +112,27 @@ services:
       - *tz
       - "/volume2/docker/gluetun:/gluetun"
       - "/lib/modules:/lib/modules:ro"
+
+  mousehole:
+    <<: *common
+    container_name: mousehole
+    cpu_count: 1
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 256M
+    environment:
+      <<: *env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:5010/state || exit 1"]
+    image: "docker.io/tmmrtn/mousehole:edge"
+    labels:
+      com.centurylinklabs.watchtower.depends-on: gluetun
+    network_mode: "container:gluetun"
+    volumes:
+      - *tz
+      - "/volume2/docker/qbittorrent/mousehole:/srv/mousehole"
