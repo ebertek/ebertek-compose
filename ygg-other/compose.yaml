@@ -85,10 +85,10 @@ services:
     image: "docker.io/dbeaver/cloudbeaver:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.dbeaver.entrypoints: websecure
+      traefik.http.routers.dbeaver.entrypoints: "websecure"
       traefik.http.routers.dbeaver.rule: "Host(`dbeaver.ebi.nu`)"
       traefik.http.routers.dbeaver.tls: "true"
-      traefik.http.services.dbeaver.loadbalancer.server.port: 8978
+      traefik.http.services.dbeaver.loadbalancer.server.port: "8978"
     mac_address: "0e:be:00:da:00:43"
     networks:
       macvlan1:
@@ -124,10 +124,10 @@ services:
     image: "ghcr.io/thelounge/thelounge:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.irc.entrypoints: websecure
+      traefik.http.routers.irc.entrypoints: "websecure"
       traefik.http.routers.irc.rule: "Host(`irc.ebi.nu`)"
       traefik.http.routers.irc.tls: "true"
-      traefik.http.services.irc.loadbalancer.server.port: 9000
+      traefik.http.services.irc.loadbalancer.server.port: "9000"
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
@@ -214,10 +214,10 @@ services:
     image: "docker.io/vaultwarden/server:testing"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.vw.entrypoints: websecure
+      traefik.http.routers.vw.entrypoints: "websecure"
       traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`)"
       traefik.http.routers.vw.tls: "true"
-      traefik.http.services.vw.loadbalancer.server.port: 80
+      traefik.http.services.vw.loadbalancer.server.port: "80"
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:

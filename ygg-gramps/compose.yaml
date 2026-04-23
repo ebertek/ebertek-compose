@@ -56,10 +56,10 @@ services:
     image: "ghcr.io/gramps-project/grampsweb:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.gramps.entrypoints: websecure
+      traefik.http.routers.gramps.entrypoints: "websecure"
       traefik.http.routers.gramps.rule: "Host(`gramps.ebi.nu`)"
       traefik.http.routers.gramps.tls: "true"
-      traefik.http.services.gramps.loadbalancer.server.port: 5000
+      traefik.http.services.gramps.loadbalancer.server.port: "5000"
     mac_address: "0e:be:00:da:00:87"
     networks:
       macvlan1:

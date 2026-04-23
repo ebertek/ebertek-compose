@@ -63,10 +63,10 @@ services:
     image: "docker.io/grafana/alloy:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.alloy.entrypoints: websecure
+      traefik.http.routers.alloy.entrypoints: "websecure"
       traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`)"
       traefik.http.routers.alloy.tls: "true"
-      traefik.http.services.alloy.loadbalancer.server.port: 12345
+      traefik.http.services.alloy.loadbalancer.server.port: "12345"
     mac_address: "0e:be:00:da:00:81"
     networks:
       macvlan1:
@@ -162,10 +162,10 @@ services:
     image: "docker.io/grafana/grafana:main"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.grafana.entrypoints: websecure
+      traefik.http.routers.grafana.entrypoints: "websecure"
       traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`)"
       traefik.http.routers.grafana.tls: "true"
-      traefik.http.services.grafana.loadbalancer.server.port: 3000
+      traefik.http.services.grafana.loadbalancer.server.port: "3000"
     mac_address: "0e:be:00:da:00:82"
     networks:
       macvlan1:
@@ -198,11 +198,11 @@ services:
     image: "docker.io/grafana/loki:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.loki.entrypoints: websecure
+      traefik.http.routers.loki.entrypoints: "websecure"
       traefik.http.routers.loki.observability.accesslogs: "false"
       traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`)"
       traefik.http.routers.loki.tls: "true"
-      traefik.http.services.loki.loadbalancer.server.port: 3100
+      traefik.http.services.loki.loadbalancer.server.port: "3100"
     mac_address: "0e:be:00:da:00:80"
     networks:
       macvlan1:
@@ -244,11 +244,11 @@ services:
     image: "docker.io/prom/prometheus:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.prometheus.entrypoints: websecure
+      traefik.http.routers.prometheus.entrypoints: "websecure"
       traefik.http.routers.prometheus.observability.accesslogs: "false"
       traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`)"
       traefik.http.routers.prometheus.tls: "true"
-      traefik.http.services.prometheus.loadbalancer.server.port: 9090
+      traefik.http.services.prometheus.loadbalancer.server.port: "9090"
     mac_address: "0e:be:00:da:00:83"
     networks:
       macvlan1:

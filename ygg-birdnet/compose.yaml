@@ -44,10 +44,10 @@ services:
     image: "ghcr.io/tphakala/birdnet-go:nightly"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.birdnet.entrypoints: websecure
+      traefik.http.routers.birdnet.entrypoints: "websecure"
       traefik.http.routers.birdnet.rule: "Host(`birdnet.ebi.nu`)"
       traefik.http.routers.birdnet.tls: "true"
-      traefik.http.services.birdnet.loadbalancer.server.port: 8080
+      traefik.http.services.birdnet.loadbalancer.server.port: "8080"
     mac_address: "0e:be:00:da:00:75"
     networks:
       macvlan1:

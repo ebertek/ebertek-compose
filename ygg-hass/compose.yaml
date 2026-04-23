@@ -49,10 +49,10 @@ services:
     image: "ghcr.io/esphome/esphome:stable"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.esphome.entrypoints: websecure
+      traefik.http.routers.esphome.entrypoints: "websecure"
       traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`)"
       traefik.http.routers.esphome.tls: "true"
-      traefik.http.services.esphome.loadbalancer.server.port: 6052
+      traefik.http.services.esphome.loadbalancer.server.port: "6052"
       traefik.http.services.esphome.loadbalancer.server.scheme: http
     mac_address: "0e:be:00:da:00:71"
     networks:
@@ -87,10 +87,10 @@ services:
     image: "ghcr.io/home-assistant/home-assistant:stable"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.hass.entrypoints: websecure
+      traefik.http.routers.hass.entrypoints: "websecure"
       traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`)"
       traefik.http.routers.hass.tls: "true"
-      traefik.http.services.hass.loadbalancer.server.port: 8123
+      traefik.http.services.hass.loadbalancer.server.port: "8123"
     mac_address: "0e:be:00:da:00:70"
     networks:
       macvlan1:
@@ -132,10 +132,10 @@ services:
     image: "docker.io/library/influxdb:2"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.influxdb.entrypoints: websecure
+      traefik.http.routers.influxdb.entrypoints: "websecure"
       traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`)"
       traefik.http.routers.influxdb.tls: "true"
-      traefik.http.services.influxdb.loadbalancer.server.port: 8086
+      traefik.http.services.influxdb.loadbalancer.server.port: "8086"
     mac_address: "0e:be:00:da:00:72"
     networks:
       macvlan1:
@@ -295,10 +295,10 @@ services:
     image: "ghcr.io/koush/scrypted:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.scrypted.entrypoints: websecure
+      traefik.http.routers.scrypted.entrypoints: "websecure"
       traefik.http.routers.scrypted.rule: "Host(`scrypted.ebi.nu`)"
       traefik.http.routers.scrypted.tls: "true"
-      traefik.http.services.scrypted.loadbalancer.server.port: 11080
+      traefik.http.services.scrypted.loadbalancer.server.port: "11080"
     logging:
       options:
         max-file: "2"
@@ -335,10 +335,10 @@ services:
     image: "ghcr.io/ebertek/vonage-ha-bridge:latest"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.vonage.entrypoints: websecure
+      traefik.http.routers.vonage.entrypoints: "websecure"
       traefik.http.routers.vonage.rule: "Host(`vonage.ebi.nu`)"
       traefik.http.routers.vonage.tls: "true"
-      traefik.http.services.vonage.loadbalancer.server.port: 3000
+      traefik.http.services.vonage.loadbalancer.server.port: "3000"
     mac_address: "0e:be:00:da:00:73"
     networks:
       macvlan1:
@@ -381,10 +381,10 @@ services:
     labels:
       com.centurylinklabs.watchtower.depends-on: mosquitto
       traefik.enable: "true"
-      traefik.http.routers.zigbee2mqtt.entrypoints: websecure
+      traefik.http.routers.zigbee2mqtt.entrypoints: "websecure"
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"
       traefik.http.routers.zigbee2mqtt.tls: "true"
-      traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8099
+      traefik.http.services.zigbee2mqtt.loadbalancer.server.port: "8099"
     mac_address: "0e:be:00:da:00:69"
     networks:
       macvlan1:
