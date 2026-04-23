@@ -17,8 +17,11 @@ networks:
             host: 10.4.21.1
           gateway: 10.4.20.1
           ip_range: 10.4.21.0/24
-        - subnet: 2001:9b1:25fc:6900:421::/80
+        - subnet: 2001:9b1:25fc:6900::/64
+          aux_addresses:
+            host: 2001:9b1:25fc:6900:421::1
           gateway: 2001:9b1:25fc:6900::1
+          ip_range: 2001:9b1:25fc:6900:421::/80
     name: macvlan1
 
 services:
