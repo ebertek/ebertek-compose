@@ -33,6 +33,6 @@ ip -4 addr flush dev "$IFACE"
 ip -4 addr add "$HOST_ADDR4" dev "$IFACE"
 ip -4 route replace "$SUBNET4" dev "$IFACE"
 
-ip -6 addr flush dev "$IFACE"
+ip -6 addr flush dev "$IFACE" scope local
 ip -6 addr add "$HOST_ADDR6" dev "$IFACE"
 ip -6 route replace "$SUBNET6" dev "$IFACE"
