@@ -64,7 +64,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.87
-        ipv6_address: 2001:9b1:25fc:6900::87
+        ipv6_address: 2001:9b1:25fc:6900:421::87
     volumes:
       - *tz
       - "/volume2/docker/gramps/cache:/app/cache"
@@ -113,7 +113,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.88
-        ipv6_address: 2001:9b1:25fc:6900::88
+        ipv6_address: 2001:9b1:25fc:6900:421::88
     volumes:
       - *tz
       - "/volume2/docker/gramps/cache:/app/cache"
@@ -147,7 +147,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.89
-        ipv6_address: 2001:9b1:25fc:6900::89
+        ipv6_address: 2001:9b1:25fc:6900:421::89
     sysctls:
       net.core.somaxconn: 512
     volumes:

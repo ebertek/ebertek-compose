@@ -58,7 +58,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.71
-        ipv6_address: 2001:9b1:25fc:6900::71
+        ipv6_address: 2001:9b1:25fc:6900:421::71
     privileged: true
     stop_signal: SIGINT
     volumes:
@@ -95,7 +95,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.70
-        ipv6_address: 2001:9b1:25fc:6900::70
+        ipv6_address: 2001:9b1:25fc:6900:421::70
     privileged: true
     volumes:
       - *tz
@@ -140,7 +140,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.72
-        ipv6_address: 2001:9b1:25fc:6900::72
+        ipv6_address: 2001:9b1:25fc:6900:421::72
     secrets:
       - influxdb2-admin-username
       - influxdb2-admin-password
@@ -181,7 +181,7 @@ services:
         # driver_opts:
         #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
         ipv4_address: 10.4.21.66
-        ipv6_address: 2001:9b1:25fc:6900::66
+        ipv6_address: 2001:9b1:25fc:6900:421::66
     security_opt:
       - "apparmor:unconfined"
     user: "1000:1000"
@@ -213,7 +213,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.67
-        ipv6_address: 2001:9b1:25fc:6900::67
+        ipv6_address: 2001:9b1:25fc:6900:421::67
     volumes:
       - *tz
       - "/volume2/docker/hass/mosquitto/config:/mosquitto/config"
@@ -254,7 +254,7 @@ services:
         aliases:
           - df2164f9-ps5-mqtt
         ipv4_address: 10.4.21.68
-        ipv6_address: 2001:9b1:25fc:6900::68
+        ipv6_address: 2001:9b1:25fc:6900:421::68
     stop_signal: SIGKILL
     volumes:
       - *tz
@@ -307,7 +307,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.76
-        ipv6_address: 2001:9b1:25fc:6900::76
+        ipv6_address: 2001:9b1:25fc:6900:421::76
     restart: unless-stopped
     volumes:
       - *tz
@@ -343,7 +343,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.73
-        ipv6_address: 2001:9b1:25fc:6900::73
+        ipv6_address: 2001:9b1:25fc:6900:421::73
     restart: unless-stopped
     secrets:
       - private.key
@@ -389,7 +389,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.69
-        ipv6_address: 2001:9b1:25fc:6900::69
+        ipv6_address: 2001:9b1:25fc:6900:421::69
     restart: on-failure
     volumes:
       - *tz

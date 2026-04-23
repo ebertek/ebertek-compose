@@ -71,7 +71,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.81
-        ipv6_address: 2001:9b1:25fc:6900::81
+        ipv6_address: 2001:9b1:25fc:6900:421::81
     volumes:
       - *tz
       - "/:/rootfs:ro"
@@ -170,7 +170,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.82
-        ipv6_address: 2001:9b1:25fc:6900::82
+        ipv6_address: 2001:9b1:25fc:6900:421::82
     user: "1028:100"
     volumes:
       - *tz
@@ -207,7 +207,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.80
-        ipv6_address: 2001:9b1:25fc:6900::80
+        ipv6_address: 2001:9b1:25fc:6900:421::80
     user: "1028:100"
     volumes:
       - *tz
@@ -253,7 +253,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.83
-        ipv6_address: 2001:9b1:25fc:6900::83
+        ipv6_address: 2001:9b1:25fc:6900:421::83
     secrets:
       - hass-bearer-token
     user: "1028:100"

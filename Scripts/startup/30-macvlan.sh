@@ -7,8 +7,8 @@ PARENT="ovs_bond0"
 HOST_ADDR4="10.4.21.1/32"
 SUBNET4="10.4.20.0/23"
 
-HOST_ADDR6="2001:9b1:25fc:6900::ffff/128"
-SUBNET6="2001:9b1:25fc:6900::/64"
+HOST_ADDR6="2001:9b1:25fc:6900:421::1/128"
+SUBNET6="2001:9b1:25fc:6900:421::/80"
 
 # Wait for parent interface to exist and be up (timeout: 30s)
 for _ in {1..30}; do
