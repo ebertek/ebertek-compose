@@ -23,12 +23,32 @@ x-env: &env
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
 secrets:
+  cloudflare_api_token:
+    file: cloudflare_api_token.txt
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
     file: postgres-user.txt
 
 services:
+  cloudflare-ddns:
+    cap_drop: [all]
+    environment:
+      <<: *env
+      CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
+      DOMAINS: "ygg.ebi.nu"
+      IP6_PROVIDER: "none"
+      PROXIED: "false"
+    image: "favonia/cloudflare-ddns:1"
+    network_mode: host
+    read_only: true
+    secrets:
+      - cloudflare_api_token
+    security_opt: [no-new-privileges:true]
+    user: "1028:100"
+    volumes:
+      - *tz
+
   cloudflared:
     <<: *common
     command: tunnel run
