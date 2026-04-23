@@ -99,6 +99,10 @@ services:
       traefik.http.routers.download.rule: "Host(`download.ebi.nu`)"
       traefik.http.routers.download.tls: "true"
       traefik.http.services.download.loadbalancer.server.port: 8080
+      traefik.http.routers.mousehole.entrypoints: websecure
+      traefik.http.routers.mousehole.rule: "Host(`mousehole.ebi.nu`)"
+      traefik.http.routers.mousehole.tls: "true"
+      traefik.http.services.mousehole.loadbalancer.server.port: 5010
     mac_address: "0e:be:00:da:00:39"
     networks:
       macvlan1:
