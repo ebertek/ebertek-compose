@@ -33,13 +33,21 @@ secrets:
 services:
   cloudflare-ddns:
     cap_drop: [all]
+    container_name: cloudflare-ddns
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 128M
     environment:
       <<: *env
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
       DOMAINS: "ygg.ebi.nu"
-      IP6_PROVIDER: "none"
+      # IP6_PROVIDER: "none"
       PROXIED: "false"
-    image: "favonia/cloudflare-ddns:1"
+    hostname: cloudflare-ddns
+    image: "docker.io/favonia/cloudflare-ddns:1"
     network_mode: host
     read_only: true
     secrets:
