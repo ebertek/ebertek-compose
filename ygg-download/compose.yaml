@@ -40,10 +40,10 @@ services:
       WEBUI_PORT: 8080
     healthcheck:
       interval: 30s
-      retries: 1
-      start_period: 10s
-      test: ["CMD-SHELL", "ping -c 2 gluetun || exit 1"]
-      timeout: 2s
+      retries: 3
+      start_period: 30s
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/ || exit 1"]
+      timeout: 5s
     image: "lscr.io/linuxserver/qbittorrent:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
@@ -134,7 +134,11 @@ services:
     environment:
       <<: *env
     healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
       test: ["CMD-SHELL", "curl -fs http://localhost:5010/state || exit 1"]
+      timeout: 5s
     image: "docker.io/tmmrtn/mousehole:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
