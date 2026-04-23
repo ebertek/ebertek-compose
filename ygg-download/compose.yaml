@@ -129,7 +129,7 @@ services:
       <<: *env
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:5010/state || exit 1"]
-    image: "docker.io/tmmrtn/mousehole:edge"
+    image: "docker.io/tmmrtn/mousehole:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: gluetun
     network_mode: "container:gluetun"
