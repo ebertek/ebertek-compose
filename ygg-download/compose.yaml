@@ -46,7 +46,7 @@ services:
       timeout: 5s
     image: "lscr.io/linuxserver/qbittorrent:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: gluetun
+      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "container:gluetun"
     volumes:
       - *tz
@@ -97,12 +97,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.download.entrypoints: "websecure"
       traefik.http.routers.download.rule: "Host(`download.ebi.nu`)"
-      traefik.http.routers.download.service: download
+      traefik.http.routers.download.service: "download"
       traefik.http.routers.download.tls: "true"
       traefik.http.services.download.loadbalancer.server.port: "8080"
       traefik.http.routers.mousehole.entrypoints: "websecure"
       traefik.http.routers.mousehole.rule: "Host(`mousehole.ebi.nu`)"
-      traefik.http.routers.mousehole.service: mousehole
+      traefik.http.routers.mousehole.service: "mousehole"
       traefik.http.routers.mousehole.tls: "true"
       traefik.http.services.mousehole.loadbalancer.server.port: "5010"
     mac_address: "0e:be:00:da:00:39"
@@ -141,7 +141,7 @@ services:
       timeout: 5s
     image: "docker.io/tmmrtn/mousehole:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: gluetun
+      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "container:gluetun"
     volumes:
       - *tz

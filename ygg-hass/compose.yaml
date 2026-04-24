@@ -53,7 +53,7 @@ services:
       traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`)"
       traefik.http.routers.esphome.tls: "true"
       traefik.http.services.esphome.loadbalancer.server.port: "6052"
-      traefik.http.services.esphome.loadbalancer.server.scheme: http
+      traefik.http.services.esphome.loadbalancer.server.scheme: "http"
     mac_address: "0e:be:00:da:00:71"
     networks:
       macvlan1:
@@ -247,7 +247,7 @@ services:
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: mosquitto
+      com.centurylinklabs.watchtower.depends-on: "mosquitto"
     mac_address: "0e:be:00:da:00:68"
     networks:
       macvlan1:
@@ -379,7 +379,7 @@ services:
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: mosquitto
+      com.centurylinklabs.watchtower.depends-on: "mosquitto"
       traefik.enable: "true"
       traefik.http.routers.zigbee2mqtt.entrypoints: "websecure"
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"

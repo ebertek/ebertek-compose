@@ -182,7 +182,7 @@ services:
       traefik.http.routers.keycloak.entrypoints: "websecure"
       traefik.http.routers.keycloak.rule: "Host(`keycloak.ebi.nu`)"
       traefik.http.routers.keycloak.tls: "true"
-      traefik.http.services.keycloak.loadbalancer.passhostheader: true
+      traefik.http.services.keycloak.loadbalancer.passhostheader: "true"
       traefik.http.services.keycloak.loadbalancer.server.port: "8080"
     mac_address: "0e:be:00:da:00:91"
     networks:
