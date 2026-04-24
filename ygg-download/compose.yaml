@@ -57,7 +57,7 @@ services:
     volumes:
       - *tz
       - "/volume1/Downloads:/downloads"
-      - "/volume2/docker/qbittorrent/qBittorrent:/config"
+      - "/volume2/docker/qbittorrent:/config"
       - "/volume2/docker/qbittorrent/ipv6-update.sh:/etc/periodic/hourly/ipv6-update.sh"
 
   gluetun:
