@@ -11,7 +11,7 @@ x-common: &common
 x-env: &env
   TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   alloy:

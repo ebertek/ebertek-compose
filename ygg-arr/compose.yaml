@@ -25,7 +25,7 @@ x-env-arr: &env-arr
   PGID: "100"
   UMASK: "002"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 secrets:
   pg-passwd:

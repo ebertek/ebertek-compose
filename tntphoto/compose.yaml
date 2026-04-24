@@ -18,7 +18,7 @@ x-hc: &hc
   start_period: 90s
   timeout: 10s
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   mariadb:

@@ -28,7 +28,7 @@ x-env: &env
   REDIS_HOSTNAME: "redis"
   TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   database:
