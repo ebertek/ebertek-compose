@@ -36,18 +36,24 @@ services:
           memory: 256M
     environment:
       <<: *env
-      TORRENTING_PORT: "56213"
-      WEBUI_PORT: "8080"
+      QBT_LEGAL_NOTICE: "confirm"
+      QBT_TORRENTING_PORT: "56213"
+      QBT_VERSION: "latest"
+      QBT_WEBUI_PORT: "8080"
     healthcheck:
       interval: 30s
       retries: 3
       start_period: 30s
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/ || exit 1"]
       timeout: 5s
-    image: "lscr.io/linuxserver/qbittorrent:latest"
+    image: "docker.io/qbittorrentofficial/qbittorrent-nox:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "container:gluetun"
+    read_only: false
+    tmpfs:
+      - /tmp
+    tty: true
     volumes:
       - *tz
       - "/volume1/Downloads:/downloads"
