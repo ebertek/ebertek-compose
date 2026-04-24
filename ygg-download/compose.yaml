@@ -15,9 +15,9 @@ x-common: &common
   stop_grace_period: 1m
 
 x-env: &env
-  PUID: 1028
-  PGID: 100
-  TZ: UTC
+  PUID: "1028"
+  PGID: "100"
+  TZ: "UTC"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -36,8 +36,8 @@ services:
           memory: 256M
     environment:
       <<: *env
-      TORRENTING_PORT: 56213
-      WEBUI_PORT: 8080
+      TORRENTING_PORT: "56213"
+      WEBUI_PORT: "8080"
     healthcheck:
       interval: 30s
       retries: 3
@@ -76,15 +76,15 @@ services:
     env_file: gluetun.txt
     environment:
       <<: *env
-      BLOCK_MALICIOUS: off
-      DNS_UNBLOCK_HOSTNAMES: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
+      BLOCK_MALICIOUS: "off"
+      DNS_UNBLOCK_HOSTNAMES: "cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org"
       FIREWALL_VPN_INPUT_PORTS: "56213"
-      SERVER_CITIES: Gothenburg
-      UPDATER_PERIOD: 24h
-      VPN_SERVICE_PROVIDER: mullvad
-      VPN_TYPE: wireguard
+      SERVER_CITIES: "Gothenburg"
+      UPDATER_PERIOD: "24h"
+      VPN_SERVICE_PROVIDER: "mullvad"
+      VPN_TYPE: "wireguard"
       WIREGUARD_ADDRESSES: "10.75.26.2/32,fc00:bbbb:bbbb:bb01::c:1a01/128"
-      WIREGUARD_ENDPOINT_PORT: 53
+      WIREGUARD_ENDPOINT_PORT: "53"
     healthcheck:
       interval: 5s
       retries: 3

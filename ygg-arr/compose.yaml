@@ -18,12 +18,12 @@ x-common: &common
   stop_grace_period: 2m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
 x-env-arr: &env-arr
-  PUID: 1028
-  PGID: 100
-  UMASK: 002
+  PUID: "1028"
+  PGID: "100"
+  UMASK: "002"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -48,7 +48,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      WEBUI_PORTS: 6767/tcp,6767/udp
+      WEBUI_PORTS: "6767/tcp,6767/udp"
     healthcheck:
       interval: 30s
       retries: 5
@@ -89,7 +89,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      LIDARR__LOG__CONSOLEFORMAT: json
+      LIDARR__LOG__CONSOLEFORMAT: "json"
     healthcheck:
       interval: 30s
       retries: 5
@@ -130,8 +130,8 @@ services:
           memory: 1024M
     environment:
       <<: *env
-      POSTGRES_PASSWORD_FILE: /run/secrets/pg-passwd
-      POSTGRES_USER_FILE: /run/secrets/pg-user
+      POSTGRES_PASSWORD_FILE: "/run/secrets/pg-passwd"
+      POSTGRES_USER_FILE: "/run/secrets/pg-user"
     healthcheck:
       interval: 10s
       retries: 5
@@ -172,7 +172,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      PROWLARR__LOG__CONSOLEFORMAT: json
+      PROWLARR__LOG__CONSOLEFORMAT: "json"
     healthcheck:
       interval: 30s
       retries: 5
@@ -215,7 +215,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      RADARR__LOG__CONSOLEFORMAT: json
+      RADARR__LOG__CONSOLEFORMAT: "json"
     healthcheck:
       interval: 30s
       retries: 5
@@ -261,7 +261,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      RECYCLARR_CREATE_CONFIG: true
+      RECYCLARR_CREATE_CONFIG: "true"
     healthcheck:
       interval: 1m
       retries: 3
@@ -338,7 +338,7 @@ services:
           memory: 512M
     environment:
       <<: [*env, *env-arr]
-      SONARR__LOG__CONSOLEFORMAT: json
+      SONARR__LOG__CONSOLEFORMAT: "json"
     healthcheck:
       interval: 30s
       retries: 5

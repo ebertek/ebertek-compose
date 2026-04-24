@@ -9,7 +9,7 @@ x-common: &common
   stop_grace_period: 1m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -25,8 +25,8 @@ services:
       - /dev/kmsg
     environment:
       <<: *env
-      ALLOY_DEPLOY_MODE: docker
-      ALLOY_HOST: hc
+      ALLOY_DEPLOY_MODE: "docker"
+      ALLOY_HOST: "hc"
       LOKI_URL: "https://loki.ebi.nu/loki/api/v1/push"
       PROM_URL: "https://prometheus.ebi.nu/api/v1/write"
     extra_hosts:
@@ -50,8 +50,8 @@ services:
     container_name: bind9
     environment:
       <<: *env
-      PUID: 100
-      PGID: 101
+      PUID: "100"
+      PGID: "101"
     healthcheck:
       interval: 1m
       retries: 5
@@ -73,9 +73,9 @@ services:
     container_name: watchtower
     environment:
       <<: *env
-      NO_COLOR: true
-      WATCHTOWER_CLEANUP: true
-      WATCHTOWER_LOG_FORMAT: JSON
+      NO_COLOR: "true"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_LOG_FORMAT: "JSON"
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
     volumes:

@@ -18,7 +18,7 @@ x-common: &common
   stop_grace_period: 2m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -36,8 +36,8 @@ services:
     #   - /dev/snd:/dev/snd
     environment:
       <<: *env
-      BIRDNET_UID: 1028
-      BIRDNET_GID: 100
+      BIRDNET_UID: "1028"
+      BIRDNET_GID: "100"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: birdnet

@@ -18,7 +18,7 @@ x-common: &common
   stop_grace_period: 2m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -109,7 +109,7 @@ services:
           memory: 256M
     environment:
       <<: *env
-      DNS_SERVER_DOMAIN: dns
+      DNS_SERVER_DOMAIN: "dns"
     healthcheck:
       interval: 30s
       retries: 3
@@ -156,15 +156,15 @@ services:
     environment:
       <<: *env
       JAVA_OPTS_KC_HEAP: "-Xms256m -Xmx1024m"
-      KC_DB: postgres
-      KC_DB_URL_DATABASE: keycloak
-      KC_DB_URL_HOST: postgres
-      KC_HEALTH_ENABLED: true
-      KC_HOSTNAME: keycloak.ebi.nu
-      KC_HOSTNAME_STRICT: false
-      KC_HTTP_ENABLED: true
-      KC_METRICS_ENABLED: true
-      KC_PROXY_HEADERS: xforwarded
+      KC_DB: "postgres"
+      KC_DB_URL_DATABASE: "keycloak"
+      KC_DB_URL_HOST: "postgres"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME: "keycloak.ebi.nu"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_PROXY_HEADERS: "xforwarded"
     healthcheck:
       interval: 15s
       retries: 5
@@ -268,8 +268,8 @@ services:
           memory: 1024M
     environment:
       <<: *env
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
-      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: "/run/secrets/postgres-passwd"
+      POSTGRES_USER_FILE: "/run/secrets/postgres-user"
     healthcheck:
       interval: 10s
       retries: 5

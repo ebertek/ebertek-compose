@@ -34,15 +34,15 @@ services:
           # cpus: "1"
           memory: 128M
     environment:
-      TZ: UTC
-      NO_COLOR: true
-      WATCHTOWER_CLEANUP: true
-      WATCHTOWER_HTTP_API_METRICS: true
-      WATCHTOWER_HTTP_API_PERIODIC_POLLS: true
-      WATCHTOWER_HTTP_API_TOKEN: demotoken
-      WATCHTOWER_HTTP_API_UPDATE: true
-      WATCHTOWER_LOG_FORMAT: JSON
-      # WATCHTOWER_ROLLING_RESTART: true
+      TZ: "UTC"
+      NO_COLOR: "true"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_HTTP_API_METRICS: "true"
+      WATCHTOWER_HTTP_API_PERIODIC_POLLS: "true"
+      WATCHTOWER_HTTP_API_TOKEN: "demotoken"
+      WATCHTOWER_HTTP_API_UPDATE: "true"
+      WATCHTOWER_LOG_FORMAT: "JSON"
+      # WATCHTOWER_ROLLING_RESTART: "true"
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
     mac_address: "0e:be:00:da:00:47"

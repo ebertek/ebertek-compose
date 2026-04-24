@@ -23,10 +23,10 @@ x-common: &common
   stop_grace_period: 1m
 
 x-env: &env
-  DB_DATABASE_NAME: immich
-  DB_HOSTNAME: database
-  REDIS_HOSTNAME: redis
-  TZ: UTC
+  DB_DATABASE_NAME: "immich"
+  DB_HOSTNAME: "database"
+  REDIS_HOSTNAME: "redis"
+  TZ: "UTC"
 
 x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
 
@@ -45,7 +45,7 @@ services:
       - pg.txt
     environment:
       <<: *env
-      POSTGRES_DB: immich
+      POSTGRES_DB: "immich"
       POSTGRES_INITDB_ARGS: "--data-checksums"
     healthcheck:
       interval: 1m
@@ -86,8 +86,8 @@ services:
     env_file: db.txt
     environment:
       <<: *env
-      IMMICH_TELEMETRY_INCLUDE: all
-      NO_COLOR: true
+      IMMICH_TELEMETRY_INCLUDE: "all"
+      NO_COLOR: "true"
     hostname: immich
     image: "ghcr.io/immich-app/immich-server:release"
     labels:
@@ -123,7 +123,7 @@ services:
     env_file: db.txt
     environment:
       <<: *env
-      NO_COLOR: true
+      NO_COLOR: "true"
     hostname: immich-machine-learning
     image: "ghcr.io/immich-app/immich-machine-learning:release"
     mac_address: "0e:be:00:da:00:49"
