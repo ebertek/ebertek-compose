@@ -171,12 +171,12 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 1536M
+          memory: 2048M
     environment:
       <<: *env
       ALLOW_DIRECT_VNC: "false"
       GROUP_ID: "100"
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1536m"
       LANG: "en_US.UTF-8"
       LC_ALL: "en_US.UTF-8"
       LC_TIME: "C.UTF-8"
