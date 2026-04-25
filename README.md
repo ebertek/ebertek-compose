@@ -65,6 +65,7 @@ A collection of Docker Compose files and shell scripts.
 - **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
 - **[scrypted](https://github.com/koush/scrypted)**: High performance video integration and automation platform.
+- **[vonage](https://github.com/ebertek/vonage-ha-bridge)**: Vonage to Home Assistant bridge for SMS and voice.
 - **[zigbee2mqtt](https://hub.docker.com/r/koenkk/zigbee2mqtt/)**: Zigbee to MQTT bridge.
 
 ### [ygg-home/](ygg-home/)
