@@ -74,6 +74,8 @@ services:
         limits:
           # cpus: "2"
           memory: 2048M
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
     environment:
       <<: *env
     healthcheck:
@@ -100,7 +102,7 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/hass/config:/config"
-      - "/run/dbus:/run/dbus:ro"
+      - "/run/dbus:/run/dbus"
 
   influxdb:
     <<: *common
