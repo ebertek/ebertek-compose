@@ -18,9 +18,9 @@ x-common: &common
   stop_grace_period: 2m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   acmesh:
@@ -36,8 +36,8 @@ services:
     env_file: acmesh.txt
     environment:
       <<: *env
-      PUID: 1028
-      PGID: 100
+      PUID: "1028"
+      PGID: "100"
     healthcheck:
       interval: 1m
       retries: 5
@@ -111,8 +111,8 @@ services:
           memory: 512M
     environment:
       <<: *env
-      PUID: 1028
-      PGID: 100
+      PUID: "1028"
+      PGID: "100"
     healthcheck:
       interval: 30s
       retries: 5
@@ -151,18 +151,18 @@ services:
     env_file: smtp.txt
     environment:
       <<: *env
-      POSTCONF_compatibility_level: 2
-      POSTCONF_message_size_limit: 20480000
-      RELAY_DOMAINS: ebi.nu ygg.nu
+      POSTCONF_compatibility_level: "2"
+      POSTCONF_message_size_limit: "20480000"
+      RELAY_DOMAINS: "ebi.nu ygg.nu"
       RELAY_HOST: "[smtp.gmail.com]:587"
-      RELAY_MODE: ALLOW_AUTH_NODOMAIN
-      RELAY_MYDOMAIN: ygg.nu
-      RELAY_MYHOSTNAME: smtp.ygg.nu
-      RELAY_MYNETWORKS: 10.4.20.0/23
+      RELAY_MODE: "ALLOW_AUTH_NODOMAIN"
+      RELAY_MYDOMAIN: "ygg.nu"
+      RELAY_MYHOSTNAME: "smtp.ygg.nu"
+      RELAY_MYNETWORKS: "10.4.20.0/23"
       RELAY_POSTMASTER: "postmaster@ygg.nu"
-      RELAY_STRICT_SENDER_MYDOMAIN: false
-      RELAY_TLS_CA: /etc/ssl/certs/ca-certificates.crt
-      RELAY_TLS_VERIFY: encrypt
+      RELAY_STRICT_SENDER_MYDOMAIN: "false"
+      RELAY_TLS_CA: "/etc/ssl/certs/ca-certificates.crt"
+      RELAY_TLS_VERIFY: "encrypt"
       RELAY_USE_TLS: "yes"
     hostname: smtp
     image: "docker.io/turgon37/smtp-relay:latest"
@@ -191,8 +191,8 @@ services:
     env_file: vw.txt
     environment:
       <<: *env
-      PUID: 1028
-      PGID: 100
+      PUID: "1028"
+      PGID: "100"
       DOMAIN: "https://vw.ebi.nu"
       EXPERIMENTAL_CLIENT_FEATURE_FLAGS: "ssh-agent-v2,ssh-key-vault-item"
       PUSH_ENABLED: "true"
@@ -201,14 +201,14 @@ services:
       SIGNUPS_ALLOWED: "true"
       SMTP_FROM: "vw@ebi.nu"
       SMTP_HOST: "smtp.ygg.nu"
-      SMTP_PORT: 25
+      SMTP_PORT: "25"
       SMTP_SECURITY: "off"
       SMTP_USERNAME: "vw@ebi.nu"
       SSO_AUTH_ONLY_NOT_SESSION: "true"
       SSO_AUTHORITY: "https://keycloak.ebi.nu/realms/ygg"
       SSO_ENABLED: "true"
       SSO_SCOPES: "email offline_access openid profile"
-      TRASH_AUTO_DELETE_DAYS: 30
+      TRASH_AUTO_DELETE_DAYS: "30"
       WEBSOCKET_ENABLED: "true"
     hostname: vw
     image: "docker.io/vaultwarden/server:testing"

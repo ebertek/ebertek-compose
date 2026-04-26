@@ -18,11 +18,11 @@ x-common: &common
   stop_grace_period: 3m
 
 x-env: &env
-  PUID: 1028
-  PGID: 100
-  TZ: UTC
+  PUID: "1028"
+  PGID: "100"
+  TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   bjornify:
@@ -65,12 +65,10 @@ services:
           memory: 512M
     environment:
       <<: *env
-      UMASK: 002
+      UMASK: "002"
       # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
-      DOCKER_MODS: >
-        lscr.io/linuxserver/mods:universal-calibre-v7.16.0|
-        lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata
-      OAUTHLIB_RELAX_TOKEN_SCOPE: 1
+      DOCKER_MODS: "lscr.io/linuxserver/mods:universal-calibre-v7.16.0|lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata"
+      OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
     healthcheck:
       interval: 30s
       retries: 5
@@ -111,9 +109,9 @@ services:
     env_file: plex.txt
     environment:
       <<: *env
-      PLEX_UID: 1028
-      PLEX_GID: 100
-      ALLOWED_NETWORKS: 10.4.21.0/24
+      PLEX_UID: "1028"
+      PLEX_GID: "100"
+      ALLOWED_NETWORKS: "10.4.21.0/24"
     hostname: plex
     image: "docker.io/plexinc/pms-docker:latest"
     labels:
@@ -173,17 +171,17 @@ services:
       resources:
         limits:
           # cpus: "2"
-          memory: 1536M
+          memory: 2048M
     environment:
       <<: *env
-      ALLOW_DIRECT_VNC: false
-      GROUP_ID: 100
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
-      LANG: en_US.UTF-8
-      LC_ALL: en_US.UTF-8
-      LC_TIME: C.UTF-8
-      UMASK: 002
-      USER_ID: 1028
+      ALLOW_DIRECT_VNC: "false"
+      GROUP_ID: "100"
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1536m"
+      LANG: "en_US.UTF-8"
+      LC_ALL: "en_US.UTF-8"
+      LC_TIME: "C.UTF-8"
+      UMASK: "002"
+      USER_ID: "1028"
     healthcheck:
       interval: 1m
       retries: 3

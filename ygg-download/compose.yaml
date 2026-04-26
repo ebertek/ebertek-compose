@@ -15,11 +15,11 @@ x-common: &common
   stop_grace_period: 1m
 
 x-env: &env
-  PUID: 1028
-  PGID: 100
-  TZ: UTC
+  PUID: "1028"
+  PGID: "100"
+  TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
   download:
@@ -33,21 +33,27 @@ services:
       resources:
         limits:
           # cpus: "1"
-          memory: 256M
+          memory: 512M
     environment:
       <<: *env
-      TORRENTING_PORT: 56213
-      WEBUI_PORT: 8080
+      QBT_LEGAL_NOTICE: "confirm"
+      QBT_TORRENTING_PORT: "56213"
+      QBT_VERSION: "latest"
+      QBT_WEBUI_PORT: "8080"
     healthcheck:
       interval: 30s
       retries: 3
       start_period: 30s
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/ || exit 1"]
       timeout: 5s
-    image: "lscr.io/linuxserver/qbittorrent:latest"
+    image: "docker.io/qbittorrentofficial/qbittorrent-nox:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: gluetun
+      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "container:gluetun"
+    read_only: false
+    tmpfs:
+      - /tmp
+    tty: true
     volumes:
       - *tz
       - "/volume1/Downloads:/downloads"
@@ -76,15 +82,15 @@ services:
     env_file: gluetun.txt
     environment:
       <<: *env
-      BLOCK_MALICIOUS: off
-      DNS_UNBLOCK_HOSTNAMES: cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org
+      BLOCK_MALICIOUS: "off"
+      DNS_UNBLOCK_HOSTNAMES: "cloudflare.com,t.myanonamouse.net,t.ncore.sh,sptracker.cc,superbits.org,tracker.superbits.org"
       FIREWALL_VPN_INPUT_PORTS: "56213"
-      SERVER_CITIES: Gothenburg
-      UPDATER_PERIOD: 24h
-      VPN_SERVICE_PROVIDER: mullvad
-      VPN_TYPE: wireguard
+      SERVER_CITIES: "Gothenburg"
+      UPDATER_PERIOD: "24h"
+      VPN_SERVICE_PROVIDER: "mullvad"
+      VPN_TYPE: "wireguard"
       WIREGUARD_ADDRESSES: "10.75.26.2/32,fc00:bbbb:bbbb:bb01::c:1a01/128"
-      WIREGUARD_ENDPOINT_PORT: 53
+      WIREGUARD_ENDPOINT_PORT: "53"
     healthcheck:
       interval: 5s
       retries: 3
@@ -97,12 +103,12 @@ services:
       traefik.enable: "true"
       traefik.http.routers.download.entrypoints: "websecure"
       traefik.http.routers.download.rule: "Host(`download.ebi.nu`)"
-      traefik.http.routers.download.service: download
+      traefik.http.routers.download.service: "download"
       traefik.http.routers.download.tls: "true"
       traefik.http.services.download.loadbalancer.server.port: "8080"
       traefik.http.routers.mousehole.entrypoints: "websecure"
       traefik.http.routers.mousehole.rule: "Host(`mousehole.ebi.nu`)"
-      traefik.http.routers.mousehole.service: mousehole
+      traefik.http.routers.mousehole.service: "mousehole"
       traefik.http.routers.mousehole.tls: "true"
       traefik.http.services.mousehole.loadbalancer.server.port: "5010"
     mac_address: "0e:be:00:da:00:39"
@@ -141,7 +147,7 @@ services:
       timeout: 5s
     image: "docker.io/tmmrtn/mousehole:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: gluetun
+      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "container:gluetun"
     volumes:
       - *tz

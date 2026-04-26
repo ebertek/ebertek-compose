@@ -18,9 +18,9 @@ x-common: &common
   stop_grace_period: 5m
 
 x-env: &env
-  TZ: UTC
+  TZ: "UTC"
 
-x-tz: &tz /usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 secrets:
   influxdb2-admin-password:
@@ -53,7 +53,7 @@ services:
       traefik.http.routers.esphome.rule: "Host(`esphome.ebi.nu`)"
       traefik.http.routers.esphome.tls: "true"
       traefik.http.services.esphome.loadbalancer.server.port: "6052"
-      traefik.http.services.esphome.loadbalancer.server.scheme: http
+      traefik.http.services.esphome.loadbalancer.server.scheme: "http"
     mac_address: "0e:be:00:da:00:71"
     networks:
       macvlan1:
@@ -115,12 +115,12 @@ services:
           memory: 1024M
     environment:
       <<: *env
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb2-admin-token
-      DOCKER_INFLUXDB_INIT_BUCKET: home
-      DOCKER_INFLUXDB_INIT_ORG: docs
-      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb2-admin-password
-      DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb2-admin-username
+      DOCKER_INFLUXDB_INIT_MODE: "setup"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: "/run/secrets/influxdb2-admin-token"
+      DOCKER_INFLUXDB_INIT_BUCKET: "home"
+      DOCKER_INFLUXDB_INIT_ORG: "docs"
+      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: "/run/secrets/influxdb2-admin-password"
+      DOCKER_INFLUXDB_INIT_USERNAME_FILE: "/run/secrets/influxdb2-admin-username"
     healthcheck:
       interval: 30s
       retries: 5
@@ -165,8 +165,8 @@ services:
           memory: 512M
     environment:
       <<: *env
-      BLUETOOTH_ADAPTER: 0
-      PRIMARY_INTERFACE: eth0
+      BLUETOOTH_ADAPTER: "0"
+      PRIMARY_INTERFACE: "eth0"
       PRODUCTION_MODE: "true"
     healthcheck:
       interval: 30s
@@ -237,7 +237,7 @@ services:
     entrypoint: /app/run-standalone.sh
     environment:
       <<: *env
-      CONFIG_PATH: /config/options.json
+      CONFIG_PATH: "/config/options.json"
       DEBUG: "@ha:ps5:*"
     healthcheck:
       interval: 5m
@@ -249,7 +249,7 @@ services:
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: mosquitto
+      com.centurylinklabs.watchtower.depends-on: "mosquitto"
     mac_address: "0e:be:00:da:00:68"
     networks:
       macvlan1:
@@ -275,8 +275,8 @@ services:
       - "/dev/dri:/dev/dri"
     environment:
       <<: *env
-      SCRYPTED_DOCKER_AVAHI: true
-      SCRYPTED_NVR_VOLUME: /nvr
+      SCRYPTED_DOCKER_AVAHI: "true"
+      SCRYPTED_NVR_VOLUME: "/nvr"
       SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
       SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer demotoken"
     healthcheck:
@@ -381,7 +381,7 @@ services:
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:latest"
     labels:
-      com.centurylinklabs.watchtower.depends-on: mosquitto
+      com.centurylinklabs.watchtower.depends-on: "mosquitto"
       traefik.enable: "true"
       traefik.http.routers.zigbee2mqtt.entrypoints: "websecure"
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"
