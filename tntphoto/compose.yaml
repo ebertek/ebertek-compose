@@ -102,6 +102,7 @@ services:
     image: "tntphoto-wordpress:php8.3-fpm-alpine"
     networks:
       - wp_net
+    pull_policy: build
     volumes:
       - *tz
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
