@@ -1,5 +1,7 @@
 FROM wordpress:php8.3-fpm-alpine
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
 # install the PHP extensions we need
 RUN set -eux; \
 	\
@@ -19,10 +21,12 @@ RUN set -eux; \
 			| sort -u \
 			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
 	)"; \
-	apk add --no-network --virtual .wordpress-phpexts-rundeps $runDeps; \
+	apk add --no-cache --virtual .wordpress-phpexts-rundeps $runDeps; \
 	apk del --no-network .build-deps
 
 HEALTHCHECK --interval=1m --timeout=10s --start-period=60s --retries=3 \
 	CMD php-fpm -t >/dev/null 2>&1 || exit 1
+
+USER www-data
 
 CMD ["php-fpm"]
