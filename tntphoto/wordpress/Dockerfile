@@ -2,11 +2,11 @@ FROM wordpress:php8.3-fpm-alpine
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-# hadolint ignore=DL3018
+# hadolint ignore=DL3018,SC2086
 RUN set -eux; \
 	\
 	apk add --no-cache --virtual .build-deps \
-		"$PHPIZE_DEPS" \
+		$PHPIZE_DEPS \
 		icu-dev \
 	; \
 	\
@@ -21,7 +21,6 @@ RUN set -eux; \
 			| sort -u \
 			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
 	)"; \
-	# hadolint ignore=SC2086
 	apk add --no-cache --virtual .wordpress-phpexts-rundeps $runDeps; \
 	apk del --no-network .build-deps
 
