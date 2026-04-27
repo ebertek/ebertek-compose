@@ -67,6 +67,9 @@ services:
 
   hass:
     <<: *common
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     container_name: hass
     cpu_count: 2
     deploy:
@@ -101,8 +104,8 @@ services:
     privileged: true
     volumes:
       - *tz
-      - "/volume2/docker/hass/config:/config"
       - "/run/dbus:/run/dbus"
+      - "/volume2/docker/hass/config:/config"
 
   influxdb:
     <<: *common
@@ -156,6 +159,7 @@ services:
     <<: *common
     cap_add:
       - NET_ADMIN
+      - NET_RAW
     container_name: matter-server
     cpu_count: 1
     deploy:
@@ -163,6 +167,8 @@ services:
         limits:
           # cpus: "1"
           memory: 512M
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
     environment:
       <<: *env
       BLUETOOTH_ADAPTER: "0"
@@ -189,8 +195,8 @@ services:
     user: "1000:1000"
     volumes:
       - *tz
+      - "/run/dbus:/run/dbus"
       - "/volume2/docker/hass/matter-server:/data"
-      - "/run/dbus:/run/dbus:ro"
 
   mosquitto:
     <<: *common
