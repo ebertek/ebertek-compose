@@ -86,13 +86,8 @@ services:
 
   wordpress:
     <<: *common
-    command:
-      - sh
-      - -c
-      - |
-        apk add icu-dev
-        docker-php-ext-install pdo pdo_mysql intl
-        php-fpm
+    build:
+      context: ./wordpress
     container_name: wordpress
     depends_on:
       mariadb:
@@ -107,7 +102,7 @@ services:
       <<: *hc
       test: ["CMD-SHELL", "php-fpm -t >/dev/null 2>&1 || exit 1"]
     hostname: wordpress
-    image: "docker.io/wordpress:php8.3-fpm-alpine"
+    image: "tntphoto-wordpress:php8.3-fpm-alpine"
     networks:
       - wp_net
     volumes:
