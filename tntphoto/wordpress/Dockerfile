@@ -22,4 +22,7 @@ RUN set -eux; \
 	apk add --no-network --virtual .wordpress-phpexts-rundeps $runDeps; \
 	apk del --no-network .build-deps
 
+HEALTHCHECK --interval=1m --timeout=10s --start-period=60s --retries=3 \
+	CMD php-fpm -t >/dev/null 2>&1 || exit 1
+
 CMD ["php-fpm"]
