@@ -192,6 +192,7 @@ services:
         ipv6_address: 2001:9b1:25fc:6900:421::66
     security_opt:
       - "apparmor:unconfined"
+    stop_grace_period: 30s
     user: "1000:1000"
     volumes:
       - *tz
