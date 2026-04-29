@@ -1,4 +1,4 @@
-// lora-2.c — Mailbox LoRa transmitter (mailbox node, battery powered)
+// lora-2.ino — Mailbox LoRa transmitter (mailbox node, battery powered)
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -39,11 +39,13 @@
 // Debounce window: reed must read open continuously for this long.
 #define DEBOUNCE_MS              750UL
 
-// Max time to wait for the mailbox to close before sleeping anyway (5 min).
-#define WAIT_FOR_CLOSE_TIMEOUT_MS 300000UL
-
 // Delay between TX retry attempt (ms).
 #define TX_RETRY_DELAY_MS        500UL
+
+// Light-sleep poll interval while waiting for the mailbox to close (ms).
+// The CPU is halted between polls; current drops to ~130 µA on ESP32-S3
+// vs ~20 mA fully awake, so an indefinite wait is battery-acceptable.
+#define CLOSE_POLL_INTERVAL_MS   500UL
 
 SPIClass spi(FSPI);
 SX1262   radio = new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY, spi);
@@ -102,18 +104,24 @@ bool debounceOpen() {
     return reedIsOpen();
 }
 
-// Block until reed closes or WAIT_FOR_CLOSE_TIMEOUT_MS elapses, then
-// add a short settling delay before we configure wakeup and sleep.
-void waitForMailboxClosedOrTimeout() {
-    const unsigned long start_ms = millis();
+// Wait indefinitely for the reed to close, using light sleep between polls
+// to keep current draw low (~130 µA vs ~20 mA fully awake).
+//
+// FIX: the previous version had a 5-minute hard timeout that broke out of
+// the loop and then entered deep sleep with ext0 level=1 while the reed was
+// still HIGH. Because the wakeup trigger is still asserted, the chip wakes
+// instantly and enters a perpetual boot loop. Waiting indefinitely is safer:
+// the mailbox will close eventually, and light sleep keeps the battery cost
+// manageable even if it takes a long time.
+void waitForMailboxClosed() {
     while (reedIsOpen()) {
-        if (millis() - start_ms > WAIT_FOR_CLOSE_TIMEOUT_MS) {
-            Serial.println("Timeout waiting for mailbox to close, sleeping anyway");
-            break;
-        }
-        delay(250);
+        // Light sleep for one poll interval. The CPU halts; peripherals and
+        // RTC remain powered. esp_sleep_enable_timer_wakeup takes microseconds.
+        esp_sleep_enable_timer_wakeup(CLOSE_POLL_INTERVAL_MS * 1000ULL);
+        esp_light_sleep_start();
+        // After waking, loop back and re-check the reed.
     }
-    delay(500);  // brief settle after close
+    delay(500);  // brief settle after close before arming deep-sleep wakeup
 }
 
 // Configure GPIO2 as an RTC input with pullup and arm ext0 wakeup on HIGH.
@@ -181,7 +189,7 @@ bool sendMailboxPacket() {
     }
 
     // Put radio to sleep regardless of TX outcome to save power during the
-    // waitForMailboxClosedOrTimeout() phase.
+    // waitForMailboxClosed() phase.
     radio.sleep();
 
     return (state == RADIOLIB_ERR_NONE);
@@ -202,7 +210,7 @@ void setup() {
         Serial.println("Ignored wake: debounce failed (spurious wakeup)");
     }
 
-    waitForMailboxClosedOrTimeout();
+    waitForMailboxClosed();
     configureReedWakeup();
 
     Serial.println("Sleeping");

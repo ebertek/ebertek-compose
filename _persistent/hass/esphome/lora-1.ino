@@ -1,4 +1,4 @@
-// lora-1.c — Mailbox LoRa receiver / MQTT bridge (home node)
+// lora-1.ino — Mailbox LoRa receiver / MQTT bridge (home node)
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -53,6 +53,16 @@ SPIClass       spi(FSPI);
 SX1262         radio = new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY, spi);
 WiFiClient     wifi_client;
 PubSubClient   mqtt(wifi_client);
+
+// ISR flag set by the DIO1 interrupt when the SX1262 signals packet-ready.
+// volatile so the compiler never optimises away reads in loop().
+// IRAM_ATTR places the handler in IRAM so it is safe to call from an ISR
+// on ESP32 (flash-cached functions must not be called during flash operations).
+volatile bool lora_received_flag = false;
+
+void IRAM_ATTR onLoraReceive() {
+    lora_received_flag = true;
+}
 
 // Non-zero while the mailbox state is ON; holds the timestamp at which the
 // state should revert to OFF.
@@ -234,8 +244,12 @@ void setup() {
         while (true) delay(1000);
     }
 
-    // FIX: arm async receive — does not block, returns immediately.
-    // DIO1 interrupt fires when a packet arrives; radio.available() polls the flag.
+    // Attach ISR to DIO1: fires when the SX1262 asserts packet-ready.
+    // setDio1Action must be called before startReceive().
+    radio.setDio1Action(onLoraReceive);
+
+    // Arm async receive — returns immediately; DIO1 ISR sets lora_received_flag
+    // when a packet lands in the FIFO.
     state = radio.startReceive();
     if (state != RADIOLIB_ERR_NONE) {
         Serial.printf("startReceive failed: %d\n", state);
@@ -258,9 +272,13 @@ void loop() {
         Serial.println("Mailbox state -> OFF");
     }
 
-    // FIX: non-blocking packet check — radio.available() returns true when
-    // the SX1262 DIO1 interrupt has fired (packet ready in FIFO).
-    if (radio.available()) {
+    // ISR-flag packet check: lora_received_flag is set by onLoraReceive()
+    // the instant DIO1 fires. Clear it atomically before reading so a second
+    // packet that arrives during readData() is not lost — it will set the
+    // flag again and be picked up on the next loop iteration.
+    if (lora_received_flag) {
+        lora_received_flag = false;  // clear before readData to avoid race
+
         String payload;
         int state = radio.readData(payload);
 
