@@ -277,7 +277,7 @@ void loop() {
     // packet that arrives during readData() is not lost — it will set the
     // flag again and be picked up on the next loop iteration.
     if (lora_received_flag) {
-        lora_received_flag = false;  // clear before readData to avoid race
+        lora_received_flag = false;  // clear before readData so a new DIO1 event during/after the read is not lost
 
         String payload;
         int state = radio.readData(payload);
