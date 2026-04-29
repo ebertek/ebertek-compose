@@ -6,15 +6,16 @@
 #include <RadioLib.h>
 #include <SPI.h>
 #include <WiFi.h>
+#include "secrets.h"
 
 // ─── User config ─────────────────────────────────────────────────────────────
-const char* WIFI_SSID     = "YOUR_WIFI";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID     = WIFI_SSID_VALUE;
+const char* WIFI_PASSWORD = WIFI_PASSWORD_VALUE;
 
-const char* MQTT_HOST     = "192.168.1.10";
-const uint16_t MQTT_PORT  = 1883;
-const char* MQTT_USER     = "";
-const char* MQTT_PASSWORD = "";
+const char* MQTT_HOST     = MQTT_HOST_VALUE;
+const uint16_t MQTT_PORT  = MQTT_PORT_VALUE;
+const char* MQTT_USER     = MQTT_USER_VALUE;
+const char* MQTT_PASSWORD = MQTT_PASSWORD_VALUE;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const char* TOPIC_EVENT           = "home/mailbox/event";
