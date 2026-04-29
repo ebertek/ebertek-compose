@@ -10,3 +10,7 @@
 #define MQTT_PORT_VALUE 1883
 #define MQTT_USER_VALUE ""
 #define MQTT_PASSWORD_VALUE ""
+
+// Shared secret for LoRa packet authentication (HMAC-SHA256).
+// Must be identical on both nodes. Change before flashing.
+#define LORA_HMAC_SECRET_VALUE "change-me-before-flashing"

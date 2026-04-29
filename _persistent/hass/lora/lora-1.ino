@@ -8,6 +8,7 @@
 #include <RadioLib.h>
 #include <SPI.h>
 #include <WiFi.h>
+#include "mbedtls/md.h"
 #include "secrets.h"
 
 // ─── User config ─────────────────────────────────────────────────────────────
@@ -70,6 +71,49 @@ void IRAM_ATTR onLoraReceive() {
 // Non-zero while the mailbox state is ON; holds the timestamp at which the
 // state should revert to OFF.
 unsigned long mailbox_on_until_ms = 0;
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
+
+// Must match transmitter exactly.
+#define HMAC_TRUNCATED_BYTES 8
+
+// Recompute HMAC using the same canonical form as the transmitter.
+// All payload fields that carry meaning are included so none can be silently
+// altered in a captured packet before it reaches the receiver.
+String computeHmac(const char* type, const char* event, uint32_t counter,
+                   float vbat, int battery) {
+    char message[96];
+    snprintf(message, sizeof(message), "%s|%s|%lu|%.2f|%d", type, event,
+             static_cast<unsigned long>(counter), vbat, battery);
+
+    uint8_t digest[32];
+    mbedtls_md_context_t ctx;
+    const mbedtls_md_info_t* info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+
+    mbedtls_md_init(&ctx);
+    mbedtls_md_setup(&ctx, info, 1);
+    mbedtls_md_hmac_starts(&ctx,
+        reinterpret_cast<const unsigned char*>(LORA_HMAC_SECRET),
+        strlen(LORA_HMAC_SECRET));
+    mbedtls_md_hmac_update(&ctx,
+        reinterpret_cast<const unsigned char*>(message),
+        strlen(message));
+    mbedtls_md_hmac_finish(&ctx, digest);
+    mbedtls_md_free(&ctx);
+
+    char hex[HMAC_TRUNCATED_BYTES * 2 + 1];
+    for (int i = 0; i < HMAC_TRUNCATED_BYTES; i++) {
+        snprintf(hex + i * 2, 3, "%02x", digest[i]);
+    }
+    return String(hex);
+}
+
+// Highest counter value accepted so far. Packets with counter <= this are
+// rejected as replays. Resets on bridge reboot, which opens a brief window;
+// acceptable for this threat model.
+static uint32_t last_accepted_counter = 0;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -184,9 +228,7 @@ void handlePacket(const String& payload) {
     Serial.printf("RX: %s | RSSI %.1f dBm | SNR %.1f dB\n",
                   payload.c_str(), rssi, snr);
 
-    mqtt.publish(TOPIC_RAW, payload.c_str(), false);
-
-    StaticJsonDocument<192> doc;
+    StaticJsonDocument<256> doc;
     DeserializationError err = deserializeJson(doc, payload);
     if (err) {
         Serial.printf("JSON parse error: %s\n", err.c_str());
@@ -195,10 +237,42 @@ void handlePacket(const String& payload) {
 
     if (doc["type"] != "mailbox") return;
 
-    const char*    event   = doc["event"]   | "opened";
+    // ── Auth: verify HMAC before touching any payload fields ─────────────────
+    const char*    type    = doc["type"]    | "";
+    const char*    event   = doc["event"]   | "";
     const uint32_t counter = doc["counter"] | 0u;
     const float    vbat    = doc["vbat"]    | 0.0f;
     const int      battery = doc["battery"] | -1;
+    const char*    hmac_rx = doc["hmac"]    | "";
+
+    // Reject packets with no HMAC field at all.
+    if (strlen(hmac_rx) == 0) {
+        Serial.println("Auth FAIL: missing hmac field, packet dropped");
+        return;
+    }
+
+    // Recompute expected HMAC and compare.
+    String hmac_expected = computeHmac(type, event, counter, vbat, battery);
+    if (!hmac_expected.equals(hmac_rx)) {
+        Serial.printf("Auth FAIL: hmac mismatch (got %s, expected %s), packet dropped\n",
+                      hmac_rx, hmac_expected.c_str());
+        return;
+    }
+
+    // Replay check: counter must be strictly greater than the last accepted.
+    if (counter <= last_accepted_counter) {
+        Serial.printf("Auth FAIL: replay detected (counter %lu <= last %lu), packet dropped\n",
+                      static_cast<unsigned long>(counter),
+                      static_cast<unsigned long>(last_accepted_counter));
+        return;
+    }
+    last_accepted_counter = counter;
+    // ─────────────────────────────────────────────────────────────────────────
+
+    Serial.printf("Auth OK (counter=%lu)\n", static_cast<unsigned long>(counter));
+
+    // Publish raw only after auth passes — don't echo unauthenticated packets.
+    mqtt.publish(TOPIC_RAW, payload.c_str(), false);
 
     char buf[32];
 
@@ -276,9 +350,9 @@ void loop() {
     }
 
     // ISR-flag packet check: lora_received_flag is set by onLoraReceive()
-    // the instant DIO1 fires. Clear it atomically before reading so a second
-    // packet that arrives during readData() is not lost — it will set the
-    // flag again and be picked up on the next loop iteration.
+    // the instant DIO1 fires. Clear before readData so a new DIO1 event
+    // during/after the read is not lost — it will set the flag again and
+    // be picked up on the next loop iteration.
     if (lora_received_flag) {
         lora_received_flag = false;  // clear before readData so a new DIO1 event during/after the read is not lost
 

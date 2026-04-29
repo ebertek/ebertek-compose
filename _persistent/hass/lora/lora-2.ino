@@ -7,6 +7,8 @@
 #include <RadioLib.h>
 #include <SPI.h>
 #include "driver/rtc_io.h"
+#include "mbedtls/md.h"
+#include "secrets.h"
 
 // ─── LoRa pins (Heltec WiFi LoRa 32 V3 / V3.2) ───────────────────────────────
 #define LORA_NSS  8
@@ -138,6 +140,54 @@ void configureReedWakeup() {
     esp_sleep_enable_ext0_wakeup(REED_PIN, 1);
 }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
+
+// Compute HMAC-SHA256 over all meaningful payload fields and return the first
+// HMAC_TRUNCATED_BYTES as a lowercase hex string.
+// Canonical form: "type|event|counter|vbat|battery"
+// Including vbat and battery means an attacker cannot alter those fields in a
+// captured packet without invalidating the tag.
+//
+// %.2f for vbat must match the format used in the JSON ("vbat" is serialised
+// with String(battery_voltage, 2)). The receiver parses that string back to
+// float and reformats with the same %.2f — both sides run the same newlib on
+// the same ESP32-S3 so the round-trip is deterministic.
+//
+// 8 bytes (16 hex chars) of truncated HMAC gives 64 bits of authentication
+// strength — sufficient for this threat model.
+#define HMAC_TRUNCATED_BYTES 8
+
+String computeHmac(const char* type, const char* event, uint32_t counter,
+                   float vbat, int battery) {
+    char message[96];
+    snprintf(message, sizeof(message), "%s|%s|%lu|%.2f|%d", type, event,
+             static_cast<unsigned long>(counter), vbat, battery);
+
+    uint8_t digest[32];  // full SHA-256 output
+    mbedtls_md_context_t ctx;
+    const mbedtls_md_info_t* info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+
+    mbedtls_md_init(&ctx);
+    mbedtls_md_setup(&ctx, info, /* hmac= */ 1);
+    mbedtls_md_hmac_starts(&ctx,
+        reinterpret_cast<const unsigned char*>(LORA_HMAC_SECRET),
+        strlen(LORA_HMAC_SECRET));
+    mbedtls_md_hmac_update(&ctx,
+        reinterpret_cast<const unsigned char*>(message),
+        strlen(message));
+    mbedtls_md_hmac_finish(&ctx, digest);
+    mbedtls_md_free(&ctx);
+
+    // Encode first HMAC_TRUNCATED_BYTES as lowercase hex.
+    char hex[HMAC_TRUNCATED_BYTES * 2 + 1];
+    for (int i = 0; i < HMAC_TRUNCATED_BYTES; i++) {
+        snprintf(hex + i * 2, 3, "%02x", digest[i]);
+    }
+    return String(hex);
+}
+
 // ─── LoRa transmit ───────────────────────────────────────────────────────────
 
 // Attempt to transmit payload. Returns RADIOLIB_ERR_NONE on success.
@@ -171,12 +221,16 @@ bool sendMailboxPacket() {
     }
 
     // Build JSON payload.
-    StaticJsonDocument<192> doc;
-    doc["type"]    = "mailbox";
-    doc["event"]   = "opened";
+    const char* type  = "mailbox";
+    const char* event = "opened";
+
+    StaticJsonDocument<256> doc;
+    doc["type"]    = type;
+    doc["event"]   = event;
     doc["counter"] = packet_counter;
     doc["vbat"]    = serialized(String(battery_voltage, 2));
     doc["battery"] = battery_percent;
+    doc["hmac"]    = computeHmac(type, event, packet_counter, battery_voltage, battery_percent);
 
     String payload;
     serializeJson(doc, payload);
