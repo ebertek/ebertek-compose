@@ -146,24 +146,24 @@ static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
 
 // Compute HMAC-SHA256 over all meaningful payload fields and return the first
 // HMAC_TRUNCATED_BYTES as a lowercase hex string.
-// Canonical form: "type|event|counter|vbat|battery"
+// Canonical form: "type|event|counter|vbat_str|battery"
 // Including vbat and battery means an attacker cannot alter those fields in a
 // captured packet without invalidating the tag.
 //
-// %.2f for vbat must match the format used in the JSON ("vbat" is serialised
-// with String(battery_voltage, 2)). The receiver parses that string back to
-// float and reformats with the same %.2f — both sides run the same newlib on
-// the same ESP32-S3 so the round-trip is deterministic.
+// vbat is passed as the already-formatted string (e.g. "3.84") rather than a
+// float so the HMAC input is byte-for-byte identical to what appears in the
+// JSON. This removes the float round-trip (TX: float→string→JSON, RX:
+// JSON→float→string) and the formatting dependency that came with it.
 //
 // 8 bytes (16 hex chars) of truncated HMAC gives 64 bits of authentication
 // strength — sufficient for this threat model.
 #define HMAC_TRUNCATED_BYTES 8
 
 String computeHmac(const char* type, const char* event, uint32_t counter,
-                   float vbat, int battery) {
+                   const char* vbat_str, int battery) {
     char message[96];
-    snprintf(message, sizeof(message), "%s|%s|%lu|%.2f|%d", type, event,
-             static_cast<unsigned long>(counter), vbat, battery);
+    snprintf(message, sizeof(message), "%s|%s|%lu|%s|%d", type, event,
+             static_cast<unsigned long>(counter), vbat_str, battery);
 
     uint8_t digest[32];  // full SHA-256 output
     mbedtls_md_context_t ctx;
@@ -224,13 +224,17 @@ bool sendMailboxPacket() {
     const char* type  = "mailbox";
     const char* event = "opened";
 
+    // Format vbat as a string once; use the same value in both the JSON field
+    // and the HMAC input so they are guaranteed byte-for-byte identical.
+    const String vbat_str = String(battery_voltage, 2);
+
     StaticJsonDocument<256> doc;
     doc["type"]    = type;
     doc["event"]   = event;
     doc["counter"] = packet_counter;
-    doc["vbat"]    = serialized(String(battery_voltage, 2));
+    doc["vbat"]    = serialized(vbat_str);
     doc["battery"] = battery_percent;
-    doc["hmac"]    = computeHmac(type, event, packet_counter, battery_voltage, battery_percent);
+    doc["hmac"]    = computeHmac(type, event, packet_counter, vbat_str.c_str(), battery_percent);
 
     String payload;
     serializeJson(doc, payload);

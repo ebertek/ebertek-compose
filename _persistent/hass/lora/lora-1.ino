@@ -83,10 +83,10 @@ static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
 // All payload fields that carry meaning are included so none can be silently
 // altered in a captured packet before it reaches the receiver.
 String computeHmac(const char* type, const char* event, uint32_t counter,
-                   float vbat, int battery) {
+                   const char* vbat_str, int battery) {
     char message[96];
-    snprintf(message, sizeof(message), "%s|%s|%lu|%.2f|%d", type, event,
-             static_cast<unsigned long>(counter), vbat, battery);
+    snprintf(message, sizeof(message), "%s|%s|%lu|%s|%d", type, event,
+             static_cast<unsigned long>(counter), vbat_str, battery);
 
     uint8_t digest[32];
     mbedtls_md_context_t ctx;
@@ -241,9 +241,11 @@ void handlePacket(const String& payload) {
     const char*    type    = doc["type"]    | "";
     const char*    event   = doc["event"]   | "";
     const uint32_t counter = doc["counter"] | 0u;
-    const float    vbat    = doc["vbat"]    | 0.0f;
-    const int      battery = doc["battery"] | -1;
-    const char*    hmac_rx = doc["hmac"]    | "";
+    // Read vbat as the raw JSON string so the HMAC input is byte-for-byte
+    // identical to what the transmitter signed — no float round-trip.
+    const char*    vbat_str = doc["vbat"]    | "0.00";
+    const int      battery  = doc["battery"] | -1;
+    const char*    hmac_rx  = doc["hmac"]    | "";
 
     // Reject packets with no HMAC field at all.
     if (strlen(hmac_rx) == 0) {
@@ -252,7 +254,7 @@ void handlePacket(const String& payload) {
     }
 
     // Recompute expected HMAC and compare.
-    String hmac_expected = computeHmac(type, event, counter, vbat, battery);
+    String hmac_expected = computeHmac(type, event, counter, vbat_str, battery);
     if (!hmac_expected.equals(hmac_rx)) {
         Serial.printf("Auth FAIL: hmac mismatch (got %s, expected %s), packet dropped\n",
                       hmac_rx, hmac_expected.c_str());
@@ -284,8 +286,8 @@ void handlePacket(const String& payload) {
     snprintf(buf, sizeof(buf), "%lu", static_cast<unsigned long>(counter));
     mqtt.publish(TOPIC_COUNTER, buf, true);
 
-    snprintf(buf, sizeof(buf), "%.2f", vbat);
-    mqtt.publish(TOPIC_BATTERY_VOLTAGE, buf, true);
+    // vbat_str is already the formatted string from the JSON — publish directly.
+    mqtt.publish(TOPIC_BATTERY_VOLTAGE, vbat_str, true);
 
     snprintf(buf, sizeof(buf), "%d", battery);
     mqtt.publish(TOPIC_BATTERY_PERCENT, buf, true);
