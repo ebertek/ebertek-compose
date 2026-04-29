@@ -16,7 +16,7 @@ networks:
           aux_addresses:
             host: 10.4.21.1
           gateway: 10.4.20.1
-          ip_range: 10.4.21.0/24
+          ip_range: 10.4.21.0/25
         - subnet: 2001:9b1:25fc:6900::/64
           aux_addresses:
             host: 2001:9b1:25fc:6900:421::1
