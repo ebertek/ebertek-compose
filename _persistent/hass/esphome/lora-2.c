@@ -1,164 +1,216 @@
+// lora-2.c — Mailbox LoRa transmitter (mailbox node, battery powered)
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <RadioLib.h>
 #include <SPI.h>
 #include "driver/rtc_io.h"
 
-#define LORA_NSS 8
-#define LORA_SCK 9
+// ─── LoRa pins (Heltec WiFi LoRa 32 V3 / V3.2) ───────────────────────────────
+#define LORA_NSS  8
+#define LORA_SCK  9
 #define LORA_MOSI 10
 #define LORA_MISO 11
-#define LORA_RST 12
+#define LORA_RST  12
 #define LORA_BUSY 13
 #define LORA_DIO1 14
 
-#define REED_PIN GPIO_NUM_2
+// ─── GPIO definitions ─────────────────────────────────────────────────────────
+// Reed switch: GPIO2, RTC-capable, pulled up internally. HIGH = open (magnet away).
+#define REED_PIN        GPIO_NUM_2
+
+// Battery ADC: GPIO1 = ADC1_CH0 = VBAT_Read on the Heltec V3 pin map.
 #define BATTERY_ADC_PIN 1
 
-#define LORA_FREQ_MHZ 868.0
-#define LORA_BW_KHZ 125.0
-#define LORA_SF 7
-#define LORA_CR 5
-#define LORA_SYNC_WORD 0x12
+// ADC_Ctrl: GPIO37 gates the battery voltage divider (R13=390K, R14=100K).
+// Must be HIGH to enable the divider, LOW otherwise to avoid standby drain.
+// Schematic net: ADC_Ctrl → Q3 (S9013) → divider bottom rail.
+#define ADC_CTRL_PIN    37
+
+// ─── LoRa RF config — must match receiver exactly ─────────────────────────────
+#define LORA_FREQ_MHZ    868.0
+#define LORA_BW_KHZ      125.0
+#define LORA_SF          7
+#define LORA_CR          5
+#define LORA_SYNC_WORD   0x12
 #define LORA_TX_POWER_DBM 14
 
-#define DEBOUNCE_MS 750
+// ─── Timing ───────────────────────────────────────────────────────────────────
+// Debounce window: reed must read open continuously for this long.
+#define DEBOUNCE_MS              750UL
+
+// Max time to wait for the mailbox to close before sleeping anyway (5 min).
 #define WAIT_FOR_CLOSE_TIMEOUT_MS 300000UL
 
-SPIClass spi(FSPI);
-SX1262 radio = new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY, spi);
+// Delay between TX retry attempt (ms).
+#define TX_RETRY_DELAY_MS        500UL
 
+SPIClass spi(FSPI);
+SX1262   radio = new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY, spi);
+
+// Survives deep sleep via RTC slow memory.
 RTC_DATA_ATTR uint32_t packet_counter = 0;
 
+// ─── Battery reading ──────────────────────────────────────────────────────────
+
+// FIX: enable the ADC_Ctrl gate before sampling, disable after.
+// Without this the divider (R13+R14 ≈ 490 KΩ) draws ~8 µA continuously from
+// VBAT even during deep sleep, needlessly draining the battery over time.
 float readBatteryVoltage() {
-  analogReadResolution(12);
-  analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db);
+    // Enable voltage divider.
+    pinMode(ADC_CTRL_PIN, OUTPUT);
+    digitalWrite(ADC_CTRL_PIN, HIGH);
+    delay(10);  // allow divider output to settle
 
-  uint32_t millivolts_sum = 0;
-  for (int i = 0; i < 16; i++) {
-    millivolts_sum += analogReadMilliVolts(BATTERY_ADC_PIN);
-    delay(5);
-  }
+    analogReadResolution(12);
+    analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db);
 
-  const float adc_mv = static_cast<float>(millivolts_sum) / 16.0f;
-
-  // Heltec V3/V3.2 battery divider: VBAT = VADC * 4.9
-  return (adc_mv * 4.9f) / 1000.0f;
-}
-
-int batteryPercent(float voltage) {
-  if (voltage >= 4.20f) {
-    return 100;
-  }
-  if (voltage <= 3.30f) {
-    return 0;
-  }
-
-  return static_cast<int>(((voltage - 3.30f) / 0.90f) * 100.0f);
-}
-
-bool reedIsOpen() {
-  return digitalRead(static_cast<uint8_t>(REED_PIN)) == HIGH;
-}
-
-bool debounceOpen() {
-  if (!reedIsOpen()) {
-    return false;
-  }
-
-  delay(DEBOUNCE_MS);
-  return reedIsOpen();
-}
-
-void configureReedWakeup() {
-  rtc_gpio_init(REED_PIN);
-  rtc_gpio_set_direction(REED_PIN, RTC_GPIO_MODE_INPUT_ONLY);
-  rtc_gpio_pullup_en(REED_PIN);
-  rtc_gpio_pulldown_dis(REED_PIN);
-
-  // Wake when mailbox opens / magnet moves away.
-  esp_sleep_enable_ext0_wakeup(REED_PIN, 1);
-}
-
-void waitForMailboxClosedOrTimeout() {
-  const unsigned long start_ms = millis();
-
-  while (reedIsOpen()) {
-    if (millis() - start_ms > WAIT_FOR_CLOSE_TIMEOUT_MS) {
-      break;
+    uint32_t mv_sum = 0;
+    for (int i = 0; i < 16; i++) {
+        mv_sum += analogReadMilliVolts(BATTERY_ADC_PIN);
+        delay(5);
     }
 
-    delay(250);
-  }
+    // Disable voltage divider to stop standby current draw.
+    digitalWrite(ADC_CTRL_PIN, LOW);
+    pinMode(ADC_CTRL_PIN, INPUT);  // hi-Z, no pull, no drive
 
-  delay(500);
+    const float adc_mv = static_cast<float>(mv_sum) / 16.0f;
+
+    // Heltec V3/V3.2 schematic: R13=390K (top), R14=100K (bottom).
+    // VADC = VBAT * 100/(100+390)  →  VBAT = VADC * 4.9
+    return (adc_mv * 4.9f) / 1000.0f;
+}
+
+// Linear approximation over the usable LiPo discharge curve (3.3 V–4.2 V).
+int batteryPercent(float voltage) {
+    if (voltage >= 4.20f) return 100;
+    if (voltage <= 3.30f) return 0;
+    return static_cast<int>(((voltage - 3.30f) / 0.90f) * 100.0f);
+}
+
+// ─── Reed switch ──────────────────────────────────────────────────────────────
+
+bool reedIsOpen() {
+    return digitalRead(static_cast<uint8_t>(REED_PIN)) == HIGH;
+}
+
+// Returns true only if the reed is still open after DEBOUNCE_MS.
+bool debounceOpen() {
+    if (!reedIsOpen()) return false;
+    delay(DEBOUNCE_MS);
+    return reedIsOpen();
+}
+
+// Block until reed closes or WAIT_FOR_CLOSE_TIMEOUT_MS elapses, then
+// add a short settling delay before we configure wakeup and sleep.
+void waitForMailboxClosedOrTimeout() {
+    const unsigned long start_ms = millis();
+    while (reedIsOpen()) {
+        if (millis() - start_ms > WAIT_FOR_CLOSE_TIMEOUT_MS) {
+            Serial.println("Timeout waiting for mailbox to close, sleeping anyway");
+            break;
+        }
+        delay(250);
+    }
+    delay(500);  // brief settle after close
+}
+
+// Configure GPIO2 as an RTC input with pullup and arm ext0 wakeup on HIGH.
+// ext0 requires an RTC GPIO; GPIO0–GPIO21 qualify on ESP32-S3.
+void configureReedWakeup() {
+    rtc_gpio_init(REED_PIN);
+    rtc_gpio_set_direction(REED_PIN, RTC_GPIO_MODE_INPUT_ONLY);
+    rtc_gpio_pullup_en(REED_PIN);
+    rtc_gpio_pulldown_dis(REED_PIN);
+
+    // Wake when reed goes HIGH (magnet removed = mailbox opened).
+    esp_sleep_enable_ext0_wakeup(REED_PIN, 1);
+}
+
+// ─── LoRa transmit ───────────────────────────────────────────────────────────
+
+// Attempt to transmit payload. Returns RADIOLIB_ERR_NONE on success.
+static int transmitOnce(const String& payload) {
+    int state = radio.transmit(payload);
+    if (state == RADIOLIB_ERR_NONE) {
+        Serial.println("Packet sent");
+    } else {
+        Serial.printf("Transmit failed: %d\n", state);
+    }
+    return state;
 }
 
 bool sendMailboxPacket() {
-  packet_counter++;
+    packet_counter++;
 
-  const float battery_voltage = readBatteryVoltage();
-  const int battery_percent = batteryPercent(battery_voltage);
+    // Read battery before radio init to keep timing clean.
+    const float battery_voltage = readBatteryVoltage();
+    const int   battery_percent = batteryPercent(battery_voltage);
+    Serial.printf("VBAT: %.2f V (%d%%)\n", battery_voltage, battery_percent);
 
-  spi.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
+    spi.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
 
-  int state = radio.begin(
-      LORA_FREQ_MHZ,
-      LORA_BW_KHZ,
-      LORA_SF,
-      LORA_CR,
-      LORA_SYNC_WORD,
-      LORA_TX_POWER_DBM
-  );
+    int state = radio.begin(
+        LORA_FREQ_MHZ, LORA_BW_KHZ, LORA_SF,
+        LORA_CR, LORA_SYNC_WORD, LORA_TX_POWER_DBM
+    );
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.printf("LoRa init failed: %d\n", state);
+        return false;
+    }
 
-  if (state != RADIOLIB_ERR_NONE) {
-    Serial.printf("LoRa init failed: %d\n", state);
-    return false;
-  }
+    // Build JSON payload.
+    StaticJsonDocument<192> doc;
+    doc["type"]    = "mailbox";
+    doc["event"]   = "opened";
+    doc["counter"] = packet_counter;
+    doc["vbat"]    = serialized(String(battery_voltage, 2));
+    doc["battery"] = battery_percent;
 
-  StaticJsonDocument<192> doc;
-  doc["type"] = "mailbox";
-  doc["event"] = "opened";
-  doc["counter"] = packet_counter;
-  doc["vbat"] = serialized(String(battery_voltage, 2));
-  doc["battery"] = battery_percent;
+    String payload;
+    serializeJson(doc, payload);
+    Serial.println(payload);
 
-  String payload;
-  serializeJson(doc, payload);
+    // FIX: one automatic retry on failure.
+    state = transmitOnce(payload);
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.printf("Retrying in %lu ms...\n", TX_RETRY_DELAY_MS);
+        delay(TX_RETRY_DELAY_MS);
+        state = transmitOnce(payload);
+    }
 
-  Serial.println(payload);
+    // Put radio to sleep regardless of TX outcome to save power during the
+    // waitForMailboxClosedOrTimeout() phase.
+    radio.sleep();
 
-  state = radio.transmit(payload);
-  radio.sleep();
-
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println("Packet sent");
-    return true;
-  }
-
-  Serial.printf("Transmit failed: %d\n", state);
-  return false;
+    return (state == RADIOLIB_ERR_NONE);
 }
 
+// ─── Arduino entry points ─────────────────────────────────────────────────────
+
 void setup() {
-  Serial.begin(115200);
-  delay(300);
+    Serial.begin(115200);
+    delay(300);
 
-  pinMode(static_cast<uint8_t>(REED_PIN), INPUT_PULLUP);
+    // Normal GPIO mode for reed during the active phase.
+    pinMode(static_cast<uint8_t>(REED_PIN), INPUT_PULLUP);
 
-  if (debounceOpen()) {
-    sendMailboxPacket();
-  } else {
-    Serial.println("Ignored wake: debounce failed");
-  }
+    if (debounceOpen()) {
+        sendMailboxPacket();
+    } else {
+        Serial.println("Ignored wake: debounce failed (spurious wakeup)");
+    }
 
-  waitForMailboxClosedOrTimeout();
-  configureReedWakeup();
+    waitForMailboxClosedOrTimeout();
+    configureReedWakeup();
 
-  Serial.println("Sleeping");
-  delay(100);
-  esp_deep_sleep_start();
+    Serial.println("Sleeping");
+    Serial.flush();
+    delay(100);
+    esp_deep_sleep_start();
 }
 
 void loop() {
+    // Never reached — device sleeps in setup() and wakes into setup() again.
 }
