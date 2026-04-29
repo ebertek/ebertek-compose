@@ -1,4 +1,6 @@
 // lora-1.ino — Mailbox LoRa receiver / MQTT bridge (home node)
+// MIT License
+// Copyright 2026 ebertek
 
 #include <Arduino.h>
 #include <ArduinoJson.h>

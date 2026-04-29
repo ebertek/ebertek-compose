@@ -1,4 +1,6 @@
 // lora-2.ino — Mailbox LoRa transmitter (mailbox node, battery powered)
+// MIT License
+// Copyright 2026 ebertek
 
 #include <Arduino.h>
 #include <ArduinoJson.h>

@@ -1,3 +1,6 @@
+// MIT License
+// Copyright 2026 ebertek
+
 #pragma once
 
 #define WIFI_SSID_VALUE "YourSSID"
