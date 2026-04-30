@@ -195,6 +195,7 @@ services:
       PGID: "100"
       DOMAIN: "https://vw.ebi.nu"
       EXPERIMENTAL_CLIENT_FEATURE_FLAGS: "ssh-agent-v2,ssh-key-vault-item"
+      IP_HEADER: "X-Forwarded-For"
       PUSH_ENABLED: "true"
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
