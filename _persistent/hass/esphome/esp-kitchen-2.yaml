@@ -57,6 +57,12 @@ button:
   - platform: factory_reset
     id: factory_reset_btn
     name: Factory reset
+  - platform: template
+    id: run_water_pump_btn
+    name: "Run water pump"
+    icon: mdi:water-pump
+    on_press:
+      - script.execute: run_water_pump
 
 esp32_ble_tracker:
   scan_parameters:
@@ -103,6 +109,17 @@ number:
     optimistic: true
     restore_value: true
     step: 1
+  - platform: template
+    id: water_pump_duration_s
+    name: "Water pump duration"
+    icon: mdi:timer-outline
+    unit_of_measurement: s
+    initial_value: 5
+    min_value: 1
+    max_value: 30
+    step: 1
+    optimistic: true
+    restore_value: true
 
 power_supply:
   - id: rgbpwr
@@ -110,6 +127,21 @@ power_supply:
     enable_time: 10ms
     keep_on_time: 10ms
     pin: GPIO19
+
+script:
+  - id: run_water_pump
+    mode: restart
+    then:
+      - switch.turn_on: water_pump_relay
+      - delay: !lambda |-
+          const float seconds = id(water_pump_duration_s).state;
+
+          if (isnan(seconds) || seconds < 1.0f) {
+            return 1000;
+          }
+
+          return static_cast<uint32_t>(seconds * 1000.0f);
+      - switch.turn_off: water_pump_relay
 
 sensor:
   - platform: uptime
@@ -192,11 +224,7 @@ text_sensor:
 
 switch:
   - platform: gpio
-    icon: "mdi:water-pump"
-    id: water_pump
-    name: "Water pump"
-    on_turn_on:
-      - delay: 30s
-      - switch.turn_off: water_pump
+    id: water_pump_relay
+    internal: true
     pin: GPIO2
     restore_mode: RESTORE_DEFAULT_OFF
