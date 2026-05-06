@@ -33,6 +33,10 @@ ip -4 addr flush dev "$IFACE"
 ip -4 addr add "$HOST_ADDR4" dev "$IFACE"
 ip -4 route replace "$SUBNET4" dev "$IFACE"
 
-ip -6 addr flush dev "$IFACE" scope local
+# Prevent SLAAC/RA from auto-adding a global IPv6 to the macvlan
+sysctl -w "net.ipv6.conf.${IFACE}.autoconf=0" || true
+sysctl -w "net.ipv6.conf.${IFACE}.accept_ra=0" || true
+
+ip -6 addr flush dev "$IFACE" scope global
 ip -6 addr add "$HOST_ADDR6" dev "$IFACE"
 ip -6 route replace "$SUBNET6" dev "$IFACE"
