@@ -367,3 +367,28 @@ services:
       - *tz
       - "/volume2/docker/sonarr:/config"
       - "/volume1/Downloads:/downloads"
+
+  unpackerr:
+    <<: *common
+    container_name: unpackerr
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          # cpus: "1"
+          memory: 512M
+    environment:
+      <<: *env
+      UN_FOLDER_0_PATH: "/downloads/Uncategorized"
+      UN_WEBSERVER_METRICS: "true"
+    hostname: unpackerr
+    image: golift/unpackerr
+    mac_address: "0e:be:00:da:00:38"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.38
+        ipv6_address: 2001:9b1:25fc:6900:421::38
+    user: 1028:100
+    volumes:
+      - *tz
+      - "/volume1/Downloads:/downloads"
