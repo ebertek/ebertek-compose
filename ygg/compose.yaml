@@ -50,7 +50,7 @@ services:
         ipv4_address: 10.4.21.47
         ipv6_address: 2001:9b1:25fc:6900:421::47
     privileged: true
-    restart: always
+    restart: unless-stopped
     stop_grace_period: 1m
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"

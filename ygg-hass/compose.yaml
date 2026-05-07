@@ -14,7 +14,7 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
-  restart: "no"
+  restart: unless-stopped
   stop_grace_period: 5m
 
 x-env: &env
@@ -310,7 +310,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.76
         ipv6_address: 2001:9b1:25fc:6900:421::76
-    restart: unless-stopped
     volumes:
       - *tz
       - "/volume2/docker/hass/scrypted/nvr:/nvr"
@@ -345,7 +344,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.73
         ipv6_address: 2001:9b1:25fc:6900:421::73
-    restart: unless-stopped
     secrets:
       - private.key
     volumes:
@@ -390,7 +388,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.69
         ipv6_address: 2001:9b1:25fc:6900:421::69
-    restart: on-failure
     volumes:
       - *tz
       - "/volume2/docker/hass/zigbee2mqtt:/app/data"

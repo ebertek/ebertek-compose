@@ -18,7 +18,7 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
-  restart: "no"
+  restart: unless-stopped
   security_opt: ["no-new-privileges:true"]
   stop_grace_period: 1m
 

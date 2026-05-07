@@ -11,7 +11,7 @@ networks:
 x-common: &common
   dns_search:
     - ygg.nu
-  restart: "no"
+  restart: unless-stopped
   stop_grace_period: 1m
 
 x-env: &env
