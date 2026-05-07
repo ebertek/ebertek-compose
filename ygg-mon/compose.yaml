@@ -78,6 +78,7 @@ services:
       - "/dev/disk/:/dev/disk:ro"
       - "/dev/mapper/:/dev/mapper:ro"
       - "/proc:/rootproc:ro"
+      - "/run/udev/data:/run/udev/data:ro"
       - "/sys:/sys:ro"
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
