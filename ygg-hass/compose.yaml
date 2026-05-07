@@ -183,7 +183,7 @@ services:
     networks:
       macvlan1:
         driver_opts:
-          com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
+          com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64 # yamllint disable-line
         ipv4_address: 10.4.21.66
         ipv6_address: 2001:9b1:25fc:6900:421::66
     security_opt:
