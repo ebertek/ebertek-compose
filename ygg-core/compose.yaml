@@ -34,11 +34,10 @@ services:
   cloudflare-ddns:
     cap_drop: [all]
     container_name: cloudflare-ddns
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 128M
     environment:
       <<: *env
@@ -61,11 +60,10 @@ services:
     <<: *common
     command: tunnel run
     container_name: cloudflared
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 128M
     env_file: cloudflared.txt
     environment:
@@ -98,14 +96,13 @@ services:
   dns:
     <<: *common
     container_name: dns
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 1024M
         reservations:
-          # cpus: "0.002"
+          cpus: "0.002"
           memory: 256M
     environment:
       <<: *env
@@ -143,14 +140,13 @@ services:
     <<: *common
     command: start
     container_name: keycloak
-    cpu_count: 2
     depends_on:
       postgres:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 2048M
     env_file: keycloak.txt
     environment:
@@ -200,14 +196,13 @@ services:
   oauth2-proxy:
     <<: *common
     container_name: oauth2-proxy
-    cpu_count: 1
     depends_on:
       keycloak:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     env_file: oauth2-proxy.txt
     environment:
@@ -260,11 +255,10 @@ services:
   postgres:
     <<: *common
     container_name: postgres
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 1024M
     environment:
       <<: *env
@@ -299,11 +293,10 @@ services:
   traefik:
     <<: *common
     container_name: traefik
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     environment:
       <<: *env

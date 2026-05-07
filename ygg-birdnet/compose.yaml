@@ -26,11 +26,10 @@ services:
   birdnet:
     <<: *common
     container_name: birdnet
-    cpu_count: 4
     deploy:
       resources:
         limits:
-          # cpus: "4"
+          cpus: "4"
           memory: 1024M
     # devices:
     #   - /dev/snd:/dev/snd

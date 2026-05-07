@@ -28,11 +28,10 @@ services:
   bjornify:
     <<: *common
     container_name: bjornify
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     env_file: bjornify.txt
     environment:
@@ -54,20 +53,18 @@ services:
   books:
     <<: *common
     container_name: books
-    cpu_count: 1
     # depends_on:
     #   calibre:
     #     condition: service_started
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: *env
       UMASK: "002"
-      # DOCKER_MODS: "linuxserver/mods:universal-calibre"  # Doesn't work due to old Synology kernel
-      DOCKER_MODS: "lscr.io/linuxserver/mods:universal-calibre-v7.16.0|lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata"
+      DOCKER_MODS: "lscr.io/linuxserver/mods:universal-calibre|lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata"
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
     healthcheck:
       interval: 30s
@@ -98,13 +95,12 @@ services:
   plex:
     <<: *common
     container_name: plex
-    cpu_count: 4
     devices:
       - "/dev/dri:/dev/dri"
     deploy:
       resources:
         limits:
-          # cpus: "4"
+          cpus: "4"
           memory: 1024M
     env_file: plex.txt
     environment:
@@ -134,14 +130,13 @@ services:
   tautulli:
     <<: *common
     container_name: tautulli
-    cpu_count: 1
     depends_on:
       plex:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     environment:
       <<: *env
@@ -166,11 +161,10 @@ services:
   tmm:
     <<: *common
     container_name: tmm
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 2048M
     environment:
       <<: *env

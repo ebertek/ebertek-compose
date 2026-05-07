@@ -34,11 +34,10 @@ services:
   database:
     <<: *common
     container_name: database
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 1536M
     env_file:
       - db.txt
@@ -70,7 +69,6 @@ services:
   immich:
     <<: *common
     container_name: immich
-    cpu_count: 4
     depends_on:
       database:
         condition: service_healthy
@@ -79,7 +77,7 @@ services:
     deploy:
       resources:
         limits:
-          # cpus: "4"
+          cpus: "4"
           memory: 1536M
     devices:
       - /dev/dri:/dev/dri
@@ -110,11 +108,10 @@ services:
   immich-machine-learning:
     <<: *common
     container_name: immich-machine-learning
-    cpu_count: 4
     deploy:
       resources:
         limits:
-          # cpus: "4"
+          cpus: "4"
           memory: 1536M
     device_cgroup_rules:
       - "c 189:* rmw"
@@ -142,11 +139,10 @@ services:
   redis:
     <<: *common
     container_name: redis
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 2048M
     env_file: db.txt
     environment:

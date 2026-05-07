@@ -37,14 +37,13 @@ services:
   bazarr:
     <<: *common
     container_name: bazarr
-    cpu_count: 1
     depends_on:
       pg:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -78,14 +77,13 @@ services:
   lidarr:
     <<: *common
     container_name: lidarr
-    cpu_count: 1
     depends_on:
       pg:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -122,11 +120,10 @@ services:
   pg:
     <<: *common
     container_name: pg
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 1024M
     environment:
       <<: *env
@@ -157,7 +154,6 @@ services:
   prowlarr:
     <<: *common
     container_name: prowlarr
-    cpu_count: 1
     depends_on:
       pg:
         condition: service_healthy
@@ -168,7 +164,7 @@ services:
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -204,14 +200,13 @@ services:
   radarr:
     <<: *common
     container_name: radarr
-    cpu_count: 1
     depends_on:
       pg:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -248,7 +243,6 @@ services:
   recyclarr:
     <<: *common
     container_name: recyclarr
-    cpu_count: 1
     depends_on:
       radarr:
         condition: service_started
@@ -257,7 +251,7 @@ services:
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -284,7 +278,6 @@ services:
   requestrr:
     <<: *common
     container_name: requestrr
-    cpu_count: 1
     depends_on:
       radarr:
         condition: service_started
@@ -293,7 +286,7 @@ services:
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -327,14 +320,13 @@ services:
   sonarr:
     <<: *common
     container_name: sonarr
-    cpu_count: 1
     depends_on:
       pg:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: [*env, *env-arr]
@@ -371,11 +363,10 @@ services:
   unpackerr:
     <<: *common
     container_name: unpackerr
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     environment:
       <<: *env

@@ -36,11 +36,10 @@ services:
   esphome:
     <<: *common
     container_name: esphome
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 2560M
     # env_file: esphome.txt
     environment:
@@ -71,11 +70,10 @@ services:
       - NET_ADMIN
       - NET_RAW
     container_name: hass
-    cpu_count: 2
     deploy:
       resources:
         limits:
-          # cpus: "2"
+          cpus: "2"
           memory: 2048M
     devices:
       - "/dev/bus/usb:/dev/bus/usb"
@@ -110,11 +108,10 @@ services:
   influxdb:
     <<: *common
     container_name: influxdb
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 1024M
     environment:
       <<: *env
@@ -161,11 +158,10 @@ services:
       - NET_ADMIN
       - NET_RAW
     container_name: matter-server
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 512M
     devices:
       - "/dev/bus/usb:/dev/bus/usb"
@@ -186,8 +182,8 @@ services:
     mac_address: "0e:be:00:da:00:66"
     networks:
       macvlan1:
-        # driver_opts:
-        #   com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
+        driver_opts:
+          com.docker.network.endpoint.sysctls: net.ipv6.conf.eth0.accept_ra_rt_info_max_plen=64  # yamllint disable-line
         ipv4_address: 10.4.21.66
         ipv6_address: 2001:9b1:25fc:6900:421::66
     security_opt:
@@ -202,11 +198,10 @@ services:
   mosquitto:
     <<: *common
     container_name: mosquitto
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     environment:
       <<: *env
@@ -232,14 +227,13 @@ services:
   ps5-mqtt:
     <<: *common
     container_name: ps5-mqtt
-    cpu_count: 1
     depends_on:
       mosquitto:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     entrypoint: /app/run-standalone.sh
     environment:
@@ -272,11 +266,10 @@ services:
   scrypted:
     <<: *common
     container_name: scrypted
-    cpu_count: 4
     deploy:
       resources:
         limits:
-          # cpus: "4"
+          cpus: "4"
           memory: 4096M
     devices:
       - "/dev/dri:/dev/dri"
@@ -326,11 +319,10 @@ services:
   vonage:
     <<: *common
     container_name: vonage
-    cpu_count: 1
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 128M
     env_file: vonage.txt
     environment:
@@ -362,14 +354,13 @@ services:
   zigbee2mqtt:
     <<: *common
     container_name: zigbee2mqtt
-    cpu_count: 1
     depends_on:
       mosquitto:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          # cpus: "1"
+          cpus: "1"
           memory: 256M
     environment:
       <<: *env
