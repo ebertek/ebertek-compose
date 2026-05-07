@@ -45,7 +45,7 @@ scrape_configs:
 
   - job_name: "cloudflared"
     static_configs:
-      - targets: ["yggdrasil.ygg.nu:60123"]
+      - targets: ["heimdall.ygg.nu:60123"]
 
   - job_name: "unpackerr"
     static_configs:
