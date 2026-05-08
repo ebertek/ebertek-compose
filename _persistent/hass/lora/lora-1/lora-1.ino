@@ -232,7 +232,7 @@ void handlePacket(const String& payload) {
     Serial.printf("RX: %s | RSSI %.1f dBm | SNR %.1f dB\n",
                   payload.c_str(), rssi, snr);
 
-    StaticJsonDocument<320> doc;
+    JsonDocument doc;
     DeserializationError err = deserializeJson(doc, payload);
     if (err) {
         Serial.printf("JSON parse error: %s\n", err.c_str());

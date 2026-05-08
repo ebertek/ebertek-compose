@@ -240,7 +240,7 @@ bool sendMailboxPacket() {
     // and the HMAC input so they are guaranteed byte-for-byte identical.
     const String vbat_str = String(battery_voltage, 2);
 
-    StaticJsonDocument<320> doc;
+    JsonDocument doc;
     doc["type"]    = type;
     doc["event"]   = event;
     doc["boot_id"] = boot_id;
