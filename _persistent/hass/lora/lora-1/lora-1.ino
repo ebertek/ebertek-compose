@@ -309,6 +309,7 @@ void setup() {
 
     mqtt.setServer(MQTT_HOST, MQTT_PORT);
     mqtt.setKeepAlive(MQTT_KEEPALIVE_S);  // explicit keepalive
+    mqtt.setBufferSize(512);
     connectMqtt();
     publishHomeAssistantDiscovery();
 
