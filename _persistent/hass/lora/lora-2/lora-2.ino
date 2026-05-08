@@ -191,7 +191,7 @@ String computeHmac(const char* type, const char* event, uint32_t counter,
 // ─── LoRa transmit ───────────────────────────────────────────────────────────
 
 // Attempt to transmit payload. Returns RADIOLIB_ERR_NONE on success.
-static int transmitOnce(const String& payload) {
+static int transmitOnce(String& payload) {
     int state = radio.transmit(payload);
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println("Packet sent");
