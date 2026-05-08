@@ -232,7 +232,7 @@ bool sendMailboxPacket() {
     doc["type"]    = type;
     doc["event"]   = event;
     doc["counter"] = packet_counter;
-    doc["vbat"]    = serialized(vbat_str);
+    doc["vbat"]    = vbat_str;
     doc["battery"] = battery_percent;
     doc["hmac"]    = computeHmac(type, event, packet_counter, vbat_str.c_str(), battery_percent);
 
