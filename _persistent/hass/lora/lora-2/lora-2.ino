@@ -8,7 +8,7 @@
 #include <SPI.h>
 #include "driver/rtc_io.h"
 #include "mbedtls/md.h"
-#include "secrets.h"
+#include "../include/secrets.h"
 
 // ─── LoRa pins (Heltec WiFi LoRa 32 V3 / V3.2) ───────────────────────────────
 #define LORA_NSS  8

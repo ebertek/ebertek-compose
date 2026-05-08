@@ -9,7 +9,7 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include "mbedtls/md.h"
-#include "secrets.h"
+#include "../include/secrets.h"
 
 // ─── User config ─────────────────────────────────────────────────────────────
 const char* WIFI_SSID     = WIFI_SSID_VALUE;
