@@ -59,6 +59,8 @@ A collection of Docker Compose files and shell scripts.
   - **[esp-kitchen-1](_persistent/hass/esphome/esp-kitchen-1.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
   - **[esp-kitchen-2](_persistent/hass/esphome/esp-kitchen-2.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
   - **[esp-office-1](_persistent/hass/esphome/esp-office-1.yaml)**: Espressif ESP32-S3-BOX-3
+  - **[lora-1](_persistent/hass/lora/lora-1/lora-1.ino)**: Heltec WiFi LoRa 32(V3) home receiver node that bridges LoRa mailbox events to MQTT/Home Assistant
+  - **[lora-2](_persistent/hass/lora/lora-2/lora-2.ino)**: Battery-powered Heltec WiFi LoRa 32(V3) remote mailbox sensor using an MC-38 reed switch
 - **[hass](https://github.com/home-assistant/core)**: Home automation.
 - **[influxdb](https://github.com/influxdata/influxdb/tree/main-2.x)**: Time series database built for real-time analytic workloads.
 - **[matter-server](https://github.com/matter-js/python-matter-server)**: Matter Controller Server.
