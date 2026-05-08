@@ -80,12 +80,13 @@ static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
 #define HMAC_TRUNCATED_BYTES 8
 
 // Recompute HMAC using the same canonical form as the transmitter.
-// All payload fields that carry meaning are included so none can be silently
-// altered in a captured packet before it reaches the receiver.
-String computeHmac(const char* type, const char* event, uint32_t counter,
+// Canonical form: "type|event|boot_id|counter|vbat_str|battery"
+String computeHmac(const char* type, const char* event,
+                   uint32_t boot_id_val, uint32_t counter,
                    const char* vbat_str, int battery) {
-    char message[96];
-    snprintf(message, sizeof(message), "%s|%s|%lu|%s|%d", type, event,
+    char message[128];
+    snprintf(message, sizeof(message), "%s|%s|%lu|%lu|%s|%d", type, event,
+             static_cast<unsigned long>(boot_id_val),
              static_cast<unsigned long>(counter), vbat_str, battery);
 
     uint8_t digest[32];
@@ -110,9 +111,12 @@ String computeHmac(const char* type, const char* event, uint32_t counter,
     return String(hex);
 }
 
-// Highest counter value accepted so far. Packets with counter <= this are
-// rejected as replays. Resets on bridge reboot, which opens a brief window;
-// acceptable for this threat model.
+// Session tracking for replay protection.
+// When boot_id changes, the remote has cold-booted and its counter has reset;
+// we reset last_accepted_counter so the first packet of the new session is
+// accepted. boot_id is inside the HMAC, so a forged boot_id change is rejected
+// before it can affect these state variables.
+static uint32_t last_boot_id          = 0;
 static uint32_t last_accepted_counter = 0;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -228,7 +232,7 @@ void handlePacket(const String& payload) {
     Serial.printf("RX: %s | RSSI %.1f dBm | SNR %.1f dB\n",
                   payload.c_str(), rssi, snr);
 
-    StaticJsonDocument<256> doc;
+    StaticJsonDocument<320> doc;
     DeserializationError err = deserializeJson(doc, payload);
     if (err) {
         Serial.printf("JSON parse error: %s\n", err.c_str());
@@ -238,9 +242,10 @@ void handlePacket(const String& payload) {
     if (doc["type"] != "mailbox") return;
 
     // ── Auth: verify HMAC before touching any payload fields ─────────────────
-    const char*    type    = doc["type"]    | "";
-    const char*    event   = doc["event"]   | "";
-    const uint32_t counter = doc["counter"] | 0u;
+    const char*    type     = doc["type"]    | "";
+    const char*    event    = doc["event"]   | "";
+    const uint32_t boot_id  = doc["boot_id"] | 0u;
+    const uint32_t counter  = doc["counter"] | 0u;
     // Read vbat as the raw JSON string so the HMAC input is byte-for-byte
     // identical to what the transmitter signed — no float round-trip.
     const char*    vbat_str = doc["vbat"]    | "0.00";
@@ -253,12 +258,24 @@ void handlePacket(const String& payload) {
         return;
     }
 
-    // Recompute expected HMAC and compare.
-    String hmac_expected = computeHmac(type, event, counter, vbat_str, battery);
+    // Recompute expected HMAC and compare. boot_id is inside the HMAC so a
+    // forged session-reset attempt is rejected here before anything else.
+    String hmac_expected = computeHmac(type, event, boot_id, counter, vbat_str, battery);
     if (!hmac_expected.equals(hmac_rx)) {
         Serial.printf("Auth FAIL: hmac mismatch (got %s, expected %s), packet dropped\n",
                       hmac_rx, hmac_expected.c_str());
         return;
+    }
+
+    // Session reset: if boot_id changed the remote has cold-booted and its
+    // packet_counter has reset to 0. Reset our window so the new session's
+    // first packet (counter=1) is accepted.
+    if (boot_id != last_boot_id) {
+        Serial.printf("New session detected (boot_id %lu → %lu), resetting counter window\n",
+                      static_cast<unsigned long>(last_boot_id),
+                      static_cast<unsigned long>(boot_id));
+        last_boot_id          = boot_id;
+        last_accepted_counter = 0;
     }
 
     // Replay check: counter must be strictly greater than the last accepted.
@@ -271,7 +288,9 @@ void handlePacket(const String& payload) {
     last_accepted_counter = counter;
     // ─────────────────────────────────────────────────────────────────────────
 
-    Serial.printf("Auth OK (counter=%lu)\n", static_cast<unsigned long>(counter));
+    Serial.printf("Auth OK (boot_id=%lu counter=%lu)\n",
+                  static_cast<unsigned long>(boot_id),
+                  static_cast<unsigned long>(counter));
 
     // Publish raw only after auth passes — don't echo unauthenticated packets.
     mqtt.publish(TOPIC_RAW, payload.c_str(), false);

@@ -54,8 +54,25 @@
 SPIClass spi(FSPI);
 SX1262   radio = new Module(LORA_NSS, LORA_DIO1, LORA_RST, LORA_BUSY, spi);
 
-// Survives deep sleep via RTC slow memory.
+// Both survive deep sleep via RTC slow memory.
+// packet_counter is monotonically increasing within a session.
+// boot_id is a random token generated once per cold boot (power loss or
+// first flash); it lets the receiver distinguish a new session from a replay.
 RTC_DATA_ATTR uint32_t packet_counter = 0;
+RTC_DATA_ATTR uint32_t boot_id        = 0;
+
+// ─── Session identity ─────────────────────────────────────────────────────────
+
+// Called once per wake. On cold boot (power loss / first flash) boot_id is 0;
+// generate a random non-zero value and store it in RTC memory so it persists
+// across deep sleep cycles. Deep-sleep wakes leave boot_id unchanged.
+void ensureBootId() {
+    if (boot_id == 0) {
+        boot_id = esp_random();
+        if (boot_id == 0) boot_id = 1;  // esp_random() returning 0 is vanishingly
+                                         // rare, but guard anyway
+    }
+}
 
 // ─── Battery reading ──────────────────────────────────────────────────────────
 
@@ -146,23 +163,18 @@ static const char* LORA_HMAC_SECRET = LORA_HMAC_SECRET_VALUE;
 
 // Compute HMAC-SHA256 over all meaningful payload fields and return the first
 // HMAC_TRUNCATED_BYTES as a lowercase hex string.
-// Canonical form: "type|event|counter|vbat_str|battery"
-// Including vbat and battery means an attacker cannot alter those fields in a
-// captured packet without invalidating the tag.
-//
-// vbat is passed as the already-formatted string (e.g. "3.84") rather than a
-// float so the HMAC input is byte-for-byte identical to what appears in the
-// JSON. This removes the float round-trip (TX: float→string→JSON, RX:
-// JSON→float→string) and the formatting dependency that came with it.
-//
-// 8 bytes (16 hex chars) of truncated HMAC gives 64 bits of authentication
-// strength — sufficient for this threat model.
+// Canonical form: "type|event|boot_id|counter|vbat_str|battery"
+// boot_id scopes the counter to a session, so the receiver can reset its
+// replay window when it sees a new boot_id without being vulnerable to an
+// attacker forging a boot_id change (boot_id is inside the HMAC).
 #define HMAC_TRUNCATED_BYTES 8
 
-String computeHmac(const char* type, const char* event, uint32_t counter,
+String computeHmac(const char* type, const char* event,
+                   uint32_t boot_id_val, uint32_t counter,
                    const char* vbat_str, int battery) {
-    char message[96];
-    snprintf(message, sizeof(message), "%s|%s|%lu|%s|%d", type, event,
+    char message[128];
+    snprintf(message, sizeof(message), "%s|%s|%lu|%lu|%s|%d", type, event,
+             static_cast<unsigned long>(boot_id_val),
              static_cast<unsigned long>(counter), vbat_str, battery);
 
     uint8_t digest[32];  // full SHA-256 output
@@ -228,13 +240,14 @@ bool sendMailboxPacket() {
     // and the HMAC input so they are guaranteed byte-for-byte identical.
     const String vbat_str = String(battery_voltage, 2);
 
-    StaticJsonDocument<256> doc;
+    StaticJsonDocument<320> doc;
     doc["type"]    = type;
     doc["event"]   = event;
+    doc["boot_id"] = boot_id;
     doc["counter"] = packet_counter;
     doc["vbat"]    = vbat_str;
     doc["battery"] = battery_percent;
-    doc["hmac"]    = computeHmac(type, event, packet_counter, vbat_str.c_str(), battery_percent);
+    doc["hmac"]    = computeHmac(type, event, boot_id, packet_counter, vbat_str.c_str(), battery_percent);
 
     String payload;
     serializeJson(doc, payload);
@@ -260,6 +273,10 @@ bool sendMailboxPacket() {
 void setup() {
     Serial.begin(115200);
     delay(300);
+
+    // Generate boot_id on first cold boot; leaves it unchanged on deep-sleep wakes.
+    ensureBootId();
+    Serial.printf("boot_id: %lu\n", static_cast<unsigned long>(boot_id));
 
     // Normal GPIO mode for reed during the active phase.
     pinMode(static_cast<uint8_t>(REED_PIN), INPUT_PULLUP);
