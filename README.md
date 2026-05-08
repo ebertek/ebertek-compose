@@ -2,11 +2,23 @@
 
 A collection of Docker Compose files and shell scripts.
 
+## Overview
+
+This repository contains self-hosted infrastructure and home automation services using Docker Compose.
+
+Main areas:
+
+- Home automation (Home Assistant, ESPHome, Zigbee2MQTT, Matter)
+- Media management and streaming (\*arr stack, Plex, Immich)
+- Monitoring (Grafana, Loki, Prometheus, Alloy)
+- Identity and networking (Keycloak, Traefik, Cloudflare Tunnel)
+- Utility services and maintenance scripts
+
 ## Docker Compose
 
 ### [ebertek/](ebertek/)
 
-- **[alloy](https://hub.docker.com/r/grafana/alloy)**: Push logs and metrics to `ygg-mon`.
+- **[alloy](https://hub.docker.com/r/grafana/alloy)**: Collect and forward logs and metrics to `ygg-mon`.
 - **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
 - **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
@@ -18,7 +30,7 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ygg/](ygg/)
 
-- **[macvlan](https://docs.docker.com/engine/network/drivers/macvlan/)**: Creates the Macvlan network used by all `ygg-*` Compose files.
+- **[macvlan](https://docs.docker.com/engine/network/drivers/macvlan/)**: Creates the Docker Macvlan network shared by all `ygg-*` Compose projects.
 - **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-arr/](ygg-arr/)
@@ -31,6 +43,7 @@ A collection of Docker Compose files and shell scripts.
 - **[recyclarr](https://github.com/recyclarr/recyclarr)**: Automatically sync [TRaSH Guides](https://trash-guides.info) to your Sonarr/Radarr instances.
 - **[requestrr](https://hotio.dev/containers/requestrr/)**: Discord chatbot for \*arr.
 - **[sonarr](https://hotio.dev/containers/sonarr/)**: Smart PVR.
+- **[unpackerr](https://github.com/Unpackerr/unpackerr)**: Extracts downloads for Radarr, Sonarr, Lidarr, Readarr, and/or a Watch folder.
 
 ### [ygg-birdnet/](ygg-birdnet/)
 
@@ -38,6 +51,7 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ygg-core/](ygg-core/)
 
+- **[cloudflare-ddns](https://github.com/favonia/cloudflare-ddns)**: A small, feature-rich, and robust Cloudflare DDNS updater.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
@@ -47,8 +61,9 @@ A collection of Docker Compose files and shell scripts.
 
 ### [ygg-download/](ygg-download/)
 
-- **[download](https://docs.linuxserver.io/images/docker-qbittorrent/)**: BitTorrent client.
+- **[download](https://github.com/qbittorrent/docker-qbittorrent-nox)**: BitTorrent client.
 - **[gluetun](https://hub.docker.com/r/qmcgaw/gluetun)**: VPN client.
+- **[mousehole](https://github.com/t-mart/mousehole)**: A background service to update a seedbox IP for MAM.
 
 ### [ygg-hass/](ygg-hass/)
 
@@ -63,7 +78,7 @@ A collection of Docker Compose files and shell scripts.
   - **[lora-2](_persistent/hass/lora/lora-2/lora-2.ino)**: Battery-powered Heltec WiFi LoRa 32(V3) remote mailbox sensor using an MC-38 reed switch
 - **[hass](https://github.com/home-assistant/core)**: Home automation.
 - **[influxdb](https://github.com/influxdata/influxdb/tree/main-2.x)**: Time series database built for real-time analytic workloads.
-- **[matter-server](https://github.com/matter-js/python-matter-server)**: Matter Controller Server.
+- **[matter-server](https://github.com/matter-js/matterjs-server)**: Matter server based on Matter.js.
 - **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
 - **[scrypted](https://github.com/koush/scrypted)**: High performance video integration and automation platform.
@@ -104,7 +119,7 @@ A collection of Docker Compose files and shell scripts.
 
 ### [Scripts/](Scripts/)
 
-- **pull_persistent**: Pull persistent files that should be version tracked.
+- **pull_persistent**: Pull persistent files that should be version-controlled.
 - **thang010146**: Back up videos from [Nguyen Duc Thang](https://www.youtube.com/user/thang010146).
 - **update-matter**: Fix routing between _matter_server_ and Matter devices.
 
@@ -124,12 +139,12 @@ A collection of Docker Compose files and shell scripts.
 
 ### [startup/](Scripts/startup/)
 
-- **00-startup**: Load all other scripts.
-- **10-fix-sysctl**: Allow memory overcommit, increase the maximum number of incoming connections, fix networking for Docker, increase file system watch limit, [update Docker](<(https://github.com/markdumay/synology-docker)>), [update Synology compatible drive database](https://github.com/007revad/Synology_HDD_db).
+- **00-startup**: Load all other scripts, [update Docker](<(https://github.com/markdumay/synology-docker)>), [update Synology compatible drive database](https://github.com/007revad/Synology_HDD_db).
+- **10-fix-sysctl**: Applies kernel/sysctl tuning for containerized workloads and networking, including increased inotify watcher limits, higher socket backlog capacity, IPv4/IPv6 networking adjustments, unprivileged ICMP ping support, and Redis-compatible memory overcommit settings.
 - **20-insmod-tun**: Load the `tun` kernel module required for VPN.
 - **30-macvlan**: Fix routing between the host and the Macvlan network used by _ygg_.
 - **40-disable-active_insight**: Remove Synology Active Insight.
-- **50-sdp**: Active current IP for [Smart DNS Proxy](https://www.smartdnsproxy.com/services/).
+- **50-sdp**: Activate current IP for [Smart DNS Proxy](https://www.smartdnsproxy.com/services/).
 - **60-rclone**: Update [rclone](https://rclone.org).
 - **70-youtube**: Update [yt-dlp](https://github.com/yt-dlp/yt-dlp).
 
@@ -137,6 +152,7 @@ A collection of Docker Compose files and shell scripts.
 
 - Docker and Docker Compose.
   - Synology's Container Manager contains an old version of Docker; the [synology-docker](https://github.com/markdumay/synology-docker) script can be used to update it.
+  - Some older Synology DSM/kernel versions may require the legacy [yggdrasil-final](../../tree/yggdrasil-final) branch.
 - Some folders require specific environment files.
 
 ## Usage
