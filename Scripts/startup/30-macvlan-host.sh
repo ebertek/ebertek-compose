@@ -2,11 +2,6 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# Docker macvlan network name
-# ---------------------------------------------------------------------------
-DOCKER_NET="macvlan1"
-
-# ---------------------------------------------------------------------------
 # Host-side macvlan interface name
 # Used so the host can communicate with macvlan containers
 # ---------------------------------------------------------------------------
@@ -21,12 +16,6 @@ PARENT="enp86s0"
 # Docker IPv4 configuration
 # ---------------------------------------------------------------------------
 
-# Main LAN subnet
-DOCKER_SUBNET4="10.4.20.0/23"
-
-# LAN gateway
-DOCKER_GATEWAY4="10.4.20.1"
-
 # Range reserved for Docker macvlan containers
 DOCKER_RANGE4="10.4.21.0/25"
 
@@ -39,12 +28,6 @@ DNS_ADDR4="10.4.21.34"
 # ---------------------------------------------------------------------------
 # Docker IPv6 configuration
 # ---------------------------------------------------------------------------
-
-# Main IPv6 LAN prefix
-DOCKER_SUBNET6="2001:9b1:25fc:6900::/64"
-
-# IPv6 gateway
-DOCKER_GATEWAY6="2001:9b1:25fc:6900::1"
 
 # IPv6 range reserved for Docker macvlan containers
 DOCKER_RANGE6="2001:9b1:25fc:6900:421::/80"
@@ -72,25 +55,6 @@ done
 if ! ip link show "${PARENT}" >/dev/null 2>&1; then
 	echo "ERROR: Parent interface ${PARENT} does not exist" >&2
 	exit 1
-fi
-
-# ---------------------------------------------------------------------------
-# Create Docker macvlan network if it does not already exist
-# ---------------------------------------------------------------------------
-if ! docker network inspect "${DOCKER_NET}" >/dev/null 2>&1; then
-	docker network create \
-		--driver macvlan \
-		--subnet="${DOCKER_SUBNET4}" \
-		--gateway="${DOCKER_GATEWAY4}" \
-		--ip-range="${DOCKER_RANGE4}" \
-		--aux-address="host=${HOST_ADDR4%/*}" \
-		--ipv6 \
-		--subnet="${DOCKER_SUBNET6}" \
-		--gateway="${DOCKER_GATEWAY6}" \
-		--ip-range="${DOCKER_RANGE6}" \
-		--aux-address="host=${HOST_ADDR6%/*}" \
-		--opt parent="${PARENT}" \
-		"${DOCKER_NET}"
 fi
 
 # ---------------------------------------------------------------------------
@@ -155,5 +119,4 @@ ip -6 route replace "${DOCKER_RANGE6}" dev "${HOST_IFACE}"
 # ---------------------------------------------------------------------------
 # Finished
 # ---------------------------------------------------------------------------
-echo "Docker macvlan network '${DOCKER_NET}' is ready"
 echo "Host macvlan interface '${HOST_IFACE}' is configured"
