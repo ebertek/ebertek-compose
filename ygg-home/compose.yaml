@@ -109,8 +109,8 @@ services:
       PLEX_GID: "100"
       ALLOWED_NETWORKS: "10.4.21.0/24"
     group_add:
-      - "render"
-      - "video"
+      - "44"
+      - "991"
     hostname: plex
     image: "docker.io/plexinc/pms-docker:latest"
     labels:

@@ -280,8 +280,8 @@ services:
       SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
       SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer demotoken"
     group_add:
-      - "render"
-      - "video"
+      - "44"
+      - "991"
     healthcheck:
       interval: 1m30s
       retries: 3
