@@ -21,6 +21,11 @@ services:
       - SYSLOG
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     container_name: alloy
+    cpu_count: 1
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
     devices:
       - /dev/kmsg
     environment:
