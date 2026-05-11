@@ -119,6 +119,7 @@ services:
     device_cgroup_rules:
       - "c 189:* rmw"
     devices:
+      - /dev/accel:/dev/accel
       - /dev/dri:/dev/dri
     env_file: db.txt
     environment:
@@ -128,7 +129,7 @@ services:
       - "44"
       - "991"
     hostname: immich-machine-learning
-    image: "ghcr.io/immich-app/immich-machine-learning:release"
+    image: "ghcr.io/immich-app/immich-machine-learning:release-openvino"
     mac_address: "0e:be:00:da:00:49"
     networks:
       macvlan1:
