@@ -42,7 +42,7 @@ services:
       - "/proc:/rootproc:ro"
       - "/sys:/sys:ro"
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
-      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/volume2/@docker:/var/lib/docker:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   watchtower:
