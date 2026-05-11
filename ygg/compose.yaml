@@ -4,54 +4,66 @@
 # version: "3.9"
 name: ygg
 
-networks:
-  macvlan1:
-    driver: macvlan
-    driver_opts:
-      parent: ovs_bond0
-    enable_ipv6: true
-    ipam:
-      config:
-        - subnet: 10.4.20.0/23
-          aux_addresses:
-            host: 10.4.21.1
-          gateway: 10.4.20.1
-          ip_range: 10.4.21.0/25
-        - subnet: 2001:9b1:25fc:6900::/64
-          aux_addresses:
-            host: 2001:9b1:25fc:6900:421::1
-          gateway: 2001:9b1:25fc:6900::1
-          ip_range: 2001:9b1:25fc:6900:421::/80
-    name: macvlan1
+x-common: &common
+  restart: unless-stopped
+  stop_grace_period: 1m
+
+x-env: &env
+  TZ: "UTC"
+
+x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 services:
+  alloy:
+    <<: *common
+    cap_add:
+      - SYS_ADMIN
+      - SYSLOG
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    container_name: alloy
+    devices:
+      - /dev/kmsg
+    environment:
+      <<: *env
+      ALLOY_DEPLOY_MODE: "docker"
+      ALLOY_HOST: "yggdrasil"
+      LOKI_URL: "https://loki.ebi.nu/loki/api/v1/push"
+      PROM_URL: "https://prometheus.ebi.nu/api/v1/write"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    hostname: alloy
+    image: "docker.io/grafana/alloy:latest"
+    volumes:
+      - *tz
+      - "/:/rootfs:ro"
+      - "/dev/disk/:/dev/disk:ro"
+      - "/dev/mapper/:/dev/mapper:ro"
+      - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
+      - "/proc:/rootproc:ro"
+      - "/sys:/sys:ro"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   watchtower:
+    <<: *common
     container_name: watchtower
+    cpu_count: 1
     deploy:
       resources:
         limits:
-          cpus: "1"
           memory: 128M
     environment:
-      TZ: "UTC"
+      <<: *env
       NO_COLOR: "true"
       WATCHTOWER_CLEANUP: "true"
-      WATCHTOWER_HTTP_API_METRICS: "true"
-      WATCHTOWER_HTTP_API_PERIODIC_POLLS: "true"
-      WATCHTOWER_HTTP_API_TOKEN: "demotoken"
-      WATCHTOWER_HTTP_API_UPDATE: "true"
       WATCHTOWER_LOG_FORMAT: "JSON"
-      # WATCHTOWER_ROLLING_RESTART: "true"
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
-    mac_address: "0e:be:00:da:00:47"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.47
-        ipv6_address: 2001:9b1:25fc:6900:421::47
     privileged: true
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
+      - *tz
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/volume2/docker/watchtower/config.json:/config.json"
