@@ -361,3 +361,34 @@ services:
       # - "/volume2/docker/traefik/traefik.yml:/etc/traefik/traefik.yml"
       - "/volume2/docker/acmesh/ebi.nu_ecc/:/certs:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  watchtower:
+    container_name: watchtower
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 128M
+    environment:
+      TZ: "UTC"
+      NO_COLOR: "true"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_HTTP_API_METRICS: "true"
+      WATCHTOWER_HTTP_API_PERIODIC_POLLS: "true"
+      WATCHTOWER_HTTP_API_TOKEN: "demotoken"
+      WATCHTOWER_HTTP_API_UPDATE: "true"
+      WATCHTOWER_LOG_FORMAT: "JSON"
+      # WATCHTOWER_ROLLING_RESTART: "true"
+    hostname: watchtower
+    image: "docker.io/nickfedor/watchtower:latest"
+    mac_address: "0e:be:00:da:00:47"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.47
+        ipv6_address: 2001:9b1:25fc:6900:421::47
+    privileged: true
+    restart: unless-stopped
+    stop_grace_period: 1m
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/volume2/docker/watchtower/config.json:/config.json"
