@@ -78,6 +78,7 @@ services:
       - "/dev/mapper/:/dev/mapper:ro"
       - "/etc/machine-id:/etc/machine-id:ro"
       - "/proc:/rootproc:ro"
+      - "/run/containerd/containerd.sock:/run/containerd/containerd.sock:ro"
       - "/run/log/journal:/run/log/journal:ro"
       - "/run/udev/data:/run/udev/data:ro"
       - "/sys:/sys:ro"
