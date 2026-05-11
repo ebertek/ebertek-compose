@@ -270,7 +270,7 @@ services:
       resources:
         limits:
           cpus: "4"
-          memory: 4096M
+          memory: 5120M
     devices:
       - "/dev/dri:/dev/dri"
     environment:
