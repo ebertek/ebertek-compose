@@ -76,6 +76,7 @@ services:
       - "/volume2/docker/gramps/users:/app/users"
 
   grampsweb-celery:
+    <<: *common
     command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
     container_name: grampsweb-celery
     depends_on:

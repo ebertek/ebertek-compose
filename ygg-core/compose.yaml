@@ -32,6 +32,7 @@ secrets:
 
 services:
   cloudflare-ddns:
+    <<: *common
     cap_drop: [all]
     container_name: cloudflare-ddns
     deploy:
