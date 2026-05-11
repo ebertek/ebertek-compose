@@ -86,6 +86,9 @@ services:
       <<: *env
       IMMICH_TELEMETRY_INCLUDE: "all"
       NO_COLOR: "true"
+    group_add:
+      - "render"
+      - "video"
     hostname: immich
     image: "ghcr.io/immich-app/immich-server:release"
     labels:
@@ -121,6 +124,9 @@ services:
     environment:
       <<: *env
       NO_COLOR: "true"
+    group_add:
+      - "render"
+      - "video"
     hostname: immich-machine-learning
     image: "ghcr.io/immich-app/immich-machine-learning:release"
     mac_address: "0e:be:00:da:00:49"
