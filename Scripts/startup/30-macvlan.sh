@@ -33,6 +33,9 @@ DOCKER_RANGE4="10.4.21.0/25"
 # Host-side macvlan IPv4 address
 HOST_ADDR4="10.4.21.1/32"
 
+# DNS server (if assigned by DHCP but running on macvlan)
+DNS_ADDR4="10.4.21.34"
+
 # ---------------------------------------------------------------------------
 # Docker IPv6 configuration
 # ---------------------------------------------------------------------------
@@ -120,13 +123,12 @@ ip -4 addr flush dev "${HOST_IFACE}"
 # Assign host IPv4 address
 ip -4 addr add "${HOST_ADDR4}" dev "${HOST_IFACE}"
 
-# Route only the Docker macvlan allocation range through this interface
-#
-# IMPORTANT:
-# Do NOT route the entire /23 through the macvlan interface,
-# otherwise the host may bypass the normal LAN path.
-# ---------------------------------------------------------------------------
-ip -4 route replace "${DOCKER_RANGE4}" dev "${HOST_IFACE}"
+# Remove bogus DHCP-provided host route for macvlan DNS container, if present.
+# It must not go via the physical parent interface.
+ip -4 route del "${DNS_ADDR4}/32" dev "${PARENT}" 2>/dev/null || true
+
+# Route only the Docker macvlan allocation range through the host macvlan interface.
+ip -4 route replace "${DOCKER_RANGE4}" dev "${HOST_IFACE}" src "${HOST_ADDR4%/*}"
 
 # ---------------------------------------------------------------------------
 # Disable IPv6 SLAAC / Router Advertisement auto-configuration
