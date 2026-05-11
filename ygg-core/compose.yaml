@@ -306,7 +306,7 @@ services:
       TRAEFIK_LOG_LEVEL: "WARN"
       TRAEFIK_LOG_FORMAT: "json"
 
-      TRAEFIK_ACCESSLOG: "true"
+      TRAEFIK_ACCESSLOG: "false"
       TRAEFIK_ACCESSLOG_FORMAT: "json"
 
       TRAEFIK_METRICS_PROMETHEUS: "true"
