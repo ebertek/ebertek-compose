@@ -15,8 +15,8 @@ while IFS='=' read -r key value; do
 	export "$key=$value"
 done <"$ENV_FILE"
 
-scp -r -P "$PORT" -i /var/services/homes/Hannibal/.ssh/id_rsa /volume2/docker/acmesh "$USER"@"$HOST":~/
-ssh "$HOST" -i /var/services/homes/Hannibal/.ssh/id_rsa -l "$USER" -p "$PORT" <<'EOF'
+scp -r -P "$PORT" -i /home/docker/.ssh/id_rsa /volume2/docker/acmesh "$USER"@"$HOST":~/
+ssh "$HOST" -i /home/docker/.ssh/id_rsa -l "$USER" -p "$PORT" <<'EOF'
 	sudo rm -r /mnt/data/tntphoto_certbot_config/_data/archive/*
 	sudo cp -R /root/acmesh/* /mnt/data/tntphoto_certbot_config/_data/archive/
 	sudo rm -r /root/acmesh
