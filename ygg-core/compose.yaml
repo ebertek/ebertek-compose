@@ -156,7 +156,7 @@ services:
     command: start
     container_name: keycloak
     depends_on:
-      postgres:
+      pg-keycloak:
         condition: service_healthy
     deploy:
       resources:
@@ -169,7 +169,7 @@ services:
       JAVA_OPTS_KC_HEAP: "-Xms256m -Xmx1024m"
       KC_DB: "postgres"
       KC_DB_URL_DATABASE: "keycloak"
-      KC_DB_URL_HOST: "postgres"
+      KC_DB_URL_HOST: "pg-keycloak"
       KC_HEALTH_ENABLED: "true"
       KC_HOSTNAME: "keycloak.ebi.nu"
       KC_HOSTNAME_STRICT: "false"
@@ -269,9 +269,9 @@ services:
     volumes:
       - *tz
 
-  postgres:
+  pg-keycloak:
     <<: *common
-    container_name: postgres
+    container_name: pg-keycloak
     deploy:
       resources:
         limits:
@@ -291,7 +291,7 @@ services:
           'pg_isready -h 127.0.0.1 -p 5432 -U "$(cat /run/secrets/postgres-user)" -d postgres',
         ]
       timeout: 5s
-    hostname: postgres
+    hostname: pg-keycloak
     image: "docker.io/library/postgres:17"
     mac_address: "0e:be:00:da:00:90"
     networks:

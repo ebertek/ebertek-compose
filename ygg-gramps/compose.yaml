@@ -27,7 +27,7 @@ services:
     <<: *common
     container_name: gramps
     depends_on:
-      grampsweb-redis:
+      rd-gramps:
         condition: service_healthy
     deploy:
       resources:
@@ -36,9 +36,9 @@ services:
           memory: 1536M
     environment:
       <<: *env
-      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://grampsweb-redis:6379/0"
-      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://grampsweb-redis:6379/0"
-      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://grampsweb-redis:6379/1"
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://rd-gramps:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://rd-gramps:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://rd-gramps:6379/1"
       GRAMPSWEB_TREE: "Gramps"
       GUNICORN_NUM_WORKERS: "3"
     healthcheck:
@@ -82,7 +82,7 @@ services:
     depends_on:
       gramps:
         condition: service_healthy
-      grampsweb-redis:
+      rd-gramps:
         condition: service_healthy
     deploy:
       resources:
@@ -91,9 +91,9 @@ services:
           memory: 1024M
     environment:
       <<: *env
-      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://grampsweb-redis:6379/0"
-      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://grampsweb-redis:6379/0"
-      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://grampsweb-redis:6379/1"
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://rd-gramps:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://rd-gramps:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://rd-gramps:6379/1"
       GRAMPSWEB_TREE: "Gramps"
       GUNICORN_NUM_WORKERS: 3
     healthcheck:
@@ -124,9 +124,9 @@ services:
       - "/volume2/docker/gramps/tmp:/tmp"
       - "/volume2/docker/gramps/users:/app/users"
 
-  grampsweb-redis:
+  rd-gramps:
     <<: *common
-    container_name: grampsweb-redis
+    container_name: rd-gramps
     deploy:
       resources:
         limits:
@@ -139,7 +139,7 @@ services:
       retries: 3
       test: ["CMD", "redis-cli", "ping"]
       timeout: 10s
-    hostname: grampsweb-redis
+    hostname: rd-gramps
     image: "docker.io/library/redis:7.2.4-alpine"
     mac_address: "0e:be:00:da:00:89"
     networks:

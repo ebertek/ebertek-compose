@@ -38,7 +38,7 @@ services:
     <<: *common
     container_name: bazarr
     depends_on:
-      pg:
+      pg-arr:
         condition: service_healthy
     deploy:
       resources:
@@ -78,7 +78,7 @@ services:
     <<: *common
     container_name: lidarr
     depends_on:
-      pg:
+      pg-arr:
         condition: service_healthy
     deploy:
       resources:
@@ -117,9 +117,9 @@ services:
       - "/volume2/docker/lidarr:/config"
       - "/volume1/Downloads:/downloads"
 
-  pg:
+  pg-arr:
     <<: *common
-    container_name: pg
+    container_name: pg-arr
     deploy:
       resources:
         limits:
@@ -135,7 +135,7 @@ services:
       start_period: 15s
       test: ["CMD", "pg_isready"]
       timeout: 5s
-    hostname: pg
+    hostname: pg-arr
     image: "docker.io/library/postgres:14"
     mac_address: "0e:be:00:da:00:42"
     networks:
@@ -155,7 +155,7 @@ services:
     <<: *common
     container_name: prowlarr
     depends_on:
-      pg:
+      pg-arr:
         condition: service_healthy
       radarr:
         condition: service_started
@@ -201,7 +201,7 @@ services:
     <<: *common
     container_name: radarr
     depends_on:
-      pg:
+      pg-arr:
         condition: service_healthy
     deploy:
       resources:
@@ -321,7 +321,7 @@ services:
     <<: *common
     container_name: sonarr
     depends_on:
-      pg:
+      pg-arr:
         condition: service_healthy
     deploy:
       resources:
