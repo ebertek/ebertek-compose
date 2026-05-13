@@ -26,24 +26,24 @@ Main areas:
 
 - **[mariadb](https://hub.docker.com/_/mariadb)**: Relational database for WordPress.
 - **[nginx](https://hub.docker.com/_/nginx)**: Reverse proxy server for WordPress.
-- **[wordpress](https://hub.docker.com/_/wordpress)**: Content management system.
+- **[wordpress](https://hub.docker.com/_/wordpress)**: Custom WordPress (content management system) PHP-FPM image based on `wordpress:php8.3-fpm-alpine`, with additional PHP extensions.
 
 ### [ygg/](ygg/)
 
-- **[macvlan](https://docs.docker.com/engine/network/drivers/macvlan/)**: Creates the Docker Macvlan network shared by all `ygg-*` Compose projects.
+- **[alloy](https://hub.docker.com/r/grafana/alloy)**: Collect and forward logs and metrics to `ygg-mon`.
 - **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-arr/](ygg-arr/)
 
-- **[bazarr](https://hotio.dev/containers/bazarr/)**: Subtitle manager for Sonarr/Radarr.
-- **[lidarr](https://hotio.dev/containers/lidarr/)**: Music collection manager.
-- **[pg](https://hub.docker.com/_/postgres)**: Object-relational database system for \*arr.
-- **[prowlarr](https://hotio.dev/containers/prowlarr/)**: Indexer manager for \*arr.
-- **[radarr](https://hotio.dev/containers/radarr/)**: Movie organizer/manager.
+- **[bazarr](https://github.com/hotio/bazarr)**: Subtitle manager for Sonarr/Radarr.
+- **[lidarr](https://github.com/hotio/lidarr)**: Music collection manager.
+- **[pg-arr](https://hub.docker.com/_/postgres)**: Object-relational database system for \*arr.
+- **[prowlarr](https://github.com/hotio/prowlarr)**: Indexer manager for \*arr.
+- **[radarr](https://github.com/hotio/radarr)**: Movie organizer/manager.
 - **[recyclarr](https://github.com/recyclarr/recyclarr)**: Automatically sync [TRaSH Guides](https://trash-guides.info) to your Sonarr/Radarr instances.
-- **[requestrr](https://hotio.dev/containers/requestrr/)**: Discord chatbot for \*arr.
-- **[sonarr](https://hotio.dev/containers/sonarr/)**: Smart PVR.
-- **[unpackerr](https://github.com/Unpackerr/unpackerr)**: Extracts downloads for Radarr, Sonarr, Lidarr, Readarr, and/or a Watch folder.
+- **[requestrr](https://github.com/hotio/requestrr)**: Discord chatbot for \*arr.
+- **[sonarr](https://github.com/hotio/sonarr)**: Smart PVR.
+- **[unpackerr](https://hub.docker.com/r/golift/unpackerr)**: Extracts downloads for Radarr, Sonarr, Lidarr, Readarr, and/or a Watch folder.
 
 ### [ygg-birdnet/](ygg-birdnet/)
 
@@ -51,19 +51,27 @@ Main areas:
 
 ### [ygg-core/](ygg-core/)
 
-- **[cloudflare-ddns](https://github.com/favonia/cloudflare-ddns)**: A small, feature-rich, and robust Cloudflare DDNS updater.
+- **[autoheal](https://hub.docker.com/r/willfarrell/autoheal)**: Monitor and restart unhealthy docker containers.
+- **[cloudflare-ddns](https://hub.docker.com/r/favonia/cloudflare-ddns)**: A small, feature-rich, and robust Cloudflare DDNS updater.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
 - **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
-- **[postgres](https://github.com/docker-library/postgres)**: Object-relational database system for Keycloak.
+- **[pg-keycloak](https://hub.docker.com/_/postgres)**: Object-relational database system for Keycloak.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
+- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-download/](ygg-download/)
 
-- **[download](https://github.com/qbittorrent/docker-qbittorrent-nox)**: BitTorrent client.
+- **[download](https://hub.docker.com/r/qbittorrentofficial/qbittorrent-nox)**: BitTorrent client.
 - **[gluetun](https://hub.docker.com/r/qmcgaw/gluetun)**: VPN client.
-- **[mousehole](https://github.com/t-mart/mousehole)**: A background service to update a seedbox IP for MAM.
+- **[mousehole](https://hub.docker.com/r/tmmrtn/mousehole)**: A background service to update a seedbox IP for MAM.
+
+### [ygg-gramps/](ygg-gramps/)
+
+- **[gramps](https://github.com/gramps-project/gramps-web)**: Open Source Online Genealogy System.
+- **[grampsweb-celery](https://github.com/gramps-project/gramps-web)**: Distributed Task Queue for Gramps.
+- **[rd-gramps](https://hub.docker.com/_/redis)**: Data platform for caching, vector search, and NoSQL databases.
 
 ### [ygg-hass/](ygg-hass/)
 
@@ -95,10 +103,10 @@ Main areas:
 
 ### [ygg-immich/](ygg-immich/)
 
-- **[database](https://github.com/immich-app/base-images/pkgs/container/postgres)**: Scalable vector search in Postgres for Immich.
 - **[immich](https://github.com/immich-app/immich)**: Photo and video management.
 - **[immich-machine-learning](https://github.com/immich-app/immich/tree/main/machine-learning)**: CLIP embeddings and facial recognition for Immich.
-- **[redis](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
+- **[pg-immich](https://github.com/immich-app/base-images/pkgs/container/postgres)**: Scalable vector search in Postgres for Immich.
+- **[rd-immich](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
 
 ### [ygg-mon/](ygg-mon/)
 
