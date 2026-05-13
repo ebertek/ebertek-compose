@@ -372,6 +372,12 @@ services:
       <<: *env
       UN_FOLDER_0_PATH: "/downloads/Uncategorized"
       UN_WEBSERVER_METRICS: "true"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9092/ready"]
+      timeout: 5s
     hostname: unpackerr
     image: golift/unpackerr
     mac_address: "0e:be:00:da:00:38"
