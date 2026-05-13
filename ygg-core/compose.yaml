@@ -31,6 +31,20 @@ secrets:
     file: postgres-user.txt
 
 services:
+  autoheal:
+    deploy:
+      replicas: 1
+    environment:
+      AUTOHEAL_INTERVAL: "30"
+      AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
+      AUTOHEAL_START_PERIOD: "120"
+    image: "willfarrell/autoheal:latest"
+    network_mode: none
+    restart: always
+    volumes:
+      - *tz
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
   cloudflare-ddns:
     <<: *common
     cap_drop: [all]

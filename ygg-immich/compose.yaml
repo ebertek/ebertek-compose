@@ -130,6 +130,8 @@ services:
       - "991"
     hostname: immich-machine-learning
     image: "ghcr.io/immich-app/immich-machine-learning:release-openvino"
+    labels:
+      autoheal: "true"
     mac_address: "0e:be:00:da:00:49"
     networks:
       macvlan1:
