@@ -64,7 +64,7 @@ services:
     # user: 1028:100
     volumes:
       - *tz
-      - /volume2/docker/immich/postgres:/var/lib/postgresql/data
+      - "/volume2/docker/immich/postgres:/var/lib/postgresql/data"
 
   immich:
     <<: *common
@@ -105,8 +105,8 @@ services:
     user: 1028:100
     volumes:
       - *tz
-      - /volume1/photo/Pictures:/mnt/media/Pictures:ro
-      - /volume2/docker/immich/upload:/usr/src/app/upload
+      - "/volume1/photo/Pictures:/mnt/media/Pictures:ro"
+      - "/volume2/docker/immich/upload:/usr/src/app/upload"
 
   immich-machine-learning:
     <<: *common
@@ -140,10 +140,10 @@ services:
     user: 1028:100
     volumes:
       - *tz
-      - /volume2/docker/immich/cache:/cache
-      - /volume2/docker/immich/ml-cache:/.cache
-      - /volume2/docker/immich/ml-config:/.config
-      - /dev/bus/usb:/dev/bus/usb
+      - "/volume2/docker/immich/cache:/cache"
+      - "/volume2/docker/immich/ml-cache:/.cache"
+      - "/volume2/docker/immich/ml-config:/.config"
+      - "/dev/bus/usb:/dev/bus/usb"
 
   redis:
     <<: *common
@@ -174,4 +174,4 @@ services:
     # user: 1028:100
     volumes:
       - *tz
-      - /volume2/docker/immich/redis:/data
+      - "/volume2/docker/immich/redis:/data"
