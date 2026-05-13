@@ -205,6 +205,10 @@ services:
       traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`)"
       traefik.http.routers.loki.tls: "true"
       traefik.http.services.loki.loadbalancer.server.port: "3100"
+    logging:
+      options:
+        max-file: "2"
+        max-size: "5m"
     mac_address: "0e:be:00:da:00:80"
     networks:
       macvlan1:

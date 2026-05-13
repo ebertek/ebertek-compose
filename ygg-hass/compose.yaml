@@ -94,6 +94,10 @@ services:
       traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`)"
       traefik.http.routers.hass.tls: "true"
       traefik.http.services.hass.loadbalancer.server.port: "8123"
+    logging:
+      options:
+        max-file: "2"
+        max-size: "5m"
     mac_address: "0e:be:00:da:00:70"
     networks:
       macvlan1:

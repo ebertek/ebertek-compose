@@ -162,6 +162,10 @@ services:
       RELAY_USE_TLS: "yes"
     hostname: smtp
     image: "docker.io/turgon37/smtp-relay:latest"
+    logging:
+      options:
+        max-file: "2"
+        max-size: "5m"
     mac_address: "0e:be:00:da:00:60"
     networks:
       macvlan1:
