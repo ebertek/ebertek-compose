@@ -211,7 +211,7 @@ services:
       TRASH_AUTO_DELETE_DAYS: "30"
       WEBSOCKET_ENABLED: "true"
     hostname: vw
-    image: "docker.io/vaultwarden/server:testing"
+    image: "ghcr.io/dani-garcia/vaultwarden:testing"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vw.entrypoints: "websecure"

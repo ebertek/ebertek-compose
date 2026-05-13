@@ -106,7 +106,7 @@ Main areas:
 - **[immich](https://github.com/immich-app/immich)**: Photo and video management.
 - **[immich-machine-learning](https://github.com/immich-app/immich/tree/main/machine-learning)**: CLIP embeddings and facial recognition for Immich.
 - **[pg-immich](https://github.com/immich-app/base-images/pkgs/container/postgres)**: Scalable vector search in Postgres for Immich.
-- **[rd-immich](https://hub.docker.com/r/valkey/valkey/)**: Data structure server for Immich.
+- **[rd-immich](https://github.com/valkey-io/valkey)**: Data structure server for Immich.
 
 ### [ygg-mon/](ygg-mon/)
 
@@ -121,7 +121,7 @@ Main areas:
 - **[dbeaver](https://hub.docker.com/r/dbeaver/cloudbeaver)**: Cloud database manager.
 - **[irc](https://github.com/thelounge/thelounge-docker)**: Web IRC client.
 - **[smtp](https://hub.docker.com/r/turgon37/smtp-relay)**: Postfix SMTP server configured as an SMTP relay.
-- **[vw](https://hub.docker.com/r/vaultwarden/server)**: Password management service.
+- **[vw](https://github.com/dani-garcia/vaultwarden)**: Password management service.
 
 ## Scripts
 
