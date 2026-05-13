@@ -56,7 +56,7 @@ services:
         ["CMD-SHELL", "curl -fsS http://127.0.0.1:6767/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: bazarr
-    image: ghcr.io/hotio/bazarr
+    image: "ghcr.io/hotio/bazarr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.bazarr.entrypoints: "websecure"
@@ -99,7 +99,7 @@ services:
         ]
       timeout: 5s
     hostname: lidarr
-    image: ghcr.io/hotio/lidarr
+    image: "ghcr.io/hotio/lidarr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.lidarr.entrypoints: "websecure"
@@ -180,7 +180,7 @@ services:
         ]
       timeout: 5s
     hostname: prowlarr
-    image: ghcr.io/hotio/prowlarr
+    image: "ghcr.io/hotio/prowlarr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.prowlarr.entrypoints: "websecure"
@@ -222,7 +222,7 @@ services:
         ]
       timeout: 5s
     hostname: radarr
-    image: ghcr.io/hotio/radarr
+    image: "ghcr.io/hotio/radarr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.radarr.entrypoints: "websecure"
@@ -263,7 +263,7 @@ services:
       test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1 || exit 1"]
       timeout: 5s
     hostname: recyclarr
-    image: ghcr.io/recyclarr/recyclarr
+    image: "ghcr.io/recyclarr/recyclarr:8"
     mac_address: "0e:be:00:da:00:62"
     networks:
       macvlan1:
@@ -301,7 +301,7 @@ services:
         ]
       timeout: 5s
     hostname: requestrr
-    image: ghcr.io/hotio/requestrr
+    image: "ghcr.io/hotio/requestrr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.requestrr.entrypoints: "websecure"
@@ -342,7 +342,7 @@ services:
         ]
       timeout: 5s
     hostname: sonarr
-    image: ghcr.io/hotio/sonarr
+    image: "ghcr.io/hotio/sonarr:release"
     labels:
       traefik.enable: "true"
       traefik.http.routers.sonarr.entrypoints: "websecure"
@@ -379,7 +379,7 @@ services:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5656/"]
       timeout: 5s
     hostname: unpackerr
-    image: golift/unpackerr
+    image: "docker.io/golift/unpackerr:latest"
     mac_address: "0e:be:00:da:00:38"
     networks:
       macvlan1:

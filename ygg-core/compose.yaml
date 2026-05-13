@@ -32,13 +32,14 @@ secrets:
 
 services:
   autoheal:
+    container_name: autoheal
     deploy:
       replicas: 1
     environment:
       AUTOHEAL_INTERVAL: "30"
       AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
       AUTOHEAL_START_PERIOD: "120"
-    image: "willfarrell/autoheal:latest"
+    image: "docker.io/willfarrell/autoheal:latest"
     network_mode: none
     restart: always
     volumes:
@@ -60,7 +61,7 @@ services:
       DOMAINS: "ygg.ebi.nu"
       PROXIED: "false"
     hostname: cloudflare-ddns
-    image: "docker.io/favonia/cloudflare-ddns:1"
+    image: "docker.io/favonia/cloudflare-ddns:latest"
     network_mode: host
     read_only: true
     secrets:
