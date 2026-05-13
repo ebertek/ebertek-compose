@@ -376,7 +376,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 10s
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9092/ready"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5656/"]
       timeout: 5s
     hostname: unpackerr
     image: golift/unpackerr
