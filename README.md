@@ -79,8 +79,9 @@ Main areas:
   - **[esp-bedroom-1](_persistent/hass/esphome/esp-bedroom-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + AtomPortABC + ENVIV Unit (SHT40/BMP280) + PA.HUB 2 Unit + Mini TVOC/eCO2 Ga Unit
   - **[esp-guest-1](_persistent/hass/esphome/esp-guest-1.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V + Microphone Unit
   - **[esp-hall-1](_persistent/hass/esphome/esp-hall-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + Light Unit
-  - **[esp-kitchen-1](_persistent/hass/esphome/esp-kitchen-1.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
   - **[esp-kitchen-2](_persistent/hass/esphome/esp-kitchen-2.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
+  - **[esp-kitchen-1](_persistent/hass/esphome/esp-kitchen-1.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit
+    - Unit KMeter-ISO (STM32F030 data acquisition + MAX31855KASA+T thermocouple digital conversion + CA-IS3641HW signal isolation)
   - **[esp-office-1](_persistent/hass/esphome/esp-office-1.yaml)**: Espressif ESP32-S3-BOX-3
   - **[lora-1](_persistent/hass/lora/lora-1/lora-1.ino)**: Heltec WiFi LoRa 32(V3) home receiver node that bridges LoRa mailbox events to MQTT/Home Assistant
   - **[lora-2](_persistent/hass/lora/lora-2/lora-2.ino)**: Battery-powered Heltec WiFi LoRa 32(V3) remote mailbox sensor using an MC-38 reed switch

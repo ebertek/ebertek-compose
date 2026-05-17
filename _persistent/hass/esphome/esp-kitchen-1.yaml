@@ -46,18 +46,6 @@ binary_sensor:
         input: true
         pullup: true
       number: GPIO9
-  - platform: gpio
-    device_class: moisture
-    filters:
-      - delayed_off: 1000ms
-      - delayed_on: 100ms
-    name: Moisture hit
-    pin:
-      inverted: true
-      mode:
-        input: true
-        pullup: true
-      number: GPIO2
 
 bluetooth_proxy:
   active: true
@@ -73,6 +61,12 @@ button:
 esp32_ble_tracker:
   scan_parameters:
     active: true
+
+i2c:
+  frequency: 100kHz
+  scan: true
+  scl: GPIO1
+  sda: GPIO2
 
 light:
   - platform: status_led
@@ -122,38 +116,18 @@ sensor:
     state_class: measurement
     unit_of_measurement: dBm
     update_interval: 60s
-  - platform: adc
-    accuracy_decimals: 3
-    attenuation: 12db
-    id: soil_voltage
-    name: "Soil Moisture Voltage"
-    pin:
-      mode:
-        input: true
-      number: GPIO1
-    unit_of_measurement: "V"
-    update_interval: 10s
-  - platform: template
-    accuracy_decimals: 0
-    device_class: moisture
-    filters:
-      - median:
-          send_every: 1
-          send_first_at: 1
-          window_size: 5
-      - sliding_window_moving_average:
-          send_every: 3
-          window_size: 9
-    id: soil_percent
-    lambda: |-
-      float v = id(soil_voltage).state;
-      const float V_dry = 3.28;
-      const float V_wet = 1.45;
-      float pct = (V_dry - v) * 100.0f / (V_dry - V_wet);
-      if (pct < 0.0f) pct = 0.0f;
-      if (pct > 100.0f) pct = 100.0f;
-      return pct;
-    name: "Soil Moisture"
-    state_class: measurement
-    unit_of_measurement: "%"
-    update_interval: 10s
+  - platform: kmeteriso
+    internal_temperature:
+      accuracy_decimals: 1
+      device_class: temperature
+      id: kmeteriso_internal_temperature
+      name: "KMeterISO Internal Temperature"
+      state_class: measurement
+      unit_of_measurement: "°C"
+    temperature:
+      accuracy_decimals: 1
+      device_class: temperature
+      id: probe_temperature
+      name: "Stove Temperature"
+      state_class: measurement
+      unit_of_measurement: "°C"
