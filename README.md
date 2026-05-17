@@ -76,13 +76,27 @@ Main areas:
 ### [ygg-hass/](ygg-hass/)
 
 - **[esphome](https://github.com/esphome/esphome)**: Control ESP32 devices.
-  - **[esp-bedroom-1](_persistent/hass/esphome/esp-bedroom-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + AtomPortABC + ENVIV Unit (SHT40/BMP280) + PA.HUB 2 Unit + Mini TVOC/eCO2 Ga Unit
-  - **[esp-guest-1](_persistent/hass/esphome/esp-guest-1.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V + Microphone Unit
-  - **[esp-hall-1](_persistent/hass/esphome/esp-hall-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit + Light Unit
-  - **[esp-kitchen-2](_persistent/hass/esphome/esp-kitchen-2.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit + Earth Unit
+  - **[esp-bedroom-1](_persistent/hass/esphome/esp-bedroom-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit
+    - Atomic Port ABC Base
+    - Unit ENV-IV (SHT40 + BMP280)
+    - Unit PaHub v2.0 (PCA9548AP)
+    - Unit Mini TVOC/eCO2 (SGP30)
+  - **[esp-guest-1](_persistent/hass/esphome/esp-guest-1.yaml)**: Espressif ESP32-S3-DevKitC-1-N32R8V
+    - Unit MIC (MAX4466 microphone preamplifier + LM393DR2G dual-voltage comparator)
+  - **[esp-hall-1](_persistent/hass/esphome/esp-hall-1.yaml)**: M5Stack AtomS3 Lite ESP32S3 Dev Kit
+    - Unit Light (photoresistor + LM393DR2G dual differential comparator)
   - **[esp-kitchen-1](_persistent/hass/esphome/esp-kitchen-1.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit
     - Unit KMeter-ISO (STM32F030 data acquisition + MAX31855KASA+T thermocouple digital conversion + CA-IS3641HW signal isolation)
+  - **[esp-kitchen-2](_persistent/hass/esphome/esp-kitchen-2.yaml)**: M5Stack NanoC6 ESP32-C6FH4 Dev Kit
+    - Unit Watering (22 μF capacitor + EDLP600-D12B water pump)
   - **[esp-office-1](_persistent/hass/esphome/esp-office-1.yaml)**: Espressif ESP32-S3-BOX-3
+    - Audio input: ES7210
+    - Audio output: ES8311 + NS4150
+    - Gyroscope + accelerometer: ICM-42607-P
+    - ESP32-S3-BOX-3-SENSOR
+      - Radar: MS58-3909S68U4
+      - Infrared: IRM-H638T + IR67-21C/TR8
+      - Temperature + humidity: AHT30
   - **[lora-1](_persistent/hass/lora/lora-1/lora-1.ino)**: Heltec WiFi LoRa 32(V3) home receiver node that bridges LoRa mailbox events to MQTT/Home Assistant
   - **[lora-2](_persistent/hass/lora/lora-2/lora-2.ino)**: Battery-powered Heltec WiFi LoRa 32(V3) remote mailbox sensor using an MC-38 reed switch
 - **[hass](https://github.com/home-assistant/core)**: Home automation.
