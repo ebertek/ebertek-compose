@@ -21,7 +21,7 @@ TMP_FILE6="/tmp/nft_blacklist6.tmp"
 # Bootstrap: create table, sets, chain and rules if they don't exist
 bootstrap_nftables() {
 	echo "Bootstrapping nftables ruleset..."
-	if ! $NFT -f - <<'NFTEOF'
+	if ! $NFT -f - <<'NFTEOF'; then
 table inet filter {
 	set blacklist {
 		type ipv4_addr
@@ -50,7 +50,6 @@ table inet filter {
 	}
 }
 NFTEOF
-	then
 		echo "Error: Failed to bootstrap nftables. Aborting."
 		exit 1
 	fi
