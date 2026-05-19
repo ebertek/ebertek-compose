@@ -18,11 +18,11 @@ scrape_configs:
 
   - job_name: "immich_api"
     static_configs:
-      - targets: ["immich-server.ygg.nu:8081"]
+      - targets: ["immich.ygg.nu:8081"]
 
   - job_name: "immich_microservices"
     static_configs:
-      - targets: ["immich-server.ygg.nu:8082"]
+      - targets: ["immich.ygg.nu:8082"]
 
   - job_name: "prometheus"
     static_configs:
