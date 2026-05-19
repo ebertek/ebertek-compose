@@ -21,6 +21,14 @@ services:
       - SYSLOG
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     container_name: alloy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: 192M
     devices:
       - /dev/kmsg
     environment:
@@ -48,6 +56,14 @@ services:
   bind9:
     <<: *common
     container_name: bind9
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 48M
     environment:
       <<: *env
       PUID: "100"
@@ -71,6 +87,14 @@ services:
   watchtower:
     <<: *common
     container_name: watchtower
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 32M
+        reservations:
+          cpus: "0.05"
+          memory: 16M
     environment:
       <<: *env
       NO_COLOR: "true"

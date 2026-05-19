@@ -27,6 +27,14 @@ services:
       - "--default-authentication-plugin=mysql_native_password"
       - "--innodb-use-native-aio=OFF"
     container_name: mariadb
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 160M
     env_file: mariadb.txt
     environment:
       <<: *env
@@ -53,6 +61,14 @@ services:
     depends_on:
       wordpress:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 16M
     environment:
       <<: *env
       PUID: "101"
@@ -93,6 +109,14 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          cpus: "0.1"
+          memory: 192M
     env_file: wordpress.txt
     environment:
       <<: *env
