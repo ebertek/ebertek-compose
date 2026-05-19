@@ -9,7 +9,6 @@ NFT="/usr/sbin/nft"
 CURL="/usr/bin/curl"
 SORT="/usr/bin/sort"
 GREP="/usr/bin/grep"
-AWK="/usr/bin/awk"
 RM="/usr/bin/rm"
 
 TABLE_NAME="inet"
@@ -17,40 +16,41 @@ CHAIN_NAME="filter"
 SET_NAME="blacklist"
 TMP_FILE="/tmp/nft_blacklist.tmp"
 
-# Confirm set exists before flushing
+# Confirm set exists before doing anything
 if ! $NFT list set $TABLE_NAME $CHAIN_NAME $SET_NAME >/dev/null 2>&1; then
-	echo "Error: Set $TABLE_NAME $CHAIN_NAME $SET_NAME does not exist. Make sure it's in /etc/nftables.conf."
+	echo "Error: Set $TABLE_NAME $CHAIN_NAME $SET_NAME does not exist."
 	exit 1
 fi
 
-# Flush existing elements
-echo "Flushing set $SET_NAME..."
-$NFT flush set $TABLE_NAME $CHAIN_NAME $SET_NAME
+# Download first
+echo "Downloading IP blacklist..."
+$CURL -s --max-time 30 --fail https://iplists.firehol.org/files/firehol_level3.netset | $GREP -v '^#' > "$TMP_FILE"
 
-# Download IP blacklist
-echo "Downloading IP blacklists..."
-$CURL -s https://iplists.firehol.org/files/firehol_level3.netset | $GREP -v '^#' > "$TMP_FILE"
-
-# Abort if empty
-if [[ ! -s $TMP_FILE ]]; then
-	echo "Error: No IPs downloaded. Aborting update."
+if [[ ! -s "$TMP_FILE" ]]; then
+	echo "Error: Download failed or returned empty list. Blacklist unchanged."
+	$RM -f "$TMP_FILE"
 	exit 1
 fi
 
 # Deduplicate
 $SORT -u "$TMP_FILE" -o "$TMP_FILE"
+COUNT=$(wc -l < "$TMP_FILE")
+echo "Downloaded $COUNT entries."
 
-# Add entries one by one
+# Now flush and reload
+echo "Flushing set $SET_NAME..."
+$NFT flush set $TABLE_NAME $CHAIN_NAME $SET_NAME
+
 echo "Adding IPs to set $SET_NAME..."
-if [[ -s "$TMP_FILE" ]]; then
-	echo "Adding IPs to set blacklist (bulk)..."
-	$NFT -f - <<EOF
+if ! $NFT -f - <<EOF
 add element inet filter blacklist { $(paste -sd, "$TMP_FILE") }
 EOF
-else
-	echo "Error: IP list is empty, skipping add."
+then
+	echo "Error: nft add element failed."
+	$RM -f "$TMP_FILE"
+	exit 1
 fi
 
 $RM -f "$TMP_FILE"
 
-echo "Update complete ✅"
+echo "Update complete ✅ ($COUNT entries loaded)"
