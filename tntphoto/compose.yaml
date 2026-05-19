@@ -39,7 +39,6 @@ services:
     environment:
       <<: *env
       MARIADB_AUTO_UPGRADE: "1"
-      MARIADB_INNODB_BUFFER_POOL_SIZE: "256M"
     healthcheck:
       <<: *hc
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
@@ -53,7 +52,9 @@ services:
       memlock: 262144
     volumes:
       - *tz
+      - "/mnt/data/tntphoto_mariadb_config/_data/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro"
       - "/mnt/data/tntphoto_mariadb_data/_data:/var/lib/mysql"
+      - "/sys/fs/cgroup/memory.pressure:/sys/fs/cgroup/memory.pressure"
 
   nginx:
     <<: *common
