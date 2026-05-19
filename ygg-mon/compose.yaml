@@ -15,7 +15,7 @@ x-common: &common
   dns_search:
     - ygg.nu
   restart: unless-stopped
-  stop_grace_period: 90s
+  stop_grace_period: 120s
 
 x-env: &env
   TZ: "UTC"
