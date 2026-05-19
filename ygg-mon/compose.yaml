@@ -41,7 +41,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1536M
+          memory: 2560M
     devices:
       - /dev/kmsg
     environment:
