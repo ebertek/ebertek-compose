@@ -29,6 +29,8 @@ secrets:
     file: postgres-passwd.txt
   postgres-user:
     file: postgres-user.txt
+  watchtower-token:
+    file: watchtower-token.txt
 
 services:
   autoheal:
@@ -420,7 +422,7 @@ services:
       WATCHTOWER_CLEANUP: "true"
       WATCHTOWER_HTTP_API_METRICS: "true"
       WATCHTOWER_HTTP_API_PERIODIC_POLLS: "true"
-      WATCHTOWER_HTTP_API_TOKEN: "demotoken"
+      WATCHTOWER_HTTP_API_TOKEN: "/run/secrets/watchtower-token"
       WATCHTOWER_HTTP_API_UPDATE: "true"
       WATCHTOWER_LOG_FORMAT: "JSON"
     hostname: watchtower
@@ -432,6 +434,8 @@ services:
         ipv6_address: 2001:9b1:25fc:6900:421::47
     privileged: true
     restart: unless-stopped
+    secrets:
+      - watchtower-token
     stop_grace_period: 1m
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"

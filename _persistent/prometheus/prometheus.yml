@@ -34,7 +34,8 @@ scrape_configs:
       - targets: ["traefik.ygg.nu:8080"]
 
   - job_name: "watchtower"
-    bearer_token: demotoken
+    authorization:
+      credentials_file: /run/secrets/watchtower-token
     metrics_path: /v1/metrics
     static_configs:
       - targets: ["watchtower.ygg.nu:8080"]

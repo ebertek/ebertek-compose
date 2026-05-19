@@ -298,12 +298,12 @@ services:
           memory: "1024M"
     devices:
       - "/dev/dri:/dev/dri"
+    env_file: scrypted.txt
     environment:
       <<: *env
       SCRYPTED_DOCKER_AVAHI: "true"
       SCRYPTED_NVR_VOLUME: "/nvr"
       SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
-      SCRYPTED_WEBHOOK_UPDATE_AUTHORIZATION: "Bearer demotoken"
     group_add:
       - "44"
       - "991"

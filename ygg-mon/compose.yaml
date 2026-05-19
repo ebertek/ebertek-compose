@@ -25,6 +25,8 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 secrets:
   hass-bearer-token:
     file: hass-bearer-token.txt
+  watchtower-token:
+    file: watchtower-token.txt
 
 services:
   alloy:
@@ -273,6 +275,7 @@ services:
         ipv6_address: 2001:9b1:25fc:6900:421::83
     secrets:
       - hass-bearer-token
+      - watchtower-token
     user: 1028:100
     volumes:
       - *tz
