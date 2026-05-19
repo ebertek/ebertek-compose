@@ -7,6 +7,18 @@ rule_files:
   - rules_compat.yml
 
 scrape_configs:
+  - job_name: "alloy"
+    static_configs:
+      - targets: ["alloy.ygg.nu:12345"]
+
+  - job_name: "birdnet"
+    static_configs:
+      - targets: ["birdnet.ygg.nu:8090"]
+
+  - job_name: "cloudflared"
+    static_configs:
+      - targets: ["pleiades.ygg.nu:60123"]
+
   - job_name: "hass"
     authorization:
       credentials_file: /run/secrets/hass-bearer-token
@@ -24,6 +36,18 @@ scrape_configs:
     static_configs:
       - targets: ["immich.ygg.nu:8082"]
 
+  - job_name: "influxdb"
+    static_configs:
+      - targets: ["influxdb.ygg.nu:8086"]
+
+  - job_name: "keycloak"
+    static_configs:
+      - targets: ["keycloak.ygg.nu:9000"]
+
+  - job_name: "loki"
+    static_configs:
+      - targets: ["loki.ygg.nu:3100"]
+
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
@@ -33,21 +57,13 @@ scrape_configs:
     static_configs:
       - targets: ["traefik.ygg.nu:8080"]
 
+  - job_name: "unpackerr"
+    static_configs:
+      - targets: ["unpackerr.ygg.nu:5656"]
+
   - job_name: "watchtower"
     authorization:
       credentials_file: /run/secrets/watchtower-token
     metrics_path: /v1/metrics
     static_configs:
       - targets: ["watchtower.ygg.nu:8080"]
-
-  - job_name: "birdnet"
-    static_configs:
-      - targets: ["birdnet.ygg.nu:8090"]
-
-  - job_name: "cloudflared"
-    static_configs:
-      - targets: ["pleiades.ygg.nu:60123"]
-
-  - job_name: "unpackerr"
-    static_configs:
-      - targets: ["unpackerr.ygg.nu:5656"]
