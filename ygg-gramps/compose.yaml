@@ -34,6 +34,9 @@ services:
         limits:
           cpus: "4"
           memory: 1536M
+        reservations:
+          cpus: "0.1"
+          memory: "384M"
     environment:
       <<: *env
       GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://rd-gramps:6379/0"
@@ -89,6 +92,9 @@ services:
         limits:
           cpus: "2"
           memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: "196M"
     environment:
       <<: *env
       GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://rd-gramps:6379/0"
@@ -132,6 +138,9 @@ services:
         limits:
           cpus: "2"
           memory: 1024M
+        reservations:
+          cpus: "0.01"
+          memory: "16M"
     environment:
       <<: *env
     healthcheck:

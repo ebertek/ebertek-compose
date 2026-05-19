@@ -35,6 +35,13 @@ services:
     container_name: autoheal
     deploy:
       replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: 8M
     environment:
       AUTOHEAL_INTERVAL: "30"
       AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
@@ -55,6 +62,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: 16M
     environment:
       <<: *env
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
@@ -80,6 +90,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.02"
+          memory: 32M
     env_file: cloudflared.txt
     environment:
       <<: *env
@@ -117,7 +130,7 @@ services:
           cpus: "1"
           memory: 1024M
         reservations:
-          cpus: "0.002"
+          cpus: "0.05"
           memory: 256M
     environment:
       <<: *env
@@ -163,6 +176,9 @@ services:
         limits:
           cpus: "2"
           memory: 2048M
+        reservations:
+          cpus: "0.1"
+          memory: 384M
     env_file: keycloak.txt
     environment:
       <<: *env
@@ -219,6 +235,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.01"
+          memory: 16M
     env_file: oauth2-proxy.txt
     environment:
       <<: *env
@@ -277,6 +296,9 @@ services:
         limits:
           cpus: "2"
           memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
     environment:
       <<: *env
       POSTGRES_PASSWORD_FILE: "/run/secrets/postgres-passwd"
@@ -315,6 +337,9 @@ services:
         limits:
           cpus: "1"
           memory: 256M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
     environment:
       <<: *env
       TRAEFIK_API_DASHBOARD: "true"
@@ -385,6 +410,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: 32M
     environment:
       TZ: "UTC"
       NO_COLOR: "true"

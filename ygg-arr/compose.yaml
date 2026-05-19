@@ -45,6 +45,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: [*env, *env-arr]
       WEBUI_PORTS: "6767/tcp,6767/udp"
@@ -85,6 +88,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: [*env, *env-arr]
       LIDARR__LOG__CONSOLEFORMAT: "json"
@@ -125,6 +131,9 @@ services:
         limits:
           cpus: "2"
           memory: 1024M
+        reservations:
+          cpus: "0.1"
+          memory: "128M"
     environment:
       <<: *env
       POSTGRES_PASSWORD_FILE: "/run/secrets/pg-passwd"
@@ -166,6 +175,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: "96M"
     environment:
       <<: [*env, *env-arr]
       PROWLARR__LOG__CONSOLEFORMAT: "json"
@@ -208,6 +220,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: [*env, *env-arr]
       RADARR__LOG__CONSOLEFORMAT: "json"
@@ -253,6 +268,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.01"
+          memory: "16M"
     environment:
       <<: [*env, *env-arr]
       RECYCLARR_CREATE_CONFIG: "true"
@@ -288,6 +306,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.02"
+          memory: "64M"
     environment:
       <<: [*env, *env-arr]
     healthcheck:
@@ -328,6 +349,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: [*env, *env-arr]
       SONARR__LOG__CONSOLEFORMAT: "json"
@@ -368,6 +392,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.02"
+          memory: "32M"
     environment:
       <<: *env
       UN_FOLDER_0_PATH: "/downloads/Uncategorized"

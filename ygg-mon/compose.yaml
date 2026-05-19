@@ -42,6 +42,9 @@ services:
         limits:
           cpus: "1"
           memory: 2560M
+        reservations:
+          cpus: "0.5"
+          memory: "1280M"
     devices:
       - /dev/kmsg
     environment:
@@ -105,6 +108,9 @@ services:
         limits:
           cpus: "1"
           memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     entrypoint:
       - sh
       - -euc
@@ -188,6 +194,9 @@ services:
         limits:
           cpus: "1"
           memory: 1024M
+        reservations:
+          cpus: "0.1"
+          memory: "128M"
     environment:
       <<: *env
     healthcheck:
@@ -234,6 +243,9 @@ services:
         limits:
           cpus: "1"
           memory: 2560M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: *env
     healthcheck:

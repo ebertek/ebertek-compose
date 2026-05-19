@@ -34,6 +34,9 @@ services:
         limits:
           cpus: "1"
           memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: "96M"
     environment:
       <<: *env
       QBT_LEGAL_NOTICE: "confirm"
@@ -71,6 +74,9 @@ services:
         limits:
           cpus: "1"
           memory: 256M
+        reservations:
+          cpus: "0.05"
+          memory: "48M"
     devices:
       - "/dev/net/tun:/dev/net/tun"
     dns:
@@ -133,6 +139,9 @@ services:
         limits:
           cpus: "1"
           memory: 256M
+        reservations:
+          cpus: "0.01"
+          memory: "48M"
     environment:
       <<: *env
     healthcheck:

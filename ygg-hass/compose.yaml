@@ -41,6 +41,9 @@ services:
         limits:
           cpus: "2"
           memory: 2560M
+        reservations:
+          cpus: "0.02"
+          memory: "64M"
     # env_file: esphome.txt
     environment:
       <<: *env
@@ -75,6 +78,9 @@ services:
         limits:
           cpus: "2"
           memory: 2048M
+        reservations:
+          cpus: "0.1"
+          memory: "640M"
     devices:
       - "/dev/bus/usb:/dev/bus/usb"
     environment:
@@ -117,6 +123,9 @@ services:
         limits:
           cpus: "1"
           memory: 1024M
+        reservations:
+          cpus: "0.05"
+          memory: "128M"
     environment:
       <<: *env
       DOCKER_INFLUXDB_INIT_MODE: "setup"
@@ -167,6 +176,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.02"
+          memory: "96M"
     devices:
       - "/dev/bus/usb:/dev/bus/usb"
     environment:
@@ -207,6 +219,9 @@ services:
         limits:
           cpus: "1"
           memory: 256M
+        reservations:
+          cpus: "0.01"
+          memory: "16M"
     environment:
       <<: *env
     healthcheck:
@@ -239,6 +254,9 @@ services:
         limits:
           cpus: "1"
           memory: 256M
+        reservations:
+          cpus: "0.01"
+          memory: "32M"
     entrypoint: /app/run-standalone.sh
     environment:
       <<: *env
@@ -275,6 +293,9 @@ services:
         limits:
           cpus: "4"
           memory: 5120M
+        reservations:
+          cpus: "0.2"
+          memory: "1024M"
     devices:
       - "/dev/dri:/dev/dri"
     environment:
@@ -330,6 +351,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: "32M"
     env_file: vonage.txt
     environment:
       <<: *env

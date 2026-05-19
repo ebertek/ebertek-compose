@@ -32,6 +32,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: "16M"
     env_file: acmesh.txt
     environment:
       <<: *env
@@ -69,6 +72,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: "128M"
     environment:
       <<: *env
       JAVA_OPTS: "-Xms128m -Xmx256m"
@@ -106,6 +112,9 @@ services:
         limits:
           cpus: "1"
           memory: 512M
+        reservations:
+          cpus: "0.02"
+          memory: "64M"
     environment:
       <<: *env
       PUID: "1028"
@@ -144,6 +153,9 @@ services:
         limits:
           cpus: "1"
           memory: 128M
+        reservations:
+          cpus: "0.01"
+          memory: "32M"
     env_file: smtp.txt
     environment:
       <<: *env
@@ -187,6 +199,9 @@ services:
         limits:
           cpus: "2"
           memory: 256M
+        reservations:
+          cpus: "0.01"
+          memory: "32M"
     env_file: vw.txt
     environment:
       <<: *env
