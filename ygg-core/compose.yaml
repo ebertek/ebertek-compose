@@ -77,7 +77,7 @@ services:
     secrets:
       - cloudflare_api_token
     security_opt: [no-new-privileges:true]
-    user: "1028:100"
+    user: 1028:100
     volumes:
       - *tz
 

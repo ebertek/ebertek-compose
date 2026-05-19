@@ -180,7 +180,7 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.82
         ipv6_address: 2001:9b1:25fc:6900:421::82
-    user: "1028:100"
+    user: 1028:100
     volumes:
       - *tz
       - "/volume2/docker/grafana:/var/lib/grafana"
@@ -223,7 +223,7 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.80
         ipv6_address: 2001:9b1:25fc:6900:421::80
-    user: "1028:100"
+    user: 1028:100
     volumes:
       - *tz
       - "/volume2/docker/loki/config.yaml:/etc/loki/config.yaml:ro"
@@ -273,7 +273,7 @@ services:
         ipv6_address: 2001:9b1:25fc:6900:421::83
     secrets:
       - hass-bearer-token
-    user: "1028:100"
+    user: 1028:100
     volumes:
       - *tz
       - "/volume2/docker/prometheus/data:/prometheus/data"

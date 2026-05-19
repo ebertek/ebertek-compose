@@ -142,7 +142,11 @@ services:
       interval: 10s
       retries: 5
       start_period: 15s
-      test: ["CMD", "pg_isready"]
+      test:
+        [
+          "CMD-SHELL",
+          'pg_isready -h 127.0.0.1 -p 5432 -U "$(cat /run/secrets/pg-user)" -d postgres',
+        ]
       timeout: 5s
     hostname: pg-arr
     image: "docker.io/library/postgres:14"
@@ -288,7 +292,7 @@ services:
         ipv4_address: 10.4.21.62
         ipv6_address: 2001:9b1:25fc:6900:421::62
     security_opt: ["no-new-privileges:true"]
-    user: "1028:100"
+    user: 1028:100
     volumes:
       - *tz
       - "/volume2/docker/recyclarr:/config"
