@@ -11,6 +11,8 @@ HOST_IFACE="macvlan1-host"
 # Physical/Open vSwitch parent interface
 # ---------------------------------------------------------------------------
 PARENT="enp86s0"
+GW_ADDR4="10.4.20.1/32"
+HOST_RANGE4="10.4.20.0/23"
 
 # ---------------------------------------------------------------------------
 # Docker IPv4 configuration
@@ -87,12 +89,25 @@ ip -4 addr flush dev "${HOST_IFACE}"
 # Assign host IPv4 address
 ip -4 addr add "${HOST_ADDR4}" dev "${HOST_IFACE}"
 
+# Make sure the host-side macvlan never owns the main LAN/gateway path.
+ip -4 route del default dev "${HOST_IFACE}" 2>/dev/null || true
+ip -4 route del "${HOST_RANGE4}" dev "${HOST_IFACE}" 2>/dev/null || true
+ip -4 route del "${GW_ADDR4}" dev "${HOST_IFACE}" 2>/dev/null || true
+
 # Remove bogus DHCP-provided host route for macvlan DNS container, if present.
 # It must not go via the physical parent interface.
 ip -4 route del "${DNS_ADDR4}/32" dev "${PARENT}" 2>/dev/null || true
 
 # Route only the Docker macvlan allocation range through the host macvlan interface.
 ip -4 route replace "${DOCKER_RANGE4}" dev "${HOST_IFACE}" src "${HOST_ADDR4%/*}"
+
+# Reduce ARP flux / wrong-interface ARP replies.
+sysctl -w net.ipv4.conf.all.arp_ignore=1 >/dev/null || true
+sysctl -w net.ipv4.conf.all.arp_announce=2 >/dev/null || true
+sysctl -w "net.ipv4.conf.${PARENT}.arp_ignore=1" >/dev/null || true
+sysctl -w "net.ipv4.conf.${PARENT}.arp_announce=2" >/dev/null || true
+sysctl -w "net.ipv4.conf.${HOST_IFACE}.arp_ignore=1" >/dev/null || true
+sysctl -w "net.ipv4.conf.${HOST_IFACE}.arp_announce=2" >/dev/null || true
 
 # ---------------------------------------------------------------------------
 # Disable IPv6 SLAAC / Router Advertisement auto-configuration
