@@ -93,10 +93,12 @@ ip -4 addr add "${HOST_ADDR4}" dev "${HOST_IFACE}"
 ip -4 route del default dev "${HOST_IFACE}" 2>/dev/null || true
 ip -4 route del "${HOST_RANGE4}" dev "${HOST_IFACE}" 2>/dev/null || true
 ip -4 route del "${GW_ADDR4}" dev "${HOST_IFACE}" 2>/dev/null || true
+ip -4 route del "${HOST_ADDR4%/*}/32" dev "${PARENT}" 2>/dev/null || true
 
 # Remove bogus DHCP-provided host route for macvlan DNS container, if present.
 # It must not go via the physical parent interface.
 ip -4 route del "${DNS_ADDR4}/32" dev "${PARENT}" 2>/dev/null || true
+ip -4 route replace "${DNS_ADDR4}/32" dev "${HOST_IFACE}" src "${HOST_ADDR4%/*}"
 
 # Route only the Docker macvlan allocation range through the host macvlan interface.
 ip -4 route replace "${DOCKER_RANGE4}" dev "${HOST_IFACE}" src "${HOST_ADDR4%/*}"
