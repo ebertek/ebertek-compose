@@ -180,7 +180,7 @@ services:
       traefik.http.routers.mass.entrypoints: "websecure"
       traefik.http.routers.mass.rule: "Host(`mass.ebi.nu`)"
       traefik.http.routers.mass.tls: "true"
-      traefik.http.services.mass.loadbalancer.server.port: "8095"
+      traefik.http.services.mass.loadbalancer.server.port: "443"
     mac_address: "0e:be:00:da:00:65"
     networks:
       macvlan1:
