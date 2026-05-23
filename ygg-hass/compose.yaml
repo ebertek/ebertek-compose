@@ -165,6 +165,34 @@ services:
       - "/volume2/docker/hass/influxdb/data:/var/lib/influxdb2"
       - "/volume2/docker/hass/influxdb/config:/etc/influxdb2"
 
+  mass:
+    cap_add:
+      - DAC_READ_SEARCH
+      - SYS_ADMIN
+    container_name: mass
+    environment:
+      <<: *env
+      LOG_LEVEL: "info"
+    hostname: mass
+    image: "ghcr.io/music-assistant/server:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.mass.entrypoints: "websecure"
+      traefik.http.routers.mass.rule: "Host(`mass.ebi.nu`)"
+      traefik.http.routers.mass.tls: "true"
+      traefik.http.services.mass.loadbalancer.server.port: "8095"
+    mac_address: "0e:be:00:da:00:65"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.65
+        ipv6_address: 2001:9b1:25fc:6900:421::65
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - *tz
+      - "/volume1/Downloads/Music:/media"
+      - "/volume2/docker/hass/mass:/data"
+
   matter-server:
     <<: *common
     cap_add:
