@@ -23,6 +23,10 @@ x-env: &env
 x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 secrets:
+  mass-alexa-password:
+    file: mass-alexa-password.txt
+  mass-alexa-username:
+    file: mass-alexa-username.txt
   influxdb2-admin-password:
     file: influxdb2-admin-password.txt
   influxdb2-admin-token:
@@ -179,8 +183,14 @@ services:
       traefik.enable: "true"
       traefik.http.routers.mass.entrypoints: "websecure"
       traefik.http.routers.mass.rule: "Host(`mass.ebi.nu`)"
+      traefik.http.routers.mass.service: "mass"
       traefik.http.routers.mass.tls: "true"
       traefik.http.services.mass.loadbalancer.server.port: "8095"
+      traefik.http.routers.mass-stream.entrypoints: "websecure"
+      traefik.http.routers.mass-stream.rule: "Host(`mass-stream.ebi.nu`)"
+      traefik.http.routers.mass-stream.service: "mass-stream"
+      traefik.http.routers.mass-stream.tls: "true"
+      traefik.http.services.mass-stream.loadbalancer.server.port: "8097"
     mac_address: "0e:be:00:da:00:65"
     networks:
       macvlan1:
@@ -192,6 +202,36 @@ services:
       - *tz
       - "/volume1/Downloads/Music:/media"
       - "/volume2/docker/hass/mass:/data"
+
+  mass-alexa:
+    container_name: mass-alexa
+    environment:
+      <<: *env
+      APP_PASSWORD: "/run/secrets/mass-alexa-password"
+      APP_USERNAME: "/run/secrets/mass-alexa-username"
+      AWS_DEFAULT_REGION: "eu-west-1"
+      LOCALE: "en-US"
+      MA_HOSTNAME: "mass-stream.ebi.nu"
+      SKILL_HOSTNAME: "mass-alexa.ebi.nu"
+    hostname: mass-alexa
+    image: "ghcr.io/alams154/music-assistant-skill:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.mass-alexa.entrypoints: "websecure"
+      traefik.http.routers.mass-alexa.rule: "Host(`mass-alexa.ebi.nu`)"
+      traefik.http.routers.mass-alexa.tls: "true"
+      traefik.http.services.mass-alexa.loadbalancer.server.port: "5000"
+    mac_address: "0e:be:00:da:00:74"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.74
+        ipv6_address: 2001:9b1:25fc:6900:421::74
+    secrets:
+      - mass-alexa-password
+      - mass-alexa-username
+    volumes:
+      - *tz
+      - "/volume2/docker/hass/mass-alexa:/root/.ask"
 
   matter-server:
     <<: *common
