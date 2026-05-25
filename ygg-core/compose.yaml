@@ -397,7 +397,6 @@ services:
         ipv6_address: 2001:9b1:25fc:6900:421::44
     volumes:
       - *tz
-      - "/volume2/docker/traefik/geoblock:/var/lib/geoblock"
       - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
       - "/volume2/docker/acmesh/ebi.nu_ecc/:/certs:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
