@@ -84,7 +84,6 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: "websecure"
-      traefik.http.routers.books.middlewares: sweden@file
       traefik.http.routers.books.rule: "Host(`books.ebi.nu`)"
       traefik.http.routers.books.tls: "true"
       traefik.http.services.books.loadbalancer.server.port: "8083"
