@@ -185,6 +185,16 @@ services:
     environment:
       <<: *env
       LOG_LEVEL: "info"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          'wget -q -O - http://127.0.0.1:8095/info | grep -q ''"status": "running"''',
+        ]
+      timeout: 5s
     hostname: mass
     image: "ghcr.io/music-assistant/server:latest"
     labels:
@@ -213,6 +223,9 @@ services:
 
   mass-alexa:
     container_name: mass-alexa
+    depends_on:
+      mass:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -229,6 +242,16 @@ services:
       LOCALE: "en-US"
       MA_HOSTNAME: "mass-stream.ebi.nu"
       SKILL_HOSTNAME: "mass-alexa.ebi.nu"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      test:
+        [
+          "CMD-SHELL",
+          'curl -fsS -u "$(cat /run/secrets/mass-alexa-username):$(cat /run/secrets/mass-alexa-password)" http://127.0.0.1:5000/status >/dev/null',
+        ]
+      timeout: 10s
     hostname: mass-alexa
     image: "ghcr.io/alams154/music-assistant-skill:latest"
     labels:
