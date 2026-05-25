@@ -81,7 +81,7 @@ services:
           memory: 4G
         reservations:
           cpus: "0.5"
-          memory: "512M"
+          memory: 1G
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -414,6 +414,9 @@ services:
         limits:
           cpus: "6"
           memory: 10G
+        reservations:
+          cpus: "0.25"
+          memory: 1G
     devices:
       - "/dev/dri:/dev/dri"
     environment:
