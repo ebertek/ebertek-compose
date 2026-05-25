@@ -71,6 +71,47 @@ services:
       - *tz
       - "/volume2/docker/hass/esphome:/config"
 
+  frigate:
+    <<: *common
+    container_name: frigate
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    devices:
+      - /dev/accel:/dev/accel
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    env_file: frigate.txt
+    environment:
+      <<: *env
+    group_add:
+      - "44"
+      - "991"
+    hostname: frigate
+    image: "ghcr.io/blakeblackshear/frigate:stable"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.frigate.entrypoints: "websecure"
+      traefik.http.routers.frigate.rule: "Host(`frigate.ebi.nu`)"
+      traefik.http.routers.frigate.tls: "true"
+      traefik.http.services.frigate.loadbalancer.server.port: "8971"
+    mac_address: "0e:be:00:da:00:77"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.77
+        ipv6_address: 2001:9b1:25fc:6900:421::77
+    privileged: true
+    shm_size: 256mb
+    volumes:
+      - *tz
+      - /path/to/your/config:/config
+      - /path/to/your/storage:/media/frigate
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+
   hass:
     <<: *common
     cap_add:
