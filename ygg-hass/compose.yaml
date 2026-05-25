@@ -85,7 +85,6 @@ services:
     env_file: frigate.txt
     environment:
       <<: *env
-      FRIGATE_MQTT_HOST: "10.4.21.67"
     group_add:
       - "44"
       - "991"
