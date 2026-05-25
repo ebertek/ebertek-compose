@@ -105,6 +105,8 @@ services:
     mac_address: "0e:be:00:da:00:77"
     networks:
       macvlan1:
+        aliases:
+          - ccab4aaf-frigate
         ipv4_address: 10.4.21.77
         ipv6_address: 2001:9b1:25fc:6900:421::77
     privileged: true
