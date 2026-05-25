@@ -105,8 +105,8 @@ services:
     shm_size: 256mb
     volumes:
       - *tz
-      - /path/to/your/config:/config
-      - /path/to/your/storage:/media/frigate
+      - "/volume1/video/Frigate:/media/frigate"
+      - "/volume2/docker/hass/frigate:/config"
       - type: tmpfs
         target: /tmp/cache
         tmpfs:
