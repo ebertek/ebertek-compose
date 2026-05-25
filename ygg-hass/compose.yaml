@@ -77,11 +77,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2"
+          cpus: "4"
           memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: "512M"
+    depends_on:
+      mosquitto:
+        condition: service_healthy
     devices:
-      - /dev/accel:/dev/accel
-      - /dev/dri/renderD128:/dev/dri/renderD128
+      - "/dev/accel:/dev/accel"
+      - "/dev/dri/renderD128:/dev/dri/renderD128"
     env_file: frigate.txt
     environment:
       <<: *env
