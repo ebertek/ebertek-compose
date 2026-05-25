@@ -391,6 +391,33 @@ services:
       - "/volume2/docker/hass/mosquitto/data:/mosquitto/data"
       - "/volume2/docker/hass/mosquitto/log:/mosquitto/log"
 
+  ollama:
+    <<: *common
+    container_name: ollama
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          memory: 10G
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      <<: *env
+      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_MAX_QUEUE: "4"
+      OLLAMA_NUM_PARALLEL: "1"
+    hostname: ollama
+    image: "docker.io/ollama/ollama:latest"
+    mac_address: "0e:be:00:da:00:78"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.78
+        ipv6_address: 2001:9b1:25fc:6900:421::78
+    volumes:
+      - *tz
+      - "/volume2/docker/hass/ollama:/root/.ollama"
+
   ps5-mqtt:
     <<: *common
     container_name: ps5-mqtt
