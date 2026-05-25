@@ -1,1 +1,2 @@
 FRIGATE_RTSP_PASSWORD=password
+PLUS_API_KEY=00000000-0000-0000-0000-000000000000:ffffffffffffffffffffffffffffffffffffffff
