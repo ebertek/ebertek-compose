@@ -85,6 +85,8 @@ services:
     depends_on:
       mosquitto:
         condition: service_healthy
+      ollama:
+        condition: service_started
     devices:
       - "/dev/accel:/dev/accel"
       - "/dev/dri/renderD128:/dev/dri/renderD128"
@@ -126,6 +128,11 @@ services:
       - NET_ADMIN
       - NET_RAW
     container_name: hass
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      ollama:
+        condition: service_started
     deploy:
       resources:
         limits:
