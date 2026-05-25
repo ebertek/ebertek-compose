@@ -422,6 +422,13 @@ services:
       OLLAMA_MAX_LOADED_MODELS: "1"
       OLLAMA_MAX_QUEUE: "4"
       OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_VULKAN: "1"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/11434'"]
+      timeout: 10s
     hostname: ollama
     image: "docker.io/ollama/ollama:latest"
     mac_address: "0e:be:00:da:00:78"
