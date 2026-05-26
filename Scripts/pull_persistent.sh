@@ -41,11 +41,6 @@ files=(
 	"hass/matter-server/config/driver.json"
 	"hass/matter-server/config/matter.pid"
 	"hass/matter-server/config/snapshot.json.gz"
-	"hass/matter-server/config/values.fabricLabel"
-	"hass/matter-server/config/values.nextNodeId"
-	"hass/matter-server/config/values.threadDataset"
-	"hass/matter-server/config/values.wifiCredentials"
-	"hass/matter-server/config/values.wifiSsid"
 	"hass/mosquitto/config/mosquitto.conf"
 	"hass/mosquitto/config/password.txt"
 	"hass/ps5-mqtt/credentials.json"
@@ -97,5 +92,14 @@ files=(
 )
 
 for file in "${files[@]}"; do
-	cp -f "${from}/${file}" "${to}/${file}"
+	src="${from}/${file}"
+	dst="${to}/${file}"
+
+	mkdir -p "$(dirname "$dst")"
+
+	if [[ -f "$src" ]]; then
+		cp -f "$src" "$dst"
+	else
+		echo "[WARNING] Missing source file: $src" >&2
+	fi
 done
