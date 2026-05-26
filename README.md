@@ -99,10 +99,14 @@ Main areas:
       - Temperature + humidity: AHT30
   - **[lora-1](_persistent/hass/lora/lora-1/lora-1.ino)**: Heltec WiFi LoRa 32(V3) home receiver node that bridges LoRa mailbox events to MQTT/Home Assistant
   - **[lora-2](_persistent/hass/lora/lora-2/lora-2.ino)**: Battery-powered Heltec WiFi LoRa 32(V3) remote mailbox sensor using an MC-38 reed switch
-- **[hass](https://github.com/home-assistant/core)**: Home automation.
+- **[frigate](https://github.com/blakeblackshear/frigate)**: NVR with realtime local object detection for IP cameras.
+- **[hass](https://github.com/home-assistant/core)**: Home automation that puts local control and privacy first.
 - **[influxdb](https://github.com/influxdata/influxdb/tree/main-2.x)**: Time series database built for real-time analytic workloads.
+- **[mass](https://github.com/music-assistant/server)**: Media library manager that connects to your streaming services and a wide range of connected speakers.
+- **[mass-alexa](https://github.com/alams154/music-assistant-alexa-skill-prototype)**: Alexa skill prototype for controlling the Music Assistant server.
 - **[matter-server](https://github.com/matter-js/matterjs-server)**: Matter server based on Matter.js.
 - **[mosquitto](https://hub.docker.com/_/eclipse-mosquitto)**: Message broker.
+- **[ollama](https://hub.docker.com/r/ollama/ollama)**: The easiest way to get up and running with large language models.
 - **[ps5-mqtt](https://github.com/FunkeyFlo/ps5-mqtt)**: PlayStation 5 status integration using MQTT.
 - **[scrypted](https://github.com/koush/scrypted)**: High performance video integration and automation platform.
 - **[vonage](https://github.com/ebertek/vonage-ha-bridge)**: Vonage to Home Assistant bridge for SMS and voice.
