@@ -421,7 +421,7 @@ services:
       - "/dev/dri:/dev/dri"
     environment:
       <<: *env
-      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_KEEP_ALIVE: "-1"
       OLLAMA_MAX_LOADED_MODELS: "1"
       OLLAMA_MAX_QUEUE: "4"
       OLLAMA_NUM_PARALLEL: "1"
