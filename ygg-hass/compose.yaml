@@ -221,64 +221,6 @@ services:
       - "/volume2/docker/hass/influxdb/data:/var/lib/influxdb2"
       - "/volume2/docker/hass/influxdb/config:/etc/influxdb2"
 
-  llama:
-    <<: *common
-    command:
-      - "-m"
-      - "/models/model.gguf"
-      - "--mmproj"
-      - "/models/mmproj.gguf"
-      - "--host"
-      - "0.0.0.0"
-      - "--port"
-      - "8080"
-      - "-c"
-      - "1024"
-      - "--parallel"
-      - "1"
-      - "-t"
-      - "6"
-      - "-tb"
-      - "6"
-      - "--no-warmup"
-    container_name: llama
-    deploy:
-      resources:
-        limits:
-          cpus: "6"
-          memory: 10G
-        reservations:
-          cpus: "0.25"
-          memory: 1G
-    devices:
-      - "/dev/accel:/dev/accel"
-      - "/dev/dri:/dev/dri"
-    environment:
-      <<: *env
-      GGML_OPENVINO_CACHE_DIR: "/tmp/ov_cache"
-      GGML_OPENVINO_DEVICE: "GPU"
-      GGML_OPENVINO_STATEFUL_EXECUTION: "1"
-    group_add:
-      - "44"
-      - "991"
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 60s
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8080'"]
-      timeout: 10s
-    hostname: llama
-    image: "ghcr.io/ggml-org/llama.cpp:server-openvino"
-    mac_address: "0e:be:00:da:00:78"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.78
-        ipv6_address: 2001:9b1:25fc:6900:421::78
-    volumes:
-      - *tz
-      - "/volume2/docker/hass/llama/models:/models"
-      - "/volume2/docker/hass/llama/ov_cache:/tmp/ov_cache"
-
   mass:
     cap_add:
       - DAC_READ_SEARCH
@@ -459,6 +401,58 @@ services:
       - "/volume2/docker/hass/mosquitto/config:/mosquitto/config"
       - "/volume2/docker/hass/mosquitto/data:/mosquitto/data"
       - "/volume2/docker/hass/mosquitto/log:/mosquitto/log"
+
+  llama:
+    <<: *common
+    command:
+      - "-m"
+      - "/models/model.gguf"
+      - "--mmproj"
+      - "/models/mmproj.gguf"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "-c"
+      - "1024"
+      - "--no-warmup"
+    container_name: llama
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          memory: 10G
+        reservations:
+          cpus: "0.25"
+          memory: 1G
+    devices:
+      - "/dev/accel:/dev/accel"
+      - "/dev/dri:/dev/dri"
+    environment:
+      <<: *env
+      GGML_OPENVINO_CACHE_DIR: "/tmp/ov_cache"
+      GGML_OPENVINO_DEVICE: "GPU"
+      GGML_OPENVINO_STATEFUL_EXECUTION: "1"
+    group_add:
+      - "44"
+      - "991"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8080'"]
+      timeout: 10s
+    hostname: llama
+    image: "ghcr.io/ggml-org/llama.cpp:server-openvino"
+    mac_address: "0e:be:00:da:00:78"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.78
+        ipv6_address: 2001:9b1:25fc:6900:421::78
+    volumes:
+      - *tz
+      - "/volume2/docker/hass/llama/models:/models"
+      - "/volume2/docker/hass/llama/ov_cache:/tmp/ov_cache"
 
   ps5-mqtt:
     <<: *common
