@@ -294,6 +294,10 @@ services:
       LOCALE: "en-US"
       MA_HOSTNAME: "mass-stream.ebi.nu"
       SKILL_HOSTNAME: "mass-alexa.ebi.nu"
+      SKIP_URL_VALIDATION: "true"
+    extra_hosts:
+      - "mass-stream.ebi.nu:10.4.21.65"
+      - "mass-alexa.ebi.nu:10.4.21.74"
     healthcheck:
       interval: 30s
       retries: 3
