@@ -85,7 +85,17 @@ services:
 
   cloudflared:
     <<: *common
-    command: tunnel run
+    command:
+      - "tunnel"
+      - "--edge-ip-version"
+      - "4"
+      - "--protocol"
+      - "quic"
+      - "--dns-resolver-addrs"
+      - "1.1.1.1:53"
+      - "--dns-resolver-addrs"
+      - "1.0.0.1:53"
+      - "run"
     container_name: cloudflared
     deploy:
       resources:
