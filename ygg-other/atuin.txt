@@ -1,3 +1,7 @@
 ATUIN_DB_NAME=atuin
 ATUIN_DB_PASSWORD=really-insecure
+ATUIN_DB_URI=postgres://atuin:really-insecure@pg-atuin/atuin"
 ATUIN_DB_USERNAME=atuin
+POSTGRES_DB=atuin
+POSTGRES_PASSWORD=really-insecure
+POSTGRES_USER=atuin
