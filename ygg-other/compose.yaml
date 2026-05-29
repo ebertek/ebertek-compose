@@ -93,6 +93,39 @@ services:
       - *tz
       - "/volume2/docker/atuin/config:/config"
 
+  browser:
+    <<: *common
+    container_name: browser
+    devices:
+      - "/dev/dri:/dev/dri"
+    group_add:
+      - "44"
+      - "991"
+    hostname: browser
+    image: "lscr.io/linuxserver/chromium:latest"
+    environment:
+      <<: *env
+      PUID: "1028"
+      PGID: "100"
+      DRI_NODE: "/dev/dri/renderD128"
+      DRINODE: "/dev/dri/renderD128"
+      PIXELFLUX_WAYLAND: "true"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.browser.entrypoints: "websecure"
+      traefik.http.routers.browser.rule: "Host(`browser.ebi.nu`)"
+      traefik.http.routers.browser.tls: "true"
+      traefik.http.services.browser.loadbalancer.server.port: "3000"
+    mac_address: "0e:be:00:da:00:79"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.79
+        ipv6_address: 2001:9b1:25fc:6900:421::79
+    shm_size: "1gb"
+    volumes:
+      - *tz
+      - "/volume2/docker/browser:/config"
+
   dbeaver:
     <<: *common
     container_name: dbeaver
