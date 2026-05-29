@@ -64,6 +64,30 @@ services:
       - "/volume2/docker/acmesh:/acme.sh"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  atuin:
+    <<: *common
+    command: start
+    container_name: atuin
+    depends_on:
+      - pg-atuin
+    env_file: atuin.txt
+    environment:
+      <<: *env
+      ATUIN_DB_URI: "postgres://${ATUIN_DB_USERNAME}:${ATUIN_DB_PASSWORD}@pg-atuin/${ATUIN_DB_NAME}"
+      ATUIN_HOST: "0.0.0.0"
+      ATUIN_OPEN_REGISTRATION: "true"
+      RUST_LOG: "info,atuin_server=debug"
+    hostname: atuin
+    image: "ghcr.io/atuinsh/atuin:18.16"
+    mac_address: "0e:be:00:da:00:84"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.84
+        ipv6_address: 2001:9b1:25fc:6900:421::84
+    volumes:
+      - *tz
+      - "/volume2/docker/atuin/config:/config"
+
   dbeaver:
     <<: *common
     container_name: dbeaver
@@ -144,6 +168,27 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/irc:/var/opt/thelounge"
+
+
+  pg-atuin:
+    <<: *common
+    container_name: pg-atuin
+    env_file: atuin.txt
+    environment:
+      <<: *env
+      POSTGRES_DB: ${ATUIN_DB_NAME}
+      POSTGRES_PASSWORD: ${ATUIN_DB_PASSWORD}
+      POSTGRES_USER: ${ATUIN_DB_USERNAME}
+    hostname: pg-atuin
+    image: postgres:18
+    mac_address: "0e:be:00:da:00:85"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.85
+        ipv6_address: 2001:9b1:25fc:6900:421::85
+    volumes:
+      - *tz
+      - "/volume2/docker/atuin/database:/var/lib/postgresql/"
 
   smtp:
     <<: *common
