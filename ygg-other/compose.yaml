@@ -113,6 +113,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.browser.entrypoints: "websecure"
+      traefik.http.routers.browser.middlewares: "arr-chain@docker"
       traefik.http.routers.browser.rule: "Host(`browser.ebi.nu`)"
       traefik.http.routers.browser.tls: "true"
       traefik.http.services.browser.loadbalancer.server.port: "3000"
