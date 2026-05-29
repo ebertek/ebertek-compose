@@ -181,15 +181,16 @@ services:
     environment:
       <<: *env
     hostname: pg-atuin
-    image: postgres:18
+    image: "docker.io/library/postgres:18"
     mac_address: "0e:be:00:da:00:85"
     networks:
       macvlan1:
         ipv4_address: 10.4.21.85
         ipv6_address: 2001:9b1:25fc:6900:421::85
-    user: "999:999"
+    user: "1028:100"
     volumes:
       - *tz
+      - "/etc/passwd:/etc/passwd:ro"
       - "/volume2/docker/atuin/database:/var/lib/postgresql/"
 
   smtp:
