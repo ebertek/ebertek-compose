@@ -79,6 +79,12 @@ services:
       RUST_LOG: "info,atuin_server=debug"
     hostname: atuin
     image: "ghcr.io/atuinsh/atuin:18.16"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.atuin.entrypoints: "websecure"
+      traefik.http.routers.atuin.rule: "Host(`atuin.ebi.nu`)"
+      traefik.http.routers.atuin.tls: "true"
+      traefik.http.services.atuin.loadbalancer.server.port: "8888"
     mac_address: "0e:be:00:da:00:84"
     networks:
       macvlan1:
