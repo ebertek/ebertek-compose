@@ -187,6 +187,7 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.85
         ipv6_address: 2001:9b1:25fc:6900:421::85
+    user: "999:999"
     volumes:
       - *tz
       - "/volume2/docker/atuin/database:/var/lib/postgresql/"
