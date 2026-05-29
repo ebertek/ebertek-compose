@@ -169,7 +169,6 @@ services:
       - *tz
       - "/volume2/docker/irc:/var/opt/thelounge"
 
-
   pg-atuin:
     <<: *common
     container_name: pg-atuin
