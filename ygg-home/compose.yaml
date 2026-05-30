@@ -138,6 +138,30 @@ services:
       - "/volume2/docker/plex/transcode:/transcode"
       - "/volume1/Downloads:/data"
 
+  sunshine:
+    <<: *common
+    container_name: sunshine
+    devices:
+      - "/dev/dri:/dev/dri"
+    group_add:
+      - "44"
+      - "991"
+    environment:
+      <: *env
+      PGID: "100"
+      PUID: "1028"
+    hostname: sunshine
+    image: "ghcr.io/lizardbyte/sunshine:latest-ubuntu-26.04"
+    ipc: host
+    mac_address: "0e:be:00:da:00:93"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.93
+        ipv6_address: 2001:9b1:25fc:6900:421::93
+    volumes:
+      - *tz
+      - "/volume2/docker/sunshine:/config"
+
   tautulli:
     <<: *common
     container_name: tautulli
