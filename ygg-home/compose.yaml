@@ -234,12 +234,7 @@ services:
       <<: *env
     hostname: wolf
     image: "ghcr.io/games-on-whales/wolf:stable"
-    ipc: host
-    mac_address: "0e:be:00:da:00:93"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.93
-        ipv6_address: 2001:9b1:25fc:6900:421::93
+    network_mode: host
     volumes:
       - *tz
       - "/dev/:/dev/:rw"
