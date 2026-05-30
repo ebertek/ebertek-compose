@@ -187,6 +187,35 @@ services:
       - *tz
       - "/volume2/docker/grafana:/var/lib/grafana"
 
+  kuma:
+    <<: *common
+    container_name: kuma
+    environment:
+      <<: *env
+      UMASK: "0022"
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3001"]
+      timeout: 5s
+    hostname: kuma
+    image: "docker.io/louislam/uptime-kuma:2"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.kuma.entrypoints: "websecure"
+      traefik.http.routers.kuma.rule: "Host(`kuma.ebi.nu`)"
+      traefik.http.routers.kuma.tls: "true"
+      traefik.http.services.kuma.loadBalancer.server.port: "3001"
+    mac_address: "0e:be:00:da:00:86"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.86
+        ipv6_address: 2001:9b1:25fc:6900:421::86
+    volumes:
+      - *tz
+      - "/volume2/docker/kuma:/app/data"
+
   loki:
     <<: *common
     command: -config.file=/etc/loki/config.yaml
