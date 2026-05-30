@@ -200,7 +200,7 @@ services:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3001"]
       timeout: 5s
     hostname: kuma
-    image: "docker.io/louislam/uptime-kuma:2"
+    image: "ghcr.io/louislam/uptime-kuma:next"
     labels:
       traefik.enable: "true"
       traefik.http.routers.kuma.entrypoints: "websecure"
