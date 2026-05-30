@@ -147,7 +147,7 @@ services:
       - "44"
       - "991"
     environment:
-      <: *env
+      <<: *env
       PGID: "100"
       PUID: "1028"
     hostname: sunshine
