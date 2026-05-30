@@ -222,7 +222,7 @@ services:
     <<: *common
     container_name: wolf
     device_cgroup_rules:
-      - 'c 13:* rmw'
+      - "c 13:* rmw"
     devices:
       - "/dev/dri:/dev/dri"
       - "/dev/uhid:/dev/uhid"
