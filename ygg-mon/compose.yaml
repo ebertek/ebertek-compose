@@ -190,6 +190,14 @@ services:
   kuma:
     <<: *common
     container_name: kuma
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: 128M
     environment:
       <<: *env
       UMASK: "0022"

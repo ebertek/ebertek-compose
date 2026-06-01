@@ -70,6 +70,14 @@ services:
     container_name: atuin
     depends_on:
       - pg-atuin
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.02"
+          memory: 64M
     env_file: atuin.txt
     environment:
       <<: *env
@@ -96,6 +104,14 @@ services:
   browser:
     <<: *common
     container_name: browser
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "0.2"
+          memory: 256M
     devices:
       - "/dev/dri:/dev/dri"
     group_add:
@@ -211,6 +227,14 @@ services:
   pg-atuin:
     <<: *common
     container_name: pg-atuin
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: 128M
     env_file: atuin.txt
     environment:
       <<: *env
