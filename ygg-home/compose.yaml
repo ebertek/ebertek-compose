@@ -138,6 +138,56 @@ services:
       - "/volume2/docker/plex/transcode:/transcode"
       - "/volume1/Downloads:/data"
 
+  plextraktsync:
+    <<: *common
+    command: watch
+    container_name: plextraktsync
+    depends_on:
+      - plex
+    environment:
+      <<: *env
+      PUID: "1028"
+      PGID: "100"
+    healthcheck:
+      interval: 60s
+      retries: 3
+      start_period: 30s
+      test: ["CMD", "plextraktsync", "healthcheck"]
+      timeout: 10s
+    hostname: plextraktsync
+    image: "ghcr.io/taxel/plextraktsync:main"
+    mac_address: "0e:be:00:da:00:94"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.94
+        ipv6_address: 2001:9b1:25fc:6900:421::94
+    restart: on-failure:2
+    volumes:
+      - *tz
+      - "/volume2/docker/plextraktsync:/app/config"
+
+  scheduler:
+    <<: *common
+    command: daemon --docker
+    container_name: scheduler
+    depends_on:
+      - plextraktsync
+    environment:
+      <<: *env
+    image: "docker.io/mcuadros/ofelia:0.3"
+    labels:
+      ofelia.job-run.plextraktsync.schedule: "@every 6h"
+      ofelia.job-run.plextraktsync.container: "plextraktsync"
+      ofelia.job-exec.plextraktsync.command: "plextraktsync sync"
+    mac_address: "0e:be:00:da:00:97"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.97
+        ipv6_address: 2001:9b1:25fc:6900:421::97
+    volumes:
+      - *tz
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   tautulli:
     <<: *common
     container_name: tautulli
