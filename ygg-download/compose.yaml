@@ -94,7 +94,7 @@ services:
       VPN_SERVICE_PROVIDER: "mullvad"
       VPN_TYPE: "wireguard"
       WIREGUARD_ADDRESSES: "10.75.26.2/32,fc00:bbbb:bbbb:bb01::c:1a01/128"
-      WIREGUARD_ENDPOINT_PORT: "53"
+      WIREGUARD_ENDPOINT_PORT: "123"
     healthcheck:
       interval: 5s
       retries: 3
