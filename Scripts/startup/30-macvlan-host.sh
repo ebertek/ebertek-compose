@@ -32,10 +32,10 @@ DNS_ADDR4="10.4.21.34"
 # ---------------------------------------------------------------------------
 
 # IPv6 range reserved for Docker macvlan containers
-DOCKER_RANGE6="2001:9b1:25fc:6900:421::/80"
+DOCKER_RANGE6="fd0e:be00:da00:20:421::/80"
 
 # Host-side macvlan IPv6 address
-HOST_ADDR6="2001:9b1:25fc:6900:421::1/128"
+HOST_ADDR6="fd0e:be00:da00:20:421::1/128"
 
 # ---------------------------------------------------------------------------
 # Wait for parent interface to exist and become operational

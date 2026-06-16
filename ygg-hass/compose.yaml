@@ -64,7 +64,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.71
-        ipv6_address: 2001:9b1:25fc:6900:421::71
+        ipv6_address: fd0e:be00:da00:20:421::71
     privileged: true
     stop_signal: SIGINT
     volumes:
@@ -108,7 +108,7 @@ services:
         aliases:
           - ccab4aaf-frigate
         ipv4_address: 10.4.21.77
-        ipv6_address: 2001:9b1:25fc:6900:421::77
+        ipv6_address: fd0e:be00:da00:20:421::77
     privileged: true
     shm_size: 256mb
     volumes:
@@ -164,7 +164,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.70
-        ipv6_address: 2001:9b1:25fc:6900:421::70
+        ipv6_address: fd0e:be00:da00:20:421::70
     privileged: true
     volumes:
       - *tz
@@ -211,7 +211,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.72
-        ipv6_address: 2001:9b1:25fc:6900:421::72
+        ipv6_address: fd0e:be00:da00:20:421::72
     secrets:
       - influxdb2-admin-username
       - influxdb2-admin-password
@@ -265,7 +265,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.65
-        ipv6_address: 2001:9b1:25fc:6900:421::65
+        ipv6_address: fd0e:be00:da00:20:421::65
     security_opt:
       - apparmor:unconfined
     volumes:
@@ -320,7 +320,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.74
-        ipv6_address: 2001:9b1:25fc:6900:421::74
+        ipv6_address: fd0e:be00:da00:20:421::74
     secrets:
       - mass-alexa-password
       - mass-alexa-username
@@ -364,7 +364,7 @@ services:
         driver_opts:
           com.docker.network.endpoint.sysctls: "net.ipv6.conf.IFNAME.accept_ra_rt_info_max_plen=64" # yamllint disable-line
         ipv4_address: 10.4.21.66
-        ipv6_address: 2001:9b1:25fc:6900:421::66
+        ipv6_address: fd0e:be00:da00:20:421::66
     security_opt:
       - "apparmor:unconfined"
     stop_grace_period: 30s
@@ -399,7 +399,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.67
-        ipv6_address: 2001:9b1:25fc:6900:421::67
+        ipv6_address: fd0e:be00:da00:20:421::67
     volumes:
       - *tz
       - "/volume2/docker/hass/mosquitto/config:/mosquitto/config"
@@ -442,7 +442,7 @@ services:
         aliases:
           - df2164f9-ps5-mqtt
         ipv4_address: 10.4.21.68
-        ipv6_address: 2001:9b1:25fc:6900:421::68
+        ipv6_address: fd0e:be00:da00:20:421::68
     stop_signal: SIGKILL
     volumes:
       - *tz
@@ -500,7 +500,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.76
-        ipv6_address: 2001:9b1:25fc:6900:421::76
+        ipv6_address: fd0e:be00:da00:20:421::76
     volumes:
       - *tz
       - "/volume2/docker/hass/scrypted/nvr:/nvr"
@@ -537,7 +537,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.73
-        ipv6_address: 2001:9b1:25fc:6900:421::73
+        ipv6_address: fd0e:be00:da00:20:421::73
     secrets:
       - private.key
     volumes:
@@ -581,7 +581,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.69
-        ipv6_address: 2001:9b1:25fc:6900:421::69
+        ipv6_address: fd0e:be00:da00:20:421::69
     volumes:
       - *tz
       - "/volume2/docker/hass/zigbee2mqtt:/app/data"

@@ -45,7 +45,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.52
-        ipv6_address: 2001:9b1:25fc:6900:421::52
+        ipv6_address: fd0e:be00:da00:20:421::52
     stop_signal: SIGINT
     user: 1028:100
     volumes:
@@ -91,7 +91,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.59
-        ipv6_address: 2001:9b1:25fc:6900:421::59
+        ipv6_address: fd0e:be00:da00:20:421::59
     volumes:
       - *tz
       - "/volume2/docker/calibre-web:/config"
@@ -131,7 +131,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.40
-        ipv6_address: 2001:9b1:25fc:6900:421::40
+        ipv6_address: fd0e:be00:da00:20:421::40
     volumes:
       - *tz
       - "/volume2/docker/plex/config:/config"
@@ -160,7 +160,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.94
-        ipv6_address: 2001:9b1:25fc:6900:421::94
+        ipv6_address: fd0e:be00:da00:20:421::94
     restart: on-failure:2
     volumes:
       - *tz
@@ -183,7 +183,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.97
-        ipv6_address: 2001:9b1:25fc:6900:421::97
+        ipv6_address: fd0e:be00:da00:20:421::97
     volumes:
       - *tz
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -216,7 +216,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.41
-        ipv6_address: 2001:9b1:25fc:6900:421::41
+        ipv6_address: fd0e:be00:da00:20:421::41
     volumes:
       - *tz
       - "/volume2/docker/tautulli:/config"
@@ -261,7 +261,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.53
-        ipv6_address: 2001:9b1:25fc:6900:421::53
+        ipv6_address: fd0e:be00:da00:20:421::53
     volumes:
       - *tz
       - "/volume2/docker/tmm/data:/data"

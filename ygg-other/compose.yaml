@@ -56,7 +56,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.36
-        ipv6_address: 2001:9b1:25fc:6900:421::36
+        ipv6_address: fd0e:be00:da00:20:421::36
     stdin_open: true
     tty: true
     volumes:
@@ -96,7 +96,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.84
-        ipv6_address: 2001:9b1:25fc:6900:421::84
+        ipv6_address: fd0e:be00:da00:20:421::84
     volumes:
       - *tz
       - "/volume2/docker/atuin/config:/config"
@@ -137,7 +137,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.79
-        ipv6_address: 2001:9b1:25fc:6900:421::79
+        ipv6_address: fd0e:be00:da00:20:421::79
     shm_size: "1gb"
     volumes:
       - *tz
@@ -176,7 +176,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.43
-        ipv6_address: 2001:9b1:25fc:6900:421::43
+        ipv6_address: fd0e:be00:da00:20:421::43
     volumes:
       - *tz
       - "/volume2/docker/dbeaver:/opt/cloudbeaver/workspace"
@@ -217,7 +217,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.45
-        ipv6_address: 2001:9b1:25fc:6900:421::45
+        ipv6_address: fd0e:be00:da00:20:421::45
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 0
     volumes:
@@ -244,7 +244,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.85
-        ipv6_address: 2001:9b1:25fc:6900:421::85
+        ipv6_address: fd0e:be00:da00:20:421::85
     user: "1028:100"
     volumes:
       - *tz
@@ -288,7 +288,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.60
-        ipv6_address: 2001:9b1:25fc:6900:421::60
+        ipv6_address: fd0e:be00:da00:20:421::60
     volumes:
       - "/volume2/docker/smtp/data:/data"
       - "/volume2/docker/smtp/client_sasl_passwd:/etc/postfix/client_sasl_passwd"
@@ -343,7 +343,7 @@ services:
     networks:
       macvlan1:
         ipv4_address: 10.4.21.46
-        ipv6_address: 2001:9b1:25fc:6900:421::46
+        ipv6_address: fd0e:be00:da00:20:421::46
     # sysctls:
     #   net.ipv4.ip_unprivileged_port_start: 80
     volumes:

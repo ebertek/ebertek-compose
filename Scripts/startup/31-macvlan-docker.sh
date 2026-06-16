@@ -32,16 +32,16 @@ HOST_ADDR4="10.4.21.1/32"
 # ---------------------------------------------------------------------------
 
 # Main IPv6 LAN prefix
-DOCKER_SUBNET6="2001:9b1:25fc:6900::/64"
+DOCKER_SUBNET6="fd0e:be00:da00:20::/64"
 
 # IPv6 gateway
-DOCKER_GATEWAY6="2001:9b1:25fc:6900::1"
+DOCKER_GATEWAY6="fd0e:be00:da00:20::1"
 
 # IPv6 range reserved for Docker macvlan containers
-DOCKER_RANGE6="2001:9b1:25fc:6900:421::/80"
+DOCKER_RANGE6="fd0e:be00:da00:20:421::/80"
 
 # Host-side macvlan IPv6 address
-HOST_ADDR6="2001:9b1:25fc:6900:421::1/128"
+HOST_ADDR6="fd0e:be00:da00:20:421::1/128"
 
 # ---------------------------------------------------------------------------
 # Wait for Docker to be available
