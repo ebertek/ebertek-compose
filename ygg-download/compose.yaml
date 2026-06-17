@@ -146,16 +146,13 @@ services:
           memory: "48M"
     environment:
       <<: *env
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      test: ["CMD-SHELL", "curl -fs http://localhost:5010/state || exit 1"]
-      timeout: 5s
+      MOUSEHOLE_ALLOWED_HOSTS: "mousehole.ebi.nu"
+      MOUSEHOLE_ALLOWED_ORIGINS: "https://mousehole.ebi.nu"
+      MOUSEHOLE_INSECURE_ALLOW_NO_AUTH: "true"
     image: "docker.io/tmmrtn/mousehole:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "service:gluetun"
     volumes:
       - *tz
-      - "/volume2/docker/qbittorrent/mousehole:/srv/mousehole"
+      - "/volume2/docker/qbittorrent/mousehole:/var/lib/mousehole"
