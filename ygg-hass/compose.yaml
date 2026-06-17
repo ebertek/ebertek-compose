@@ -110,6 +110,8 @@ services:
         ipv4_address: 10.4.21.77
         ipv6_address: fd0e:be00:da00:20:421::77
     privileged: true
+    profiles:
+      - nfs
     shm_size: 256mb
     volumes:
       - *tz
@@ -266,6 +268,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.65
         ipv6_address: fd0e:be00:da00:20:421::65
+    profiles:
+      - nfs
     security_opt:
       - apparmor:unconfined
     volumes:
@@ -321,6 +325,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.74
         ipv6_address: fd0e:be00:da00:20:421::74
+    profiles:
+      - nfs
     secrets:
       - mass-alexa-password
       - mass-alexa-username

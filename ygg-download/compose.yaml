@@ -53,6 +53,8 @@ services:
     labels:
       com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "service:gluetun"
+    profiles:
+      - nfs
     read_only: false
     tmpfs:
       - /tmp

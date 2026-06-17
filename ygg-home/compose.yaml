@@ -92,6 +92,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.59
         ipv6_address: fd0e:be00:da00:20:421::59
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/calibre-web:/config"
@@ -132,6 +134,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.40
         ipv6_address: fd0e:be00:da00:20:421::40
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/plex/config:/config"
@@ -161,6 +165,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.94
         ipv6_address: fd0e:be00:da00:20:421::94
+    profiles:
+      - nfs
     restart: on-failure:2
     volumes:
       - *tz
@@ -184,6 +190,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.97
         ipv6_address: fd0e:be00:da00:20:421::97
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -217,6 +225,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.41
         ipv6_address: fd0e:be00:da00:20:421::41
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/tautulli:/config"
@@ -262,6 +272,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.53
         ipv6_address: fd0e:be00:da00:20:421::53
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/tmm/data:/data"

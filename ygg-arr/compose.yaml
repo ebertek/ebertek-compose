@@ -72,6 +72,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.57
         ipv6_address: fd0e:be00:da00:20:421::57
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/bazarr:/config"
@@ -118,6 +120,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.58
         ipv6_address: fd0e:be00:da00:20:421::58
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/lidarr:/config"
@@ -209,6 +213,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.54
         ipv6_address: fd0e:be00:da00:20:421::54
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/prowlarr:/config"
@@ -254,6 +260,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.55
         ipv6_address: fd0e:be00:da00:20:421::55
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/radarr:/config"
@@ -291,6 +299,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.62
         ipv6_address: fd0e:be00:da00:20:421::62
+    profiles:
+      - nfs
     security_opt: ["no-new-privileges:true"]
     user: 1028:100
     volumes:
@@ -338,6 +348,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.61
         ipv6_address: fd0e:be00:da00:20:421::61
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/requestrr:/config"
@@ -383,6 +395,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.56
         ipv6_address: fd0e:be00:da00:20:421::56
+    profiles:
+      - nfs
     volumes:
       - *tz
       - "/volume2/docker/sonarr:/config"
@@ -416,6 +430,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.38
         ipv6_address: fd0e:be00:da00:20:421::38
+    profiles:
+      - nfs
     user: 1028:100
     volumes:
       - *tz

@@ -70,6 +70,8 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.48
         ipv6_address: fd0e:be00:da00:20:421::48
+    profiles:
+      - nfs
     user: 1028:100
     volumes:
       - *tz
