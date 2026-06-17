@@ -48,8 +48,8 @@ require_commands() {
 
 	local command_name
 	for command_name in "${required_commands[@]}"; do
-		command -v "${command_name}" >/dev/null 2>&1 \
-			|| die "required command not found: ${command_name}"
+		command -v "${command_name}" >/dev/null 2>&1 ||
+			die "required command not found: ${command_name}"
 	done
 }
 
@@ -84,8 +84,8 @@ compose_dirs_reverse() {
 }
 
 nfs_services() {
-	docker compose --profile nfs config --format json \
-		| python3 -c '
+	docker compose --profile nfs config --format json |
+		python3 -c '
 import json
 import sys
 
