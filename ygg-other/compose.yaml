@@ -244,6 +244,13 @@ services:
     env_file: atuin.txt
     environment:
       <<: *env
+    healthcheck:
+      interval: 10s
+      retries: 5
+      start_period: 15s
+      test:
+        ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres"]
+      timeout: 5s
     hostname: pg-atuin
     image: "docker.io/library/postgres:18"
     mac_address: "0e:be:00:da:00:85"
