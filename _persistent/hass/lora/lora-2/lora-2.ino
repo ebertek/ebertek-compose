@@ -278,6 +278,16 @@ void setup() {
     ensureBootId();
     Serial.printf("boot_id: %lu\n", static_cast<unsigned long>(boot_id));
 
+    // FIX: configureReedWakeup() (called at the end of the previous wake cycle)
+    // switches REED_PIN into RTC IO mux mode via rtc_gpio_init() so ext0 can
+    // monitor it during deep sleep. That mode change persists across the wake —
+    // it is NOT automatically undone. Without this rtc_gpio_deinit() call,
+    // the subsequent pinMode(REED_PIN, INPUT_PULLUP) below has no effect: the
+    // pin stays routed through the RTC mux, and digitalRead() never reflects
+    // the real reed state again. This is why only the very first OPEN event
+    // (before the pin was ever put into RTC mode) was being detected.
+    rtc_gpio_deinit(REED_PIN);
+
     // Normal GPIO mode for reed during the active phase.
     pinMode(static_cast<uint8_t>(REED_PIN), INPUT_PULLUP);
 
