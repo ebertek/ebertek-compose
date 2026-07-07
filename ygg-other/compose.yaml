@@ -31,7 +31,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.01"
           memory: "16M"
@@ -74,10 +74,10 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 256M
+          memory: "256M"
         reservations:
           cpus: "0.02"
-          memory: 64M
+          memory: "64M"
     env_file: atuin.txt
     environment:
       <<: *env
@@ -108,10 +108,10 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 4G
+          memory: "4096M"
         reservations:
           cpus: "0.2"
-          memory: 256M
+          memory: "256M"
     devices:
       - "/dev/dri:/dev/dri"
     group_add:
@@ -157,7 +157,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 512M
+          memory: "512M"
         reservations:
           cpus: "0.1"
           memory: "128M"
@@ -197,7 +197,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 512M
+          memory: "512M"
         reservations:
           cpus: "0.02"
           memory: "64M"
@@ -238,10 +238,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 512M
+          memory: "512M"
         reservations:
           cpus: "0.05"
-          memory: 128M
+          memory: "128M"
     env_file: atuin.txt
     environment:
       <<: *env
@@ -272,7 +272,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.01"
           memory: "32M"
@@ -318,7 +318,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 256M
+          memory: "256M"
         reservations:
           cpus: "0.01"
           memory: "32M"

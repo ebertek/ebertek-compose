@@ -85,7 +85,7 @@ services:
       resources:
         limits:
           cpus: "4"
-          memory: 1536M
+          memory: "1536M"
         reservations:
           cpus: "0.1"
           memory: "128M"
@@ -125,7 +125,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 1536M
+          memory: "1536M"
         reservations:
           cpus: "0.05"
           memory: "196M"
@@ -163,7 +163,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 2048M
+          memory: "2048M"
         reservations:
           cpus: "0.02"
           memory: "32M"

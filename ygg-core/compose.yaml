@@ -40,10 +40,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.01"
-          memory: 8M
+          memory: "8M"
     environment:
       AUTOHEAL_INTERVAL: "30"
       AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
@@ -63,10 +63,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.01"
-          memory: 16M
+          memory: "16M"
     environment:
       <<: *env
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
@@ -95,10 +95,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.02"
-          memory: 32M
+          memory: "32M"
     env_file: cloudflared.txt
     environment:
       <<: *env
@@ -134,10 +134,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1024M
+          memory: "1024M"
         reservations:
           cpus: "0.05"
-          memory: 256M
+          memory: "256M"
     environment:
       <<: *env
       DNS_SERVER_DOMAIN: "dns"
@@ -181,10 +181,10 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 2048M
+          memory: "2048M"
         reservations:
           cpus: "0.1"
-          memory: 384M
+          memory: "384M"
     env_file: keycloak.txt
     environment:
       <<: *env
@@ -240,10 +240,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 512M
+          memory: "512M"
         reservations:
           cpus: "0.01"
-          memory: 16M
+          memory: "16M"
     env_file: oauth2-proxy.txt
     environment:
       <<: *env
@@ -301,10 +301,10 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 1024M
+          memory: "1024M"
         reservations:
           cpus: "0.05"
-          memory: 64M
+          memory: "64M"
     environment:
       <<: *env
       POSTGRES_PASSWORD_FILE: "/run/secrets/postgres-passwd"
@@ -342,10 +342,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 256M
+          memory: "256M"
         reservations:
           cpus: "0.05"
-          memory: 64M
+          memory: "64M"
     environment:
       <<: *env
       TRAEFIK_API_DASHBOARD: "true"
@@ -412,10 +412,10 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.01"
-          memory: 32M
+          memory: "32M"
     environment:
       TZ: "UTC"
       NO_COLOR: "true"

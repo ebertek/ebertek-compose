@@ -31,10 +31,10 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 512M
+          memory: "512M"
         reservations:
           cpus: "0.1"
-          memory: 160M
+          memory: "160M"
     env_file: mariadb.txt
     environment:
       <<: *env
@@ -65,10 +65,10 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 128M
+          memory: "128M"
         reservations:
           cpus: "0.05"
-          memory: 16M
+          memory: "16M"
     environment:
       <<: *env
       PUID: "101"
@@ -113,10 +113,10 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 1536M
+          memory: "1536M"
         reservations:
           cpus: "0.1"
-          memory: 192M
+          memory: "192M"
     env_file: wordpress.txt
     environment:
       <<: *env

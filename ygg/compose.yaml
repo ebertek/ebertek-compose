@@ -30,7 +30,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: "1536M"
     devices:
       - /dev/kmsg
     environment:
@@ -62,7 +62,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: "128M"
     environment:
       <<: *env
       NO_COLOR: "true"

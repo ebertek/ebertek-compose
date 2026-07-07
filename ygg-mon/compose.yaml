@@ -109,7 +109,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1024M
+          memory: "1024M"
         reservations:
           cpus: "0.05"
           memory: "128M"
@@ -197,7 +197,7 @@ services:
           memory: "1024M"
         reservations:
           cpus: "0.05"
-          memory: 128M
+          memory: "128M"
     environment:
       <<: *env
       UMASK: "0022"
@@ -233,7 +233,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1024M
+          memory: "1024M"
         reservations:
           cpus: "0.1"
           memory: "128M"
@@ -282,7 +282,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 2560M
+          memory: "2560M"
         reservations:
           cpus: "0.05"
           memory: "128M"
