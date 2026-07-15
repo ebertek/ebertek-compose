@@ -1,13 +1,15 @@
 ---
 global:
   evaluation_interval: 30s
-  scrape_interval: 30s
+  scrape_interval: 60s
+  scrape_timeout: 10s
 
 rule_files:
   - rules_compat.yml
 
 scrape_configs:
   - job_name: "alloy"
+    scrape_interval: 30s
     static_configs:
       - targets: ["alloy.ygg.nu:12345"]
 
@@ -24,7 +26,6 @@ scrape_configs:
       credentials_file: /run/secrets/hass-bearer-token
     metrics_path: /api/prometheus
     scheme: https
-    scrape_interval: 60s
     static_configs:
       - targets: ["hass.ygg.nu:8123"]
 
@@ -49,11 +50,13 @@ scrape_configs:
       - targets: ["loki.ygg.nu:3100"]
 
   - job_name: "prometheus"
+    scrape_interval: 30s
     static_configs:
       - targets: ["localhost:9090"]
 
   - job_name: "traefik"
     metrics_path: /metrics
+    scrape_interval: 30s
     static_configs:
       - targets: ["traefik.ygg.nu:8080"]
 

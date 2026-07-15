@@ -64,6 +64,26 @@ prometheus.exporter.unix "node" {
 
 prometheus.exporter.cadvisor "docker" {
   docker_only = true
+  store_container_labels = false
+  allowlisted_container_labels = [
+    "com.docker.compose.project",
+    "com.docker.compose.service",
+  ]
+  disabled_metrics = [
+    "advtcp",
+    "cpu_topology",
+    "cpuset",
+    "disk",
+    "diskIO",
+    "hugetlb",
+    "memory_numa",
+    "process",
+    "referenced_memory",
+    "resctrl",
+    "tcp",
+    "udp",
+  ]
+  storage_duration = "1m"
 }
 
 discovery.relabel "metrics_integrations_docker" {
