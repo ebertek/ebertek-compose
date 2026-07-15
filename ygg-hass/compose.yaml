@@ -439,7 +439,7 @@ services:
         ["CMD-SHELL", "ls -l /proc/*/exe 2>/dev/null | grep -q node || exit 1"]
       timeout: 10s
     hostname: ps5-mqtt
-    image: "ghcr.io/funkeyflo/ps5-mqtt/amd64:latest"
+    image: "ghcr.io/funkeyflo/ps5-mqtt:latest"
     labels:
       com.centurylinklabs.watchtower.depends-on: "mosquitto"
     mac_address: "0e:be:00:da:00:68"
