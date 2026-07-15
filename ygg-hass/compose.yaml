@@ -426,7 +426,6 @@ services:
         reservations:
           cpus: "0.01"
           memory: "32M"
-    entrypoint: /app/run-standalone.sh
     environment:
       <<: *env
       CONFIG_PATH: "/config/options.json"
