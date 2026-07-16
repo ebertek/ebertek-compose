@@ -136,6 +136,7 @@ services:
       - *tz
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
       - "/mnt/data/tntphoto_php_config/_data:/usr/local/etc/php/conf.d"
+      - "/mnt/data/tntphoto_php_config/_data/zzz-logging.conf:/usr/local/etc/php-fpm.d/zzz-logging.conf:ro"
       - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
 
 networks:
