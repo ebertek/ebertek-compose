@@ -125,6 +125,10 @@ services:
       WORDPRESS_DB_HOST: "mariadb:3306"
     hostname: wordpress
     image: "tntphoto-wordpress:php8.3-fpm-alpine"
+    logging:
+      options:
+        max-file: "3"
+        max-size: "10m"
     networks:
       - wp_net
     pull_policy: build
