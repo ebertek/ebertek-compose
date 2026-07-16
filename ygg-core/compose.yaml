@@ -14,6 +14,10 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
+  logging:
+    options:
+      max-file: "3"
+      max-size: "10m"
   restart: unless-stopped
   stop_grace_period: 2m
 
@@ -432,7 +436,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.47
         ipv6_address: fd0e:be00:da00:20:421::47
-    privileged: true
     restart: unless-stopped
     secrets:
       - watchtower-token

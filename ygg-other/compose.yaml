@@ -14,6 +14,10 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
+  logging:
+    options:
+      max-file: "3"
+      max-size: "10m"
   restart: unless-stopped
   stop_grace_period: 2m
 
@@ -84,7 +88,7 @@ services:
     environment:
       <<: *env
       ATUIN_HOST: "0.0.0.0"
-      ATUIN_OPEN_REGISTRATION: "true"
+      ATUIN_OPEN_REGISTRATION: "false"
       RUST_LOG: "info,atuin_server=debug"
     hostname: atuin
     image: "ghcr.io/atuinsh/atuin:18.16"
@@ -338,7 +342,7 @@ services:
       PUSH_ENABLED: "true"
       PUSH_RELAY_URI: "https://api.bitwarden.eu"
       PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
-      SIGNUPS_ALLOWED: "true"
+      SIGNUPS_ALLOWED: "false"
       SMTP_FROM: "vw@ebi.nu"
       SMTP_HOST: "smtp.ygg.nu"
       SMTP_PORT: "25"

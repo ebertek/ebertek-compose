@@ -10,6 +10,10 @@ x-common: &common
     - 1.1.1.1
   dns_search:
     - ygg.nu
+  logging:
+    options:
+      max-file: "3"
+      max-size: "10m"
   restart: unless-stopped
   stop_grace_period: 1m
 
@@ -62,7 +66,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: "128M"
+          memory: "64M"
     environment:
       <<: *env
       NO_COLOR: "true"
@@ -70,7 +74,6 @@ services:
       WATCHTOWER_LOG_FORMAT: "JSON"
     hostname: watchtower
     image: "docker.io/nickfedor/watchtower:latest"
-    privileged: true
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:
