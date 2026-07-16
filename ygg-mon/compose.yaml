@@ -201,6 +201,7 @@ services:
     environment:
       <<: *env
       UMASK: "0022"
+      UPTIME_KUMA_LOG_FORMAT: "json"
     healthcheck:
       interval: 30s
       retries: 3
