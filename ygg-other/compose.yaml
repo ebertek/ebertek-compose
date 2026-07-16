@@ -69,7 +69,9 @@ services:
     command: start
     container_name: atuin
     depends_on:
-      - pg-atuin
+      pg-atuin:
+        condition: service_healthy
+        restart: true
     deploy:
       resources:
         limits:
@@ -266,7 +268,7 @@ services:
     volumes:
       - *tz
       - "/etc/passwd:/etc/passwd:ro"
-      - "/volume2/docker/atuin/database:/var/lib/postgresql/"
+      - "/volume2/docker/atuin/database:/var/lib/postgresql"
 
   smtp:
     <<: *common
