@@ -1,12 +1,10 @@
 ---
 esphome:
-  area: Guest Room
+  area: Outdoors
   compile_process_limit: 2
-  friendly_name: esp-guest-1
-  min_version: 2025.11.0
+  friendly_name: esp-outdoors-1
+  min_version: 2026.3.0
   name: esp-guest-1
-  platformio_options:
-    board_build.arduino.memory_type: opi_opi
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -124,13 +122,15 @@ sensor:
     update_interval: 60s
   - platform: bme280_i2c
     address: 0x76
-    i2c_id: bus_bme280
     humidity:
       id: bme280_h
       name: Humidity
+    i2c_id: bus_bme280
+    iir_filter: 4x
     pressure:
       id: bme280_p
       name: Pressure
+      oversampling: 16x
     temperature:
       id: bme280_t
       name: Temperature
@@ -141,25 +141,44 @@ sensor:
     id: bme280_h_abs
     name: Absolute humidity
     temperature: bme280_t
-  - platform: template
-    icon: "mdi:thermometer-alert"
+  - platform: dew_point
+    humidity: bme280_h
     id: bme280_dew_point
-    lambda: |-
-      return (243.5*(log(id(bme280_h).state/100)+((17.67*id(bme280_t).state)/
-      (243.5+id(bme280_t).state)))/(17.67-log(id(bme280_h).state/100)-
-      ((17.67*id(bme280_t).state)/(243.5+id(bme280_t).state))));
     name: Dew point
-    unit_of_measurement: °C
+    temperature: bme280_t
+  - platform: template
+    accuracy_decimals: 1
+    device_class: temperature
+    id: bme280_dew_point_margin
+    lambda: |-
+      if (isnan(id(bme280_t).state) || isnan(id(bme280_dew_point).state))
+        return NAN;
+      return id(bme280_t).state - id(bme280_dew_point).state;
+    name: Dew Point Margin
+    state_class: measurement
+    unit_of_measurement: "°C"
   - platform: template
     accuracy_decimals: 2
+    device_class: pressure
     filters:
       - filter_out: nan
-    icon: "mdi:gauge"
+    icon: "mdi:waves-arrow-up"
     id: bme280_vpd
     lambda: |-
-      return (((100 - id(bme280_h).state) / 100.0) * (0.6108 * exp((17.27 * id(bme280_t).state) / (id(bme280_t).state + 237.3))));
+      const float temperature = id(bme280_t).state;
+      const float humidity = id(bme280_h).state;
+
+      if (isnan(temperature) || isnan(humidity)) {
+        return NAN;
+      }
+
+      const float saturation_vapor_pressure =
+          0.6108f * expf((17.27f * temperature) / (temperature + 237.3f));
+
+      return saturation_vapor_pressure * (1.0f - humidity / 100.0f);
     name: VPD
-    update_interval: 10s
+    state_class: measurement
+    update_interval: 60s
     unit_of_measurement: kPa
   - platform: adc
     accuracy_decimals: 5

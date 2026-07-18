@@ -1,13 +1,10 @@
 ---
 esphome:
-  area: Bedroom
+  area: Crawl space
   compile_process_limit: 2
-  friendly_name: esp-bedroom-1
-  min_version: 2025.11.0
+  friendly_name: esp-crawl-1
+  min_version: 2026.3.0
   name: esp-bedroom-1
-  platformio_options:
-    board_build.f_cpu: 240000000L
-    board_build.mcu: esp32s3
 
 esp32:
   board: m5stack-atoms3
@@ -111,10 +108,13 @@ sensor:
   - platform: bmp280_i2c
     address: 0x76
     i2c_id: pahub1
+    iir_filter: 4x
     pressure:
       id: bmp280_p
       name: BMP280 Pressure
+      oversampling: 16x
     temperature:
+      entity_category: diagnostic
       id: bmp280_t
       name: BMP280 Temperature
       oversampling: 16x
@@ -125,7 +125,7 @@ sensor:
       temperature_source: sht40_t
       humidity_source: sht40_h
     eco2:
-      accuracy_decimals: 1
+      accuracy_decimals: 0
       filters:
         - sliding_window_moving_average:
             send_every: 60
@@ -134,7 +134,7 @@ sensor:
     i2c_id: pahub0
     store_baseline: yes
     tvoc:
-      accuracy_decimals: 1
+      accuracy_decimals: 0
       device_class: volatile_organic_compounds_parts
       filters:
         - sliding_window_moving_average:
@@ -151,31 +151,58 @@ sensor:
     temperature:
       id: sht40_t
       name: SHT40 Temperature
+    update_interval: 60s
   - platform: absolute_humidity
     humidity: sht40_h
     id: sht40_h_abs
     name: Absolute humidity
     temperature: sht40_t
-  - platform: template
-    icon: "mdi:thermometer-alert"
+  - platform: dew_point
+    humidity: sht40_h
     id: sht40_dew_point
-    lambda: |-
-      return (243.5*(log(id(sht40_h).state/100)+((17.67*id(sht40_t).state)/
-      (243.5+id(sht40_t).state)))/(17.67-log(id(sht40_h).state/100)-
-      ((17.67*id(sht40_t).state)/(243.5+id(sht40_t).state))));
     name: Dew point
-    unit_of_measurement: °C
+    temperature: sht40_t
   - platform: template
     accuracy_decimals: 2
+    device_class: pressure
     filters:
       - filter_out: nan
-    icon: "mdi:gauge"
+    icon: "mdi:waves-arrow-up"
     id: sht40_vpd
     lambda: |-
-      return (((100 - id(sht40_h).state) / 100.0) * (0.6108 * exp((17.27 * id(sht40_t).state) / (id(sht40_t).state + 237.3))));
+      const float temperature = id(sht40_t).state;
+      const float humidity = id(sht40_h).state;
+
+      if (isnan(temperature) || isnan(humidity)) {
+        return NAN;
+      }
+
+      const float saturation_vapor_pressure =
+          0.6108f * expf((17.27f * temperature) / (temperature + 237.3f));
+
+      return saturation_vapor_pressure * (1.0f - humidity / 100.0f);
     name: VPD
-    update_interval: 10s
+    state_class: measurement
+    update_interval: 60s
     unit_of_measurement: kPa
+  - platform: template
+    accuracy_decimals: 1
+    device_class: temperature
+    icon: "mdi:thermometer-chevron-up"
+    id: sht40_dew_point_margin
+    lambda: |-
+      const float temperature = id(sht40_t).state;
+      const float dew_point = id(sht40_dew_point).state;
+
+      if (isnan(temperature) || isnan(dew_point)) {
+        return NAN;
+      }
+
+      return temperature - dew_point;
+    name: Dew Point Margin
+    state_class: measurement
+    unit_of_measurement: °C
+    update_interval: 60s
 
 tca9548a:
   - address: 0x70

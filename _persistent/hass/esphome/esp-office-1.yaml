@@ -1,8 +1,8 @@
 ---
 esphome:
-  area: Office
+  area: Guest room
   compile_process_limit: 2
-  friendly_name: esp-office-1
+  friendly_name: esp-guest-1
   min_version: 2026.4.0
   name: esp-office-1
   platformio_options:
@@ -258,15 +258,23 @@ sensor:
     id: aht20_h_abs
     name: Absolute humidity
     temperature: aht20_t
-  - platform: template
-    icon: "mdi:thermometer-alert"
+  - platform: dew_point
+    humidity: aht20_h
     id: aht20_dew_point
-    lambda: |-
-      return (243.5*(log(id(aht20_h).state/100)+((17.67*id(aht20_t).state)/
-      (243.5+id(aht20_t).state)))/(17.67-log(id(aht20_h).state/100)-
-      ((17.67*id(aht20_t).state)/(243.5+id(aht20_t).state))));
     name: Dew point
-    unit_of_measurement: °C
+    temperature: aht20_t
+  - platform: template
+    accuracy_decimals: 1
+    device_class: temperature
+    id: aht20_dew_point_margin
+    lambda: |-
+      if (isnan(id(aht20_t).state) || isnan(id(aht20_dew_point).state))
+        return NAN;
+      return id(aht20_t).state - id(aht20_dew_point).state;
+    name: Dew Point Margin
+    state_class: measurement
+    unit_of_measurement: "°C"
+
   - platform: template
     accuracy_decimals: 2
     filters:
