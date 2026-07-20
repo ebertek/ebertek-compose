@@ -4,7 +4,7 @@ esphome:
   compile_process_limit: 2
   friendly_name: esp-crawl-1
   min_version: 2026.3.0
-  name: esp-bedroom-1
+  name: esp-4
 
 esp32:
   board: m5stack-atoms3

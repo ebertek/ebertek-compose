@@ -4,7 +4,7 @@ esphome:
   compile_process_limit: 2
   friendly_name: esp-guest-1
   min_version: 2026.4.0
-  name: esp-office-1
+  name: esp-1
   platformio_options:
     board_build.flash_mode: dio
 

@@ -4,7 +4,7 @@ esphome:
   compile_process_limit: 2
   friendly_name: esp-outdoors-1
   min_version: 2026.3.0
-  name: esp-guest-1
+  name: esp-2
 
 esp32:
   board: esp32-s3-devkitc-1
