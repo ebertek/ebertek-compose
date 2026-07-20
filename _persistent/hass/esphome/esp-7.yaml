@@ -24,7 +24,6 @@ ota:
     password: !secret ota_7
 
 logger:
-  level: VERY_VERBOSE
 
 wifi:
   domain: .ygg.nu
@@ -68,6 +67,58 @@ button:
     id: factory_reset_btn
     name: Factory Reset
     entity_category: diagnostic
+  - platform: template
+    name: "Nexa Uppe ON"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: nexa_433_tx
+          device: 0xA2366
+          group: 0
+          state: 1
+          channel: 1
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+  - platform: template
+    name: "Nexa Uppe OFF"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: nexa_433_tx
+          device: 0xA2366
+          group: 0
+          state: 0
+          channel: 1
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+  - platform: template
+    name: "Nexa Nere ON"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: nexa_433_tx
+          device: 0xA2366
+          group: 0
+          state: 1
+          channel: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+  - platform: template
+    name: "Nexa Nere OFF"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: nexa_433_tx
+          device: 0xA2366
+          group: 0
+          state: 0
+          channel: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
 
 esp32_ble_tracker:
   scan_parameters:
@@ -87,25 +138,31 @@ light:
 
 # M5Stack RF433R on Port.B.
 # Black=GND, Red=5V, Yellow=NC/GPIO7, White=RF_RX/GPIO8.
-remote_receiver:
-  id: nexa_433_receiver
-  pin:
-    number: GPIO8
-    mode:
-      input: true
-      pullup: false
-    inverted: false
-  dump:
-    - raw
-    - rc_switch
-  tolerance: 50%
-  filter: 250us
-  idle: 10ms
-  buffer_size: 16kb
+# remote_receiver:
+#   id: nexa_433_receiver
+#   buffer_size: 16kb
+#   dump:
+#     - raw
+#     - rc_switch
+#   filter: 250us
+#   idle: 10ms
+#   pin:
+#     inverted: false
+#     mode:
+#       input: true
+#       pullup: false
+#     number: GPIO8
+#   tolerance: 50%
 
-# Built-in IR transmitter, not 433 MHz RF.
 remote_transmitter:
+  - id: nexa_433_tx
+    # M5Stack RF433T on Port.B.
+    # Black=GND, Red=5V, Yellow=RF_TX/GPIO7, White=NC/GPIO8.
+    carrier_duty_percent: 100%
+    non_blocking: true
+    pin: GPIO7
   - id: builtin_ir_tx
+    # Built-in IR transmitter, not 433 MHz RF.
     carrier_duty_percent: 50%
     non_blocking: true
     pin: GPIO4
