@@ -136,24 +136,6 @@ light:
     rmt_symbols: 192
     use_dma: true
 
-# M5Stack RF433R on Port.B.
-# Black=GND, Red=5V, Yellow=NC/GPIO7, White=RF_RX/GPIO8.
-# remote_receiver:
-#   id: nexa_433_receiver
-#   buffer_size: 16kb
-#   dump:
-#     - raw
-#     - rc_switch
-#   filter: 250us
-#   idle: 10ms
-#   pin:
-#     inverted: false
-#     mode:
-#       input: true
-#       pullup: false
-#     number: GPIO8
-#   tolerance: 50%
-
 remote_transmitter:
   - id: nexa_433_tx
     # M5Stack RF433T on Port.B.
