@@ -47,6 +47,18 @@ binary_sensor:
         input: true
         pullup: true
       number: GPIO41
+  - platform: gpio
+    filters:
+      - delayed_off: 1000ms
+      - delayed_on: 10ms
+    id: light_d
+    name: Illuminance hit
+    pin:
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+      number: GPIO7
 
 bluetooth_proxy:
   active: true
@@ -203,6 +215,21 @@ sensor:
     state_class: measurement
     unit_of_measurement: °C
     update_interval: 60s
+  - platform: adc
+    device_class: illuminance
+    filters:
+      - lambda: |-
+          return 200 - (x / 10000.0) * 2000000.0;
+    id: light_a
+    name: Illuminance
+    pin:
+      mode:
+        input: true
+        pullup: true
+      number: GPIO8
+    unit_of_measurement: "lx"
+    update_interval: 1s
+
 
 tca9548a:
   - address: 0x70
