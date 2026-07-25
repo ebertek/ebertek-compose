@@ -3,13 +3,14 @@ esphome:
   area: Guest room
   compile_process_limit: 2
   friendly_name: esp-guest-1
-  min_version: 2026.4.0
+  min_version: 2026.5.0
   name: esp-1
   platformio_options:
     board_build.flash_mode: dio
 
 esp32:
   board: esp32s3box
+  cpu_frequency: 240MHz
   flash_size: 16MB
   framework:
     sdkconfig_options:
@@ -35,26 +36,29 @@ ota:
 logger:
   hardware_uart: USB_SERIAL_JTAG
 
+network:
+  enable_ipv6: true
+
 wifi:
   domain: .ygg.nu
   password: !secret wifi_password
   ssid: !secret wifi_ssid
 
 at581x:
-  i2c_id: bus_a
-  id: "Radar"
+  i2c_id: i2c_adc_dac
+  id: radar
 
 audio_adc:
   - platform: es7210
     bits_per_sample: 16bit
-    i2c_id: bus_a
+    i2c_id: i2c_adc_dac
     id: es7210_adc
     sample_rate: 16000
 
 audio_dac:
   - platform: es8311
     bits_per_sample: 16bit
-    i2c_id: bus_a
+    i2c_id: i2c_adc_dac
     id: es8311_dac
     sample_rate: 48000
 
@@ -74,7 +78,7 @@ binary_sensor:
       number: GPIO1
   - platform: gpio
     disabled_by_default: true
-    id: btn_top_left
+    id: left_top_button
     internal: true
     name: Top Left Button
     on_multi_click:
@@ -86,7 +90,7 @@ binary_sensor:
       - timing:
           - ON for at least 10s
         then:
-          - button.press: btn_factory_reset
+          - button.press: factory_reset_btn
     pin:
       ignore_strapping_warning: true
       inverted: true
@@ -102,8 +106,8 @@ binary_sensor:
     device_class: occupancy
     disabled_by_default: false
     filters:
-      - delayed_off: 60000ms
-    name: Presence detect
+      - delayed_off: 60s
+    name: Presence
     pin:
       number: GPIO21
 
@@ -115,7 +119,7 @@ button:
     id: btn_safe_mode
     name: Safe Mode Boot
   - platform: factory_reset
-    id: btn_factory_reset
+    id: factory_reset_btn
     internal: true
     name: Factory reset
   - platform: restart
@@ -124,7 +128,7 @@ button:
     name: Restart
 
 display:
-  - platform: ili9xxx
+  - platform: mipi_spi
     cs_pin: 5
     data_rate: 40MHz
     dc_pin: 4
@@ -134,7 +138,7 @@ display:
     reset_pin:
       inverted: true
       number: GPIO48
-    spi_id: bus_display
+    spi_id: spi_bus
     update_interval: never
 
 esp32_ble_tracker:
@@ -142,7 +146,7 @@ esp32_ble_tracker:
     active: true
 
 i2c:
-  - id: bus_a
+  - id: i2c_adc_dac
     frequency: 100kHz
     scan: false
     scl: GPIO18
@@ -165,6 +169,15 @@ i2s_audio:
       number: GPIO45
     i2s_mclk_pin: GPIO2
 
+infrared:
+  - platform: ir_rf_proxy
+    name: IR Receiver
+    receiver_frequency: 38kHz
+    remote_receiver_id: ir_rx
+  - platform: ir_rf_proxy
+    name: IR Transmitter
+    remote_transmitter_id: ir_tx
+
 light:
   - platform: monochromatic
     default_transition_length: 250ms
@@ -185,7 +198,7 @@ media_player:
     id: speaker_media_player
     media_pipeline:
       format: FLAC
-      num_channels: 2
+      num_channels: 1
       sample_rate: 48000
       speaker: media_resampling_speaker
     name: Media Player
@@ -282,9 +295,16 @@ sensor:
     icon: "mdi:gauge"
     id: aht20_vpd
     lambda: |-
-      return (((100 - id(aht20_h).state) / 100.0) * (0.6108 * exp((17.27 * id(aht20_t).state) / (id(aht20_t).state + 237.3))));
+      if (isnan(id(aht20_t).state) || isnan(id(aht20_h).state))
+        return NAN;
+
+      return ((100.0 - id(aht20_h).state) / 100.0) *
+            (0.6108 * exp(
+              (17.27 * id(aht20_t).state) /
+              (id(aht20_t).state + 237.3)
+            ));
     name: VPD
-    update_interval: 10s
+    update_interval: 60s
     unit_of_measurement: kPa
   - platform: adc
     accuracy_decimals: 1
@@ -303,11 +323,11 @@ sensor:
     accuracy_decimals: 0
     device_class: battery
     entity_category: diagnostic
-    filters:
+    filters: # order is important
+      - lambda: return (x - 2.7) / (4.2 - 2.7) * 100.0;
       - clamp:
           max_value: 100
           min_value: 0
-      - lambda: return (x - 2.7) / (4.2 - 2.7) * 100;
     id: battery_percent
     name: Battery level
     source_id: battery_voltage
@@ -317,30 +337,34 @@ speaker:
   - platform: i2s_audio
     audio_dac: es8311_dac
     bits_per_sample: 16bit
-    buffer_duration: 500ms
+    buffer_duration: 100ms
     channel: left
     dac_type: external
     i2s_audio_id: i2s_audio_bus
     i2s_dout_pin: GPIO15
-    id: i2s_audio_speaker
+    id: box_speaker
     sample_rate: 48000
   - platform: mixer
-    id: mixing_speaker
-    output_speaker: i2s_audio_speaker
+    id: mixer_speaker
+    num_channels: 1
+    output_speaker: box_speaker
     source_speakers:
-      - id: announcement_mixing_input
-      - id: media_mixing_input
+      - id: announcement_mixer_input
+      - id: media_mixer_input
+    task_stack_in_psram: true
   - platform: resampler
     id: announcement_resampling_speaker
-    output_speaker: announcement_mixing_input
+    output_speaker: announcement_mixer_input
     sample_rate: 48000
+    task_stack_in_psram: true
   - platform: resampler
     id: media_resampling_speaker
-    output_speaker: media_mixing_input
+    output_speaker: media_mixer_input
     sample_rate: 48000
+    task_stack_in_psram: true
 
 spi:
-  - id: bus_display
+  - id: spi_bus
     clk_pin: 7
     interface: spi2
     mosi_pin: 6
@@ -371,12 +395,12 @@ switch:
     optimistic: true
     restore_mode: ALWAYS_OFF
   - platform: at581x
-    at581x_id: Radar
+    at581x_id: radar
     name: Enable Radar
     restore_mode: ALWAYS_ON
 
 touchscreen:
-  i2c_id: bus_a
+  i2c_id: i2c_adc_dac
   id: gt911_touchscreen
   interrupt_pin:
     ignore_strapping_warning: true
