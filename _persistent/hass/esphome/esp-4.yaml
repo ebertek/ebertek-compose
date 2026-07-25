@@ -59,6 +59,50 @@ binary_sensor:
         input: true
         pullup: true
       number: GPIO7
+  - platform: remote_receiver
+    id: nexa_wte2_uppe_on
+    name: "Nexa WTE-2 Uppe ON"
+    nexa:
+      channel: 1
+      device: 0xA2366
+      group: 0
+      level: 0
+      state: 1
+    filters:
+      - delayed_off: 300ms
+  - platform: remote_receiver
+    id: nexa_wte2_uppe_off
+    name: "Nexa WTE-2 Uppe OFF"
+    nexa:
+      device: 0xA2366
+      channel: 1
+      group: 0
+      level: 0
+      state: 0
+    filters:
+      - delayed_off: 300ms
+  - platform: remote_receiver
+    id: nexa_wte2_nere_on
+    name: "Nexa WTE-2 Nere ON"
+    nexa:
+      device: 0xA2366
+      channel: 0
+      group: 0
+      level: 0
+      state: 1
+    filters:
+      - delayed_off: 300ms
+  - platform: remote_receiver
+    id: nexa_wte2_nere_off
+    name: "Nexa WTE-2 Nere OFF"
+    nexa:
+      device: 0xA2366
+      channel: 0
+      group: 0
+      level: 0
+      state: 0
+    filters:
+      - delayed_off: 300ms
 
 bluetooth_proxy:
   active: true
@@ -93,7 +137,7 @@ light:
     rmt_symbols: 192
     use_dma: true
 
-# M5Stack RF433R on Port.B.
+# M5Stack RF433R plugged into AtomS3 Lite main Grove.
 # Black=GND, Red=5V, Yellow=NC/GPIO2, White=RF_RX/GPIO1.
 remote_receiver:
   id: nexa_433_receiver
@@ -102,14 +146,14 @@ remote_receiver:
     - nexa
     - rc_switch
   filter: 250us
-  idle: 10ms
+  idle: 6ms
   pin:
     inverted: false
     mode:
       input: true
       pullup: false
     number: GPIO1
-  tolerance: 50%
+  tolerance: 35%
 
 remote_transmitter:
   carrier_duty_percent: 50%
