@@ -345,7 +345,7 @@ speaker:
     id: box_speaker
     sample_rate: 48000
   - platform: mixer
-    id: mixer_speaker
+    id: box_mixer
     num_channels: 1
     output_speaker: box_speaker
     source_speakers:
