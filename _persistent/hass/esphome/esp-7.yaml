@@ -3,7 +3,7 @@ esphome:
   area: Hall
   compile_process_limit: 2
   friendly_name: esp-hall-1
-  min_version: 2025.11.0
+  min_version: 2026.5.0
   name: esp-7
 
 esp32:
@@ -18,12 +18,15 @@ api:
     key: !secret api_7
   reboot_timeout: 0s
 
+logger:
+
+network:
+  enable_ipv6: true
+
 ota:
   - platform: esphome
     id: ota_esphome
     password: !secret ota_7
-
-logger:
 
 wifi:
   domain: .ygg.nu
@@ -55,74 +58,82 @@ bluetooth_proxy:
   active: true
 
 button:
-  - platform: restart
-    id: restart_btn
-    name: Restart
-    entity_category: diagnostic
-  - platform: safe_mode
-    id: button_safe_mode
-    name: Safe Mode Boot
-    entity_category: diagnostic
   - platform: factory_reset
+    entity_category: diagnostic
     id: factory_reset_btn
     name: Factory Reset
+  - platform: restart
+    disabled_by_default: true
+    entity_category: config
+    icon: "mdi:restart"
+    id: restart_btn
+    name: Restart
+  - platform: safe_mode
     entity_category: diagnostic
-  - platform: template
-    name: "Nexa Uppe ON"
-    on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: nexa_433_tx
-          device: 0xA2366
-          group: 0
-          state: 1
-          channel: 1
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-  - platform: template
-    name: "Nexa Uppe OFF"
-    on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: nexa_433_tx
-          device: 0xA2366
-          group: 0
-          state: 0
-          channel: 1
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-  - platform: template
-    name: "Nexa Nere ON"
-    on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: nexa_433_tx
-          device: 0xA2366
-          group: 0
-          state: 1
-          channel: 0
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
+    id: button_safe_mode
+    name: Safe Mode Boot
   - platform: template
     name: "Nexa Nere OFF"
     on_press:
       - remote_transmitter.transmit_nexa:
-          transmitter_id: nexa_433_tx
+          transmitter_id: rf_tx
+          channel: 0
           device: 0xA2366
           group: 0
-          state: 0
-          channel: 0
           level: 0
           repeat:
             times: 10
             wait_time: 10ms
+          state: 0
+  - platform: template
+    name: "Nexa Nere ON"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: rf_tx
+          channel: 0
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 1
+  - platform: template
+    name: "Nexa Uppe OFF"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: rf_tx
+          channel: 1
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 0
+  - platform: template
+    name: "Nexa Uppe ON"
+    on_press:
+      - remote_transmitter.transmit_nexa:
+          transmitter_id: rf_tx
+          channel: 1
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 1
 
 esp32_ble_tracker:
   scan_parameters:
     active: true
+
+infrared:
+  - platform: ir_rf_proxy
+    id: ir_proxy_tx
+    name: IR Transmitter
+    remote_transmitter_id: ir_tx
 
 light:
   - platform: esp32_rmt_led_strip
@@ -136,20 +147,32 @@ light:
     rmt_symbols: 192
     use_dma: true
 
+radio_frequency:
+  - platform: ir_rf_proxy
+    frequency: 433.92MHz
+    id: rf_proxy_tx
+    name: RF Proxy Transmitter
+    remote_transmitter_id: rf_tx
+
 remote_transmitter:
-  - id: nexa_433_tx
+  - id: ir_tx
+    # Built-in IR transmitter.
+    carrier_duty_percent: 50%
+    non_blocking: true
+    pin: GPIO4
+  - id: rf_tx
     # M5Stack RF433T on Port.B.
     # Black=GND, Red=5V, Yellow=RF_TX/GPIO7, White=NC/GPIO8.
     carrier_duty_percent: 100%
     non_blocking: true
     pin: GPIO7
-  - id: builtin_ir_tx
-    # Built-in IR transmitter, not 433 MHz RF.
-    carrier_duty_percent: 50%
-    non_blocking: true
-    pin: GPIO4
 
 sensor:
+  - platform: internal_temperature
+    entity_category: diagnostic
+    id: esp32_internal_temperature
+    name: ESP32 Internal Temperature
+    update_interval: 60s
   - platform: uptime
     device_class: duration
     entity_category: diagnostic
@@ -168,27 +191,22 @@ sensor:
     state_class: measurement
     unit_of_measurement: dBm
     update_interval: 60s
-  - platform: internal_temperature
-    id: esp32_internal_temperature
-    name: ESP32 Internal Temperature
-    entity_category: diagnostic
-    update_interval: 60s
 
 text_sensor:
   - platform: version
+    entity_category: diagnostic
     id: esphome_version
     name: ESPHome Version
-    entity_category: diagnostic
   - platform: wifi_info
     ip_address:
+      entity_category: diagnostic
       id: wifi_ip_address
       name: IP Address
-      entity_category: diagnostic
     mac_address:
+      entity_category: diagnostic
       id: wifi_mac_address
       name: MAC Address
-      entity_category: diagnostic
     ssid:
+      entity_category: diagnostic
       id: connected_ssid
       name: Connected SSID
-      entity_category: diagnostic
