@@ -197,8 +197,8 @@ services:
       KC_DB_URL_DATABASE: "keycloak"
       KC_DB_URL_HOST: "pg-keycloak"
       KC_HEALTH_ENABLED: "true"
-      KC_HOSTNAME: "keycloak.ebi.nu"
-      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME: "https://keycloak.ebi.nu"
+      KC_HOSTNAME_STRICT: "true"
       KC_HTTP_ENABLED: "true"
       KC_METRICS_ENABLED: "true"
       KC_PROXY_HEADERS: "xforwarded"
@@ -287,9 +287,11 @@ services:
       traefik.http.middlewares.oauth-auth.forwardauth.authResponseHeaders: "Authorization,Remote-Email,Remote-Groups,Remote-Name,Remote-User,X-Auth-Request-Email,X-Auth-Request-Preferred-Username,X-Auth-Request-Redirect,X-Auth-Request-User,X-Forwarded-User"
       traefik.http.middlewares.oauth-auth.forwardauth.maxResponseBodySize: "1048576"
       traefik.http.middlewares.oauth-auth.forwardauth.trustForwardHeader: "true"
+      traefik.http.middlewares.oauth-chain.chain.middlewares: "oauth-errors,oauth-auth"
       traefik.http.middlewares.oauth-errors.errors.query: "/oauth2/sign_in?rd={url}"
       traefik.http.middlewares.oauth-errors.errors.service: "oauth-backend"
-      traefik.http.middlewares.oauth-errors.errors.status: "401-403"
+      traefik.http.middlewares.oauth-errors.errors.status: "401"
+      traefik.http.middlewares.oauth-errors.errors.statusRewrites.401: "302"
     mac_address: "0e:be:00:da:00:92"
     networks:
       macvlan1:
