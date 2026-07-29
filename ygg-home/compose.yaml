@@ -72,7 +72,6 @@ services:
         reservations:
           cpus: "0.02"
           memory: "128M"
-    env_file: books.txt
     environment:
       <<: *env
       CWA_CALIBRE_USER_PLUGINS: "true"
