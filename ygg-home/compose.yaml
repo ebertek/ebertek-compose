@@ -28,6 +28,10 @@ x-env: &env
 
 x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
+secrets:
+  books-hardcover_token:
+    file: books-hardcover_token.txt
+
 services:
   bjornify:
     <<: *common
@@ -60,9 +64,6 @@ services:
   books:
     <<: *common
     container_name: books
-    # depends_on:
-    #   calibre:
-    #     condition: service_started
     deploy:
       resources:
         limits:
@@ -71,11 +72,15 @@ services:
         reservations:
           cpus: "0.02"
           memory: "128M"
+    env_file: books.txt
     environment:
       <<: *env
-      UMASK: "002"
-      DOCKER_MODS: "lscr.io/linuxserver/mods:universal-calibre|lscr.io/linuxserver/mods:calibre-web-dtrpg-metadata"
+      CWA_CALIBRE_USER_PLUGINS: "true"
+      HARDCOVER_SYNC_ENABLED: "true"
+      HARDCOVER_TOKEN_FILE: "/run/secrets/hardcover_token"
+      NETWORK_SHARE_MODE: "true"
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
+      TRUSTED_PROXY_COUNT: "2"
     healthcheck:
       interval: 30s
       retries: 5
@@ -84,7 +89,7 @@ services:
         ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: books
-    image: "lscr.io/linuxserver/calibre-web:latest"
+    image: "ghcr.io/new-usemame/calibre-web-nextgen:latest"
     labels:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: "websecure"
@@ -98,10 +103,13 @@ services:
         ipv6_address: fd0e:be00:da00:20:421::59
     profiles:
       - nfs
+    secrets:
+      - books-hardcover_token
     volumes:
       - *tz
+      - "/volume1/Downloads/Books:/calibre-library"
+      - "/volume2/docker/calibre-plugins:/config/.config/calibre/plugins"
       - "/volume2/docker/calibre-web:/config"
-      - "/volume1/Downloads:/downloads"
 
   plex:
     <<: *common
