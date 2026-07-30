@@ -191,7 +191,7 @@ services:
     container_name: scheduler
     depends_on:
       plextraktsync:
-        condition: service_healthy
+        condition: service_started
     deploy:
       resources:
         limits:
