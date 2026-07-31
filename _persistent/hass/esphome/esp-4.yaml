@@ -58,7 +58,7 @@ binary_sensor:
       mode:
         input: true
         pullup: true
-      number: GPIO7
+      number: GPIO2
   - platform: remote_receiver
     id: nexa_wte2_uppe_on
     name: "Nexa WTE-2 Uppe ON"
@@ -137,8 +137,8 @@ light:
     rmt_symbols: 192
     use_dma: true
 
-# M5Stack RF433R plugged into AtomS3 Lite main Grove.
-# Black=GND, Red=5V, Yellow=NC/GPIO2, White=RF_RX/GPIO1.
+# M5Stack RF433R on Port.B.
+# Black=GND, Red=5V, Yellow=NC/GPIO7, White=RF_RX/GPIO8.
 remote_receiver:
   id: nexa_433_receiver
   buffer_size: 16kb
@@ -152,7 +152,7 @@ remote_receiver:
     mode:
       input: true
       pullup: false
-    number: GPIO1
+    number: GPIO8
   tolerance: 35%
 
 remote_transmitter:
@@ -288,7 +288,7 @@ sensor:
       mode:
         input: true
         pullup: true
-      number: GPIO8
+      number: GPIO1
     unit_of_measurement: "lx"
     update_interval: 1s
 
