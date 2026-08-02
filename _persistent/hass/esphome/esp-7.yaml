@@ -1,8 +1,8 @@
 ---
 esphome:
-  area: Hall
+  area: Laundry room
   compile_process_limit: 2
-  friendly_name: esp-hall-1
+  friendly_name: esp-laundry-1
   min_version: 2026.5.0
   name: esp-7
 
