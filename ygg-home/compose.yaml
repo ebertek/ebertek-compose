@@ -68,7 +68,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: "512M"
+          memory: "4096M"
         reservations:
           cpus: "0.02"
           memory: "128M"
@@ -192,7 +192,7 @@ services:
     container_name: scheduler
     depends_on:
       plextraktsync:
-        condition: service_healthy
+        condition: service_started
     deploy:
       resources:
         limits:

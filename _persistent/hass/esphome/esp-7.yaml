@@ -1,8 +1,8 @@
 ---
 esphome:
-  area: Hall
+  area: Laundry room
   compile_process_limit: 2
-  friendly_name: esp-hall-1
+  friendly_name: esp-laundry-1
   min_version: 2026.5.0
   name: esp-7
 
@@ -73,57 +73,25 @@ button:
     id: button_safe_mode
     name: Safe Mode Boot
   - platform: template
+    entity_category: config
     name: "Nexa Nere OFF"
     on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: rf_tx
-          channel: 0
-          device: 0xA2366
-          group: 0
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-          state: 0
+      - script.execute: nexa_nere_off
   - platform: template
+    entity_category: config
     name: "Nexa Nere ON"
     on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: rf_tx
-          channel: 0
-          device: 0xA2366
-          group: 0
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-          state: 1
+      - script.execute: nexa_nere_on
   - platform: template
+    entity_category: config
     name: "Nexa Uppe OFF"
     on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: rf_tx
-          channel: 1
-          device: 0xA2366
-          group: 0
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-          state: 0
+      - script.execute: nexa_uppe_off
   - platform: template
+    entity_category: config
     name: "Nexa Uppe ON"
     on_press:
-      - remote_transmitter.transmit_nexa:
-          transmitter_id: rf_tx
-          channel: 1
-          device: 0xA2366
-          group: 0
-          level: 0
-          repeat:
-            times: 10
-            wait_time: 10ms
-          state: 1
+      - script.execute: nexa_uppe_on
 
 esp32_ble_tracker:
   scan_parameters:
@@ -132,7 +100,7 @@ esp32_ble_tracker:
 infrared:
   - platform: ir_rf_proxy
     id: ir_proxy_tx
-    name: IR Transmitter
+    name: IR Proxy Transmitter
     remote_transmitter_id: ir_tx
 
 light:
@@ -167,6 +135,56 @@ remote_transmitter:
     non_blocking: true
     pin: GPIO7
 
+script:
+  - id: nexa_nere_off
+    then:
+      - remote_transmitter.transmit_nexa:
+          channel: 0
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 0
+          transmitter_id: rf_tx
+  - id: nexa_nere_on
+    then:
+      - remote_transmitter.transmit_nexa:
+          channel: 0
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 1
+          transmitter_id: rf_tx
+  - id: nexa_uppe_off
+    then:
+      - remote_transmitter.transmit_nexa:
+          channel: 1
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 0
+          transmitter_id: rf_tx
+  - id: nexa_uppe_on
+    then:
+      - remote_transmitter.transmit_nexa:
+          channel: 1
+          device: 0xA2366
+          group: 0
+          level: 0
+          repeat:
+            times: 10
+            wait_time: 10ms
+          state: 1
+          transmitter_id: rf_tx
+
 sensor:
   - platform: internal_temperature
     entity_category: diagnostic
@@ -191,6 +209,26 @@ sensor:
     state_class: measurement
     unit_of_measurement: dBm
     update_interval: 60s
+
+switch:
+  - platform: template
+    id: nexa_nere
+    name: "Nexa Nere"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_off_action:
+      - script.execute: nexa_nere_off
+    turn_on_action:
+      - script.execute: nexa_nere_on
+  - platform: template
+    id: nexa_uppe
+    name: "Nexa Uppe"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_off_action:
+      - script.execute: nexa_uppe_off
+    turn_on_action:
+      - script.execute: nexa_uppe_on
 
 text_sensor:
   - platform: version
