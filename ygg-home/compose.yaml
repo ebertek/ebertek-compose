@@ -100,6 +100,7 @@ services:
     volumes:
       - *tz
       - "/volume1/Downloads/Books:/calibre-library"
+      - "/volume1/Downloads/Uncategorized/readarr:/cwa-book-ingest"
       - "/volume2/docker/calibre-plugins:/config/.config/calibre/plugins"
       - "/volume2/docker/calibre-web:/config"
 
