@@ -174,8 +174,7 @@ services:
       interval: 30s
       retries: 5
       start_period: 60s
-      test:
-        ["CMD-SHELL", "curl -fsS http://127.0.0.1:8978/ >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8978'"]
       timeout: 5s
     hostname: dbeaver
     image: "docker.io/dbeaver/cloudbeaver:latest"
