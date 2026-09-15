@@ -91,7 +91,7 @@ services:
       ATUIN_OPEN_REGISTRATION: "false"
       RUST_LOG: "info,atuin_server=debug"
     hostname: atuin
-    image: "ghcr.io/atuinsh/atuin:18.16"
+    image: "ghcr.io/atuinsh/atuin:18.22"
     labels:
       traefik.enable: "true"
       traefik.http.routers.atuin.entrypoints: "websecure"
