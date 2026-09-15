@@ -426,6 +426,7 @@ services:
       TZ: "UTC"
       NO_COLOR: "true"
       WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_DISABLE_CONTAINERS: "watchtower"
       WATCHTOWER_HTTP_API_METRICS: "true"
       WATCHTOWER_HTTP_API_PERIODIC_POLLS: "true"
       WATCHTOWER_HTTP_API_TOKEN: "/run/secrets/watchtower-token"
