@@ -27,6 +27,12 @@ readonly -a STACKS=(
 	"ygg-other"
 )
 
+readonly -a NFS_PATHS=(
+	"/volume1/Downloads"
+	"/volume1/photo"
+	"/volume1/video"
+)
+
 log() {
 	printf '%s\n' "$*"
 }
@@ -43,7 +49,10 @@ die() {
 require_commands() {
 	local -a required_commands=(
 		"docker"
+		"findmnt"
 		"python3"
+		"stat"
+		"timeout"
 	)
 
 	local command_name
@@ -98,6 +107,36 @@ for name, service in services.items():
 '
 }
 
+wait_for_nfs() {
+	local path
+	local fstype
+
+	for path in "${NFS_PATHS[@]}"; do
+		log "==> Checking NFS mount: ${path}"
+
+		#
+		# Accessing the path triggers x-systemd.automount.
+		#
+		# If the NAS/network is not available yet, fail this
+		# invocation so systemd's Restart=on-failure can retry
+		# the NFS service later.
+		#
+		if ! timeout 30 stat "${path}/." >/dev/null 2>&1; then
+			die "NFS path is not reachable: ${path}"
+		fi
+
+		fstype="$(findmnt -T "${path}" -n -o FSTYPE 2>/dev/null || true)"
+
+		if [[ "${fstype}" != "nfs" && "${fstype}" != "nfs4" ]]; then
+			die "path is not mounted via NFS: ${path} (fstype=${fstype:-none})"
+		fi
+
+		log "==> NFS mount available: ${path} (${fstype})"
+	done
+
+	log "==> All NFS mounts are available"
+}
+
 run_compose_up_core() {
 	local dir
 
@@ -127,6 +166,8 @@ run_compose_stop_core() {
 run_compose_up_nfs() {
 	local dir
 	local -a services=()
+
+	wait_for_nfs
 
 	while IFS= read -r dir; do
 		mapfile -t services < <(
@@ -194,7 +235,7 @@ Usage: $(basename "$0") {up-core|stop-core|up-nfs|stop-nfs|list|list-nfs}
 Commands:
   up-core    Start all default/non-profiled Compose services.
   stop-core  Stop all default/non-profiled Compose services.
-  up-nfs     Start all services with profiles: ["nfs"].
+  up-nfs     Verify NFS mounts, then start all services with profiles: ["nfs"].
   stop-nfs   Stop all services with profiles: ["nfs"].
   list       List allowlisted Compose stack directories.
   list-nfs   List detected nfs-profile services per stack.
