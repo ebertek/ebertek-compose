@@ -54,8 +54,6 @@ services:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/ || exit 1"]
       timeout: 5s
     image: "docker.io/qbittorrentofficial/qbittorrent-nox:5.2.3-1"
-    labels:
-      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "service:gluetun"
     profiles:
       - nfs
@@ -153,8 +151,6 @@ services:
       MOUSEHOLE_ALLOWED_ORIGINS: "https://mousehole.ebi.nu"
       MOUSEHOLE_INSECURE_ALLOW_NO_AUTH: "true"
     image: "docker.io/tmmrtn/mousehole:0.5.0"
-    labels:
-      com.centurylinklabs.watchtower.depends-on: "gluetun"
     network_mode: "service:gluetun"
     volumes:
       - *tz

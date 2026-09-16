@@ -444,8 +444,6 @@ services:
       timeout: 10s
     hostname: ps5-mqtt
     image: "ghcr.io/funkeyflo/ps5-mqtt:1.7.0"
-    labels:
-      com.centurylinklabs.watchtower.depends-on: "mosquitto"
     mac_address: "0e:be:00:da:00:68"
     networks:
       macvlan1:
@@ -476,7 +474,6 @@ services:
       <<: *env
       SCRYPTED_DOCKER_AVAHI: "true"
       SCRYPTED_NVR_VOLUME: "/nvr"
-      SCRYPTED_WEBHOOK_UPDATE: "http://watchtower:8080/v1/update"
     group_add:
       - "44"
       - "991"
@@ -581,7 +578,6 @@ services:
     hostname: zigbee2mqtt
     image: "docker.io/koenkk/zigbee2mqtt:2.14.1"
     labels:
-      com.centurylinklabs.watchtower.depends-on: "mosquitto"
       traefik.enable: "true"
       traefik.http.routers.zigbee2mqtt.entrypoints: "websecure"
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"

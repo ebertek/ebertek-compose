@@ -20,7 +20,6 @@ Main areas:
 
 - **[alloy](https://hub.docker.com/r/grafana/alloy)**: Collect and forward logs and metrics to `ygg-mon`.
 - **[bind9](https://hub.docker.com/r/ubuntu/bind9)**: DNS management.
-- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [tntphoto/](tntphoto/)
 
@@ -31,7 +30,6 @@ Main areas:
 ### [ygg/](ygg/)
 
 - **[alloy](https://hub.docker.com/r/grafana/alloy)**: Collect and forward logs and metrics to `ygg-mon`.
-- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-arr/](ygg-arr/)
 
@@ -59,7 +57,6 @@ Main areas:
 - **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
 - **[pg-keycloak](https://hub.docker.com/_/postgres)**: Object-relational database system for Keycloak.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
-- **[watchtower](https://hub.docker.com/r/nickfedor/watchtower)**: Automatic Docker container image updates.
 
 ### [ygg-download/](ygg-download/)
 
