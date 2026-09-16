@@ -203,7 +203,7 @@ services:
           memory: "16M"
     environment:
       <<: *env
-    image: "docker.io/mcuadros/ofelia:0.3.22"
+    image: "docker.io/mcuadros/ofelia:v3.0.8"
     labels:
       ofelia.job-run.plextraktsync.schedule: "@every 6h"
       ofelia.job-run.plextraktsync.container: "plextraktsync"
