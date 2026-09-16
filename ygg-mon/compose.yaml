@@ -68,7 +68,7 @@ services:
       test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/12345' || exit 1"]
       timeout: 5s
     hostname: alloy
-    image: "docker.io/grafana/alloy:latest"
+    image: "docker.io/grafana/alloy:v1.19.2"
     labels:
       traefik.enable: "true"
       traefik.http.routers.alloy.entrypoints: "websecure"
@@ -174,7 +174,7 @@ services:
         ]
       timeout: 5s
     hostname: grafana
-    image: "docker.io/grafana/grafana:main"
+    image: "docker.io/grafana/grafana:13.2.2"
     labels:
       traefik.enable: "true"
       traefik.http.routers.grafana.entrypoints: "websecure"
@@ -213,7 +213,7 @@ services:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3001"]
       timeout: 5s
     hostname: kuma
-    image: "ghcr.io/louislam/uptime-kuma:next"
+    image: "ghcr.io/louislam/uptime-kuma:2.5.5"
     labels:
       traefik.enable: "true"
       traefik.http.routers.kuma.entrypoints: "websecure"
@@ -251,7 +251,7 @@ services:
       test: ["CMD", "/usr/bin/loki", "-health"]
       timeout: 5s
     hostname: loki
-    image: "docker.io/grafana/loki:latest"
+    image: "docker.io/grafana/loki:3.7.7"
     labels:
       traefik.enable: "true"
       traefik.http.routers.loki.entrypoints: "websecure"
@@ -303,7 +303,7 @@ services:
         ]
       timeout: 5s
     hostname: prometheus
-    image: "docker.io/prom/prometheus:latest"
+    image: "docker.io/prom/prometheus:v3.14.0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.prometheus.entrypoints: "websecure"

@@ -46,7 +46,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: alloy
-    image: "docker.io/grafana/alloy:latest"
+    image: "docker.io/grafana/alloy:v1.19.2"
     volumes:
       - *tz
       - "/:/rootfs:ro"
@@ -73,7 +73,7 @@ services:
       WATCHTOWER_CLEANUP: "true"
       WATCHTOWER_LOG_FORMAT: "JSON"
     hostname: watchtower
-    image: "docker.io/nickfedor/watchtower:latest"
+    image: "docker.io/nickfedor/watchtower:1.22.2"
     restart: unless-stopped
     stop_grace_period: 1m
     volumes:

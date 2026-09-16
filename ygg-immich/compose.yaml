@@ -62,7 +62,7 @@ services:
       - "44"
       - "991"
     hostname: immich
-    image: "ghcr.io/immich-app/immich-server:release"
+    image: "ghcr.io/immich-app/immich-server:v3.2.2"
     labels:
       traefik.enable: "true"
       traefik.http.routers.immich.entrypoints: "websecure"
@@ -106,7 +106,7 @@ services:
       - "44"
       - "991"
     hostname: immich-machine-learning
-    image: "ghcr.io/immich-app/immich-machine-learning:release-openvino"
+    image: "ghcr.io/immich-app/immich-machine-learning:v3.2.2-openvino"
     labels:
       autoheal: "true"
     mac_address: "0e:be:00:da:00:49"
@@ -148,7 +148,7 @@ services:
         ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d immich"]
       timeout: 5s
     hostname: pg-immich
-    image: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0"
+    image: "ghcr.io/immich-app/postgres:18-vectorchord1.1.1"
     mac_address: "0e:be:00:da:00:51"
     networks:
       macvlan1:

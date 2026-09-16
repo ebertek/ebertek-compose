@@ -48,7 +48,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: birdnet
-    image: "ghcr.io/tphakala/birdnet-go:nightly"
+    image: "ghcr.io/tphakala/birdnet-go:20260823"
     labels:
       traefik.enable: "true"
       traefik.http.routers.birdnet.entrypoints: "websecure"

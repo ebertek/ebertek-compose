@@ -44,7 +44,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: alloy
-    image: "docker.io/grafana/alloy:latest"
+    image: "docker.io/grafana/alloy:v1.19.2"
     volumes:
       - *tz
       - "/:/rootfs:ro"
@@ -79,7 +79,7 @@ services:
       test: ["CMD-SHELL", "bash -c 'exec 6<> /dev/tcp/127.0.0.1/53' || exit 1"]
       timeout: 10s
     hostname: bind9
-    image: "docker.io/ubuntu/bind9:latest"
+    image: "docker.io/ubuntu/bind9:9.20-25.04_beta"
     network_mode: host
     volumes:
       - *tz
@@ -105,7 +105,7 @@ services:
       WATCHTOWER_CLEANUP: "true"
       WATCHTOWER_LOG_FORMAT: "JSON"
     hostname: watchtower
-    image: "docker.io/nickfedor/watchtower:latest"
+    image: "docker.io/nickfedor/watchtower:1.22.2"
     volumes:
       - *tz
       - "/var/run/docker.sock:/var/run/docker.sock"

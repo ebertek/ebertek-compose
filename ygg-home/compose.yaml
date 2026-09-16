@@ -48,7 +48,7 @@ services:
     environment:
       <<: *env
     hostname: bjornify
-    image: "ghcr.io/ebertek/bjornify:latest"
+    image: "ghcr.io/ebertek/bjornify:1.0.88"
     mac_address: "0e:be:00:da:00:52"
     networks:
       macvlan1:
@@ -81,7 +81,7 @@ services:
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
       TRUSTED_PROXY_COUNT: "2"
     hostname: books
-    image: "ghcr.io/new-usemame/calibre-web-nextgen:latest"
+    image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.43"
     labels:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: "websecure"
@@ -127,7 +127,7 @@ services:
       - "44"
       - "991"
     hostname: plex
-    image: "docker.io/plexinc/pms-docker:latest"
+    image: "docker.io/plexinc/pms-docker:1.43.4.10903-e5521bd8c"
     labels:
       traefik.enable: "true"
       traefik.http.routers.plex.entrypoints: "websecure"
@@ -173,7 +173,7 @@ services:
       test: ["CMD", "plextraktsync", "healthcheck"]
       timeout: 10s
     hostname: plextraktsync
-    image: "ghcr.io/taxel/plextraktsync:main"
+    image: "ghcr.io/taxel/plextraktsync:0.35.18"
     mac_address: "0e:be:00:da:00:94"
     networks:
       macvlan1:
@@ -203,7 +203,7 @@ services:
           memory: "16M"
     environment:
       <<: *env
-    image: "docker.io/mcuadros/ofelia:0.3"
+    image: "docker.io/mcuadros/ofelia:0.3.22"
     labels:
       ofelia.job-run.plextraktsync.schedule: "@every 6h"
       ofelia.job-run.plextraktsync.container: "plextraktsync"
@@ -236,7 +236,7 @@ services:
     environment:
       <<: *env
     hostname: tautulli
-    image: "ghcr.io/tautulli/tautulli:latest"
+    image: "ghcr.io/tautulli/tautulli:v2.18.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.tautulli.entrypoints: "websecure"
@@ -283,7 +283,7 @@ services:
       test: ["CMD-SHELL", "pgrep Xtigervnc >/dev/null || exit 1"]
       timeout: 10s
     hostname: tmm
-    image: "docker.io/tinymediamanager/tinymediamanager:latest"
+    image: "docker.io/tinymediamanager/tinymediamanager:5.3.2"
     labels:
       traefik.enable: "true"
       traefik.http.routers.tmm.entrypoints: "websecure"

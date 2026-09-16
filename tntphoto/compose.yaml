@@ -47,7 +47,7 @@ services:
       <<: *hc
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
     hostname: mariadb
-    image: "docker.io/library/mariadb:latest"
+    image: "docker.io/library/mariadb:13.0.2"
     networks:
       - wp_net
     ports:
