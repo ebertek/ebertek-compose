@@ -495,7 +495,7 @@ services:
         ]
       timeout: 10s
     hostname: scrypted
-    image: "ghcr.io/koush/scrypted:24.04"
+    image: "ghcr.io/koush/scrypted:v0.147.0-noble-full"
     labels:
       traefik.enable: "true"
       traefik.http.routers.scrypted.entrypoints: "websecure"
