@@ -107,7 +107,7 @@ services:
       test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       timeout: 5s
     hostname: gluetun
-    image: "ghcr.io/qdm12/gluetun:latest"
+    image: "ghcr.io/qdm12/gluetun:v3.41.3"
     labels:
       traefik.enable: "true"
       traefik.http.routers.download.entrypoints: "websecure"
