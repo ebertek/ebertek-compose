@@ -326,7 +326,7 @@ services:
         ]
       timeout: 5s
     hostname: pg-keycloak
-    image: "docker.io/library/postgres:17"
+    image: "docker.io/library/postgres:18"
     mac_address: "0e:be:00:da:00:90"
     networks:
       macvlan1:
