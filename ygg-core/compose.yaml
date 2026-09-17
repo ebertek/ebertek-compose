@@ -459,7 +459,7 @@ services:
     user: "999:999"
     volumes:
       - *tz
-      - "/volume2/docker/postgres:/var/lib/postgresql/data"
+      - "/volume2/docker/postgres:/var/lib/postgresql"
 
   traefik:
     <<: *common
