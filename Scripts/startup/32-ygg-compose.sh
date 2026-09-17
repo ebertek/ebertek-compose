@@ -50,6 +50,7 @@ require_commands() {
 	local -a required_commands=(
 		"docker"
 		"findmnt"
+		"grep"
 		"python3"
 		"stat"
 		"timeout"
@@ -109,7 +110,8 @@ for name, service in services.items():
 
 wait_for_nfs() {
 	local path
-	local fstype
+	local fstypes
+	local nfs_fstype
 
 	for path in "${NFS_PATHS[@]}"; do
 		log "==> Checking NFS mount: ${path}"
@@ -125,13 +127,29 @@ wait_for_nfs() {
 			die "NFS path is not reachable: ${path}"
 		fi
 
-		fstype="$(findmnt -T "${path}" -n -o FSTYPE 2>/dev/null || true)"
+		#
+		# With x-systemd.automount, findmnt may report multiple
+		# filesystem layers for the same path, for example:
+		#
+		#   autofs
+		#   nfs4
+		#
+		# Accept the path as valid as long as one of the reported
+		# filesystem types is nfs or nfs4.
+		#
+		fstypes="$(findmnt -T "${path}" -n -o FSTYPE 2>/dev/null || true)"
 
-		if [[ "${fstype}" != "nfs" && "${fstype}" != "nfs4" ]]; then
-			die "path is not mounted via NFS: ${path} (fstype=${fstype:-none})"
+		nfs_fstype="$(
+			printf '%s\n' "${fstypes}" |
+				grep -m1 -xE 'nfs|nfs4' ||
+				true
+		)"
+
+		if [[ -z "${nfs_fstype}" ]]; then
+			die "path is not mounted via NFS: ${path} (fstype=${fstypes:-none})"
 		fi
 
-		log "==> NFS mount available: ${path} (${fstype})"
+		log "==> NFS mount available: ${path} (${nfs_fstype})"
 	done
 
 	log "==> All NFS mounts are available"
