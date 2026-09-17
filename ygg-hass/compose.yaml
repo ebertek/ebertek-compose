@@ -405,7 +405,7 @@ services:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 1883 || exit 1"]
       timeout: 5s
     hostname: mosquitto
-    image: "docker.io/library/eclipse-mosquitto:2.1.2"
+    image: "docker.io/library/eclipse-mosquitto:2.1.2-alpine"
     mac_address: "0e:be:00:da:00:67"
     networks:
       macvlan1:
