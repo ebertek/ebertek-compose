@@ -307,7 +307,7 @@ services:
       <<: *env
       MONGO_INITDB_ROOT_PASSWORD_FILE: "/run/secrets/komodo-database-password"
       MONGO_INITDB_ROOT_USERNAME: "komodo"
-    image: "docker.io/library/mongo:8.0.30"
+    image: "docker.io/library/mongo:8.3.11"
     labels:
       komodo.skip: ""
     mac_address: "0e:be:00:da:00:98"
