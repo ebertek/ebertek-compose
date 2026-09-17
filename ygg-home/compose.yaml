@@ -182,6 +182,8 @@ services:
     profiles:
       - nfs
     restart: on-failure:2
+    tmpfs:
+      - /app/xdg
     volumes:
       - *tz
       - "/volume2/docker/plextraktsync:/app/config"
@@ -320,6 +322,8 @@ services:
     hostname: wolf
     image: "ghcr.io/games-on-whales/wolf:stable"
     network_mode: host
+    tmpfs:
+      - /run/user/wolf
     volumes:
       - *tz
       - "/dev/:/dev/:rw"

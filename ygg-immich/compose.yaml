@@ -76,6 +76,8 @@ services:
         ipv6_address: fd0e:be00:da00:20:421::48
     profiles:
       - nfs
+    tmpfs:
+      - /data
     user: 1028:100
     volumes:
       - *tz
