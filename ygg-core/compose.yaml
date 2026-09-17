@@ -244,7 +244,8 @@ services:
     <<: *common
     container_name: komodo
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -323,6 +324,16 @@ services:
       <<: *env
       MONGO_INITDB_ROOT_PASSWORD_FILE: "/run/secrets/komodo-database-password"
       MONGO_INITDB_ROOT_USERNAME: "komodo"
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval ''db.adminCommand("ping").ok'' | grep -q ''^1$''',
+        ]
+      timeout: 5s
     image: "docker.io/library/mongo:8.3.11"
     labels:
       komodo.skip: ""
