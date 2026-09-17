@@ -158,7 +158,7 @@ services:
     # user: 1028:100
     volumes:
       - *tz
-      - "/volume2/docker/immich/postgres:/var/lib/postgresql/data"
+      - "/volume2/docker/immich/postgres:/var/lib/postgresql"
 
   rd-immich:
     <<: *common
