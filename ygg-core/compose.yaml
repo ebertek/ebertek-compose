@@ -245,6 +245,14 @@ services:
     container_name: komodo
     depends_on:
       - mongo
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+        reservations:
+          cpus: "0.1"
+          memory: "256M"
     environment:
       <<: *env
       KOMODO_DATABASE_ADDRESS: "mongo:27017"
@@ -303,6 +311,14 @@ services:
     <<: *common
     command: "--quiet --wiredTigerCacheSizeGB 0.25"
     container_name: mongo
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+        reservations:
+          cpus: "0.1"
+          memory: "256M"
     environment:
       <<: *env
       MONGO_INITDB_ROOT_PASSWORD_FILE: "/run/secrets/komodo-database-password"
@@ -394,6 +410,14 @@ services:
     container_name: periphery
     depends_on:
       - komodo
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "512M"
+        reservations:
+          cpus: "0.05"
+          memory: "64M"
     environment:
       <<: *env
       PERIPHERY_CONNECT_AS: "Pleiades"
