@@ -48,7 +48,7 @@ services:
     environment:
       <<: *env
     hostname: bjornify
-    image: "ghcr.io/ebertek/bjornify:1.0.88"
+    image: "ghcr.io/ebertek/bjornify:1.0.93"
     mac_address: "0e:be:00:da:00:52"
     networks:
       macvlan1:
