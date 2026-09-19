@@ -162,7 +162,7 @@ services:
         ]
       timeout: 5s
     hostname: dns
-    image: "docker.io/technitium/dns-server:15.4.0"
+    image: "docker.io/technitium/dns-server:15.5.0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.dns.entrypoints: "websecure"
