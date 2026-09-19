@@ -55,7 +55,7 @@ services:
         ]
       timeout: 5s
     hostname: acmesh
-    image: "docker.io/neilpang/acme.sh:3.1.4"
+    image: "docker.io/neilpang/acme.sh:3.1.5"
     mac_address: "0e:be:00:da:00:36"
     networks:
       macvlan1:
