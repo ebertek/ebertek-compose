@@ -83,7 +83,7 @@ services:
       DOMAINS: "ygg.ebi.nu"
       PROXIED: "false"
     hostname: cloudflare-ddns
-    image: "docker.io/favonia/cloudflare-ddns:1.17.0"
+    image: "docker.io/favonia/cloudflare-ddns:1.17.1"
     network_mode: host
     read_only: true
     secrets:
