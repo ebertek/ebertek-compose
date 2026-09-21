@@ -177,7 +177,7 @@ services:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8978'"]
       timeout: 5s
     hostname: dbeaver
-    image: "docker.io/dbeaver/cloudbeaver:26.2.0"
+    image: "docker.io/dbeaver/cloudbeaver:26.2.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.dbeaver.entrypoints: "websecure"
