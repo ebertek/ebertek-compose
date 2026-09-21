@@ -12,19 +12,28 @@ permissions:
 
 jobs:
   dispatch:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Send repository_dispatch to ygg-compose
         run: |
           set -e
+
           echo "Sending repository_dispatch to ygg-compose..."
-          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null \
+            -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
             -d '{"event_type": "trigger-sync"}')
 
           echo "HTTP Response: $HTTP_RESPONSE"
+
           if [ "$HTTP_RESPONSE" -ne 204 ]; then
             echo "Error: Failed to dispatch event. HTTP Status: $HTTP_RESPONSE"
             exit 1
