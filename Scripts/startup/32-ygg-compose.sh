@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 #
 # Manage all allowed Ygg Docker Compose stacks on Pleiades.
@@ -64,7 +63,7 @@ die() {
 #
 compose() {
 	COMPOSE_DISABLE_ENV_FILE=1 \
-	COMPOSE_PROFILES= \
+		COMPOSE_PROFILES='' \
 		docker compose "$@"
 }
 
@@ -164,7 +163,7 @@ get_nfs_services() {
 	)" || die "failed to detect NFS services in: ${dir}"
 
 	if [[ -n "${output}" ]]; then
-		mapfile -t services <<< "${output}"
+		mapfile -t services <<<"${output}"
 	fi
 }
 
