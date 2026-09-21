@@ -29,14 +29,6 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 secrets:
   cloudflare_api_token:
     file: cloudflare_api_token.txt
-  komodo-admin-password:
-    file: "komodo-admin-password.txt"
-  komodo-database-password:
-    file: "komodo-database-password.txt"
-  komodo-jwt-secret:
-    file: "komodo-jwt-secret.txt"
-  komodo-webhook-secret:
-    file: "komodo-webhook-secret.txt"
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
@@ -240,116 +232,6 @@ services:
       - *tz
       - "/volume2/docker/keycloak/providers:/opt/keycloak/providers"
 
-  komodo:
-    <<: *common
-    container_name: komodo
-    depends_on:
-      mongo:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "2G"
-        reservations:
-          cpus: "0.1"
-          memory: "256M"
-    environment:
-      <<: *env
-      KOMODO_DATABASE_ADDRESS: "mongo:27017"
-      KOMODO_DATABASE_PASSWORD_FILE: "/run/secrets/komodo-database-password"
-      KOMODO_DATABASE_USERNAME: "komodo"
-      KOMODO_DEFAULT_PAGINATION_LIMIT: "50"
-      KOMODO_DISABLE_CONFIRM_DIALOG: "false"
-      KOMODO_DISABLE_INIT_RESOURCES: "false"
-      KOMODO_DISABLE_NON_ADMIN_CREATE: "false"
-      KOMODO_DISABLE_USER_REGISTRATION: "true"
-      KOMODO_ENABLE_NEW_USERS: "false"
-      KOMODO_FIRST_SERVER_NAME: "Pleiades"
-      KOMODO_GITHUB_OAUTH_ENABLED: "false"
-      KOMODO_GOOGLE_OAUTH_ENABLED: "false"
-      KOMODO_HOST: "https://komodo.ebi.nu"
-      KOMODO_INIT_ADMIN_PASSWORD_FILE: "/run/secrets/komodo-admin-password"
-      KOMODO_INIT_ADMIN_USERNAME: "komodo"
-      KOMODO_JWT_SECRET_FILE: "/run/secrets/komodo-jwt-secret"
-      KOMODO_JWT_TTL: "1-day"
-      KOMODO_LOCAL_AUTH: "true"
-      KOMODO_LOGGING_PRETTY: "false"
-      KOMODO_MONITORING_INTERVAL: "15-sec"
-      KOMODO_OIDC_ENABLED: "false"
-      KOMODO_PERIPHERY_PUBLIC_KEY: "file:/config/keys/periphery.pub"
-      KOMODO_PRETTY_STARTUP_CONFIG: "false"
-      KOMODO_RESOURCE_POLL_INTERVAL: "1-hr"
-      KOMODO_TITLE: "Komodo"
-      KOMODO_TRANSPARENT_MODE: "false"
-      KOMODO_WEBHOOK_SECRET_FILE: "/run/secrets/komodo-webhook-secret"
-    hostname: komodo
-    image: "ghcr.io/moghtech/komodo-core:2"
-    init: true
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.komodo.entrypoints: "websecure"
-      traefik.http.routers.komodo.rule: "Host(`komodo.ebi.nu`)"
-      traefik.http.routers.komodo.tls: "true"
-      traefik.http.services.komodo.loadbalancer.server.port: "9120"
-    mac_address: "0e:be:00:da:00:47"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.47
-        ipv6_address: fd0e:be00:da00:20:421::47
-    secrets:
-      - komodo-admin-password
-      - komodo-database-password
-      - komodo-jwt-secret
-      - komodo-webhook-secret
-    volumes:
-      - *tz
-      - "/volume2/docker/komodo/backups:/backups"
-      - "/volume2/docker/komodo/keys:/config/keys"
-      - "/volume2/docker/komodo/syncs:/syncs"
-
-  mongo:
-    <<: *common
-    command: "--quiet --wiredTigerCacheSizeGB 0.25"
-    container_name: mongo
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "2G"
-        reservations:
-          cpus: "0.1"
-          memory: "256M"
-    environment:
-      <<: *env
-      MONGO_INITDB_ROOT_PASSWORD_FILE: "/run/secrets/komodo-database-password"
-      MONGO_INITDB_ROOT_USERNAME: "komodo"
-    healthcheck:
-      interval: 30s
-      retries: 5
-      start_period: 30s
-      test:
-        [
-          "CMD-SHELL",
-          'mongosh --quiet --eval ''db.adminCommand("ping").ok'' | grep -q ''^1$''',
-        ]
-      timeout: 5s
-    image: "docker.io/library/mongo:8.3.11"
-    labels:
-      komodo.skip: ""
-    mac_address: "0e:be:00:da:00:98"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.98
-        ipv6_address: fd0e:be00:da00:20:421::98
-    restart: unless-stopped
-    secrets:
-      - komodo-database-password
-    volumes:
-      - *tz
-      - "/volume2/docker/komodo/mongo/config:/data/configdb"
-      - "/volume2/docker/komodo/mongo/data:/data/db"
-
   oauth2-proxy:
     <<: *common
     container_name: oauth2-proxy
@@ -415,45 +297,6 @@ services:
         ipv6_address: fd0e:be00:da00:20:421::92
     volumes:
       - *tz
-
-  periphery:
-    <<: *common
-    container_name: periphery
-    depends_on:
-      - komodo
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "512M"
-        reservations:
-          cpus: "0.05"
-          memory: "64M"
-    environment:
-      <<: *env
-      PERIPHERY_CONNECT_AS: "Pleiades"
-      PERIPHERY_CORE_ADDRESS: "ws://komodo:9120"
-      PERIPHERY_CORE_PUBLIC_KEYS: "file:/config/keys/core.pub"
-      PERIPHERY_DISABLE_CONTAINER_TERMINALS: "false"
-      PERIPHERY_DISABLE_TERMINALS: "false"
-      PERIPHERY_INCLUDE_DISK_MOUNTS: "/etc/hostname"
-      PERIPHERY_LOGGING_PRETTY: "false"
-      PERIPHERY_PRETTY_STARTUP_CONFIG: "false"
-      PERIPHERY_ROOT_DIRECTORY: "/volume2/docker/komodo/periphery"
-    hostname: periphery
-    image: "ghcr.io/moghtech/komodo-periphery:2"
-    init: true
-    mac_address: "0e:be:00:da:00:99"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.99
-        ipv6_address: fd0e:be00:da00:20:421::99
-    volumes:
-      - *tz
-      - "/proc:/proc:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/volume2/docker/komodo/keys:/config/keys"
-      - "/volume2/docker/komodo/periphery:/volume2/docker/komodo/periphery"
 
   pg-keycloak:
     <<: *common
