@@ -1,6 +1,11 @@
+
 #!/usr/bin/env bash
 #
 # Manage all allowed Ygg Docker Compose stacks on Pleiades.
+#
+# Compose configurations are sourced from Komodo's managed Git checkout.
+# Komodo-generated .env files are ignored so that COMPOSE_PROFILES=nfs
+# cannot activate NFS-dependent services before the NFS readiness check.
 #
 # Usage:
 #   32-ygg-compose.sh up-core
@@ -12,7 +17,7 @@
 
 set -Eeuo pipefail
 
-readonly BASE_DIR="/home/docker/ygg-compose"
+readonly BASE_DIR="/volume2/docker/komodo/periphery/repos/ygg-compose"
 
 readonly -a STACKS=(
 	"ygg-arr"
@@ -46,6 +51,23 @@ die() {
 	exit 1
 }
 
+#
+# Prevent Docker Compose from reading Komodo-generated .env files.
+#
+# Those files are root-owned (0600) and contain COMPOSE_PROFILES=nfs.
+# Allowing Compose to read them would:
+#
+#   1. Fail when this script runs as the docker user.
+#   2. Enable NFS-profile services during up-core.
+#
+# Explicit --profile nfs arguments still work.
+#
+compose() {
+	COMPOSE_DISABLE_ENV_FILE=1 \
+	COMPOSE_PROFILES= \
+		docker compose "$@"
+}
+
 require_commands() {
 	local -a required_commands=(
 		"docker"
@@ -57,44 +79,60 @@ require_commands() {
 	)
 
 	local command_name
+
 	for command_name in "${required_commands[@]}"; do
 		command -v "${command_name}" >/dev/null 2>&1 ||
 			die "required command not found: ${command_name}"
 	done
 }
 
-compose_dirs() {
+#
+# Validate the entire checkout before performing any Compose operations.
+#
+# This prevents a partially completed startup caused by a missing
+# repository directory or Compose file.
+#
+validate_checkout() {
 	local stack
 	local compose_file
+
+	[[ -d "${BASE_DIR}" ]] ||
+		die "Komodo checkout is not available: ${BASE_DIR}"
 
 	for stack in "${STACKS[@]}"; do
 		compose_file="${BASE_DIR}/${stack}/compose.yaml"
 
-		if [[ -f "${compose_file}" ]]; then
-			printf '%s\n' "${BASE_DIR}/${stack}"
-		else
-			warn "missing compose file for stack: ${stack}"
-		fi
+		[[ -f "${compose_file}" ]] ||
+			die "missing compose file: ${compose_file}"
+
+		[[ -r "${compose_file}" ]] ||
+			die "compose file is not readable: ${compose_file}"
+	done
+}
+
+compose_dirs() {
+	local stack
+
+	for stack in "${STACKS[@]}"; do
+		printf '%s\n' "${BASE_DIR}/${stack}"
 	done
 }
 
 compose_dirs_reverse() {
 	local index
-	local stack
-	local compose_file
 
 	for ((index = ${#STACKS[@]} - 1; index >= 0; index--)); do
-		stack="${STACKS[index]}"
-		compose_file="${BASE_DIR}/${stack}/compose.yaml"
-
-		if [[ -f "${compose_file}" ]]; then
-			printf '%s\n' "${BASE_DIR}/${stack}"
-		fi
+		printf '%s\n' "${BASE_DIR}/${STACKS[index]}"
 	done
 }
 
+#
+# Discover services explicitly assigned to the nfs profile.
+#
+# Called from within the relevant Compose directory.
+#
 nfs_services() {
-	docker compose --profile nfs config --format json |
+	compose --profile nfs config --format json |
 		python3 -c '
 import json
 import sys
@@ -108,6 +146,28 @@ for name, service in services.items():
 '
 }
 
+#
+# Populate the caller's services array.
+#
+# Command substitution is used instead of mapfile with process
+# substitution so that failures in nfs_services are propagated.
+#
+get_nfs_services() {
+	local dir="$1"
+	local output
+
+	services=()
+
+	output="$(
+		cd "${dir}" &&
+			nfs_services
+	)" || die "failed to detect NFS services in: ${dir}"
+
+	if [[ -n "${output}" ]]; then
+		mapfile -t services <<< "${output}"
+	fi
+}
+
 wait_for_nfs() {
 	local path
 	local fstypes
@@ -119,9 +179,8 @@ wait_for_nfs() {
 		#
 		# Accessing the path triggers x-systemd.automount.
 		#
-		# If the NAS/network is not available yet, fail this
-		# invocation so systemd's Restart=on-failure can retry
-		# the NFS service later.
+		# If the NAS/network is unavailable, fail this invocation
+		# so systemd's Restart=on-failure can retry it later.
 		#
 		if ! timeout 30 stat "${path}/." >/dev/null 2>&1; then
 			die "NFS path is not reachable: ${path}"
@@ -134,8 +193,8 @@ wait_for_nfs() {
 		#   autofs
 		#   nfs4
 		#
-		# Accept the path as valid as long as one of the reported
-		# filesystem types is nfs or nfs4.
+		# Accept the path if any reported filesystem type is
+		# nfs or nfs4.
 		#
 		fstypes="$(findmnt -T "${path}" -n -o FSTYPE 2>/dev/null || true)"
 
@@ -155,6 +214,12 @@ wait_for_nfs() {
 	log "==> All NFS mounts are available"
 }
 
+#
+# Start default/non-profiled services across all stacks.
+#
+# COMPOSE_PROFILES is explicitly cleared by compose(), so
+# Komodo's nfs profile cannot be activated during this phase.
+#
 run_compose_up_core() {
 	local dir
 
@@ -163,11 +228,14 @@ run_compose_up_core() {
 
 		(
 			cd "${dir}" || exit 1
-			docker compose up -d
+			compose up -d
 		)
 	done < <(compose_dirs)
 }
 
+#
+# Stop default/non-profiled services in reverse stack order.
+#
 run_compose_stop_core() {
 	local dir
 
@@ -176,11 +244,17 @@ run_compose_stop_core() {
 
 		(
 			cd "${dir}" || exit 1
-			docker compose stop
+			compose stop
 		)
 	done < <(compose_dirs_reverse)
 }
 
+#
+# Start NFS-profile services only after verifying all NFS mounts.
+#
+# Explicit service names prevent unrelated default services from
+# being included merely because the nfs profile is enabled.
+#
 run_compose_up_nfs() {
 	local dir
 	local -a services=()
@@ -188,9 +262,7 @@ run_compose_up_nfs() {
 	wait_for_nfs
 
 	while IFS= read -r dir; do
-		mapfile -t services < <(
-			cd "${dir}" && nfs_services
-		)
+		get_nfs_services "${dir}"
 
 		if [[ "${#services[@]}" -eq 0 ]]; then
 			log "==> NFS up: ${dir} has no nfs-profile services, skipping"
@@ -201,19 +273,20 @@ run_compose_up_nfs() {
 
 		(
 			cd "${dir}" || exit 1
-			docker compose --profile nfs up -d "${services[@]}"
+			compose --profile nfs up -d "${services[@]}"
 		)
 	done < <(compose_dirs)
 }
 
+#
+# Stop NFS-profile services in reverse stack order.
+#
 run_compose_stop_nfs() {
 	local dir
 	local -a services=()
 
 	while IFS= read -r dir; do
-		mapfile -t services < <(
-			cd "${dir}" && nfs_services
-		)
+		get_nfs_services "${dir}"
 
 		if [[ "${#services[@]}" -eq 0 ]]; then
 			log "==> NFS stop: ${dir} has no nfs-profile services, skipping"
@@ -224,7 +297,7 @@ run_compose_stop_nfs() {
 
 		(
 			cd "${dir}" || exit 1
-			docker compose --profile nfs stop "${services[@]}"
+			compose --profile nfs stop "${services[@]}"
 		)
 	done < <(compose_dirs_reverse)
 }
@@ -235,9 +308,7 @@ list_nfs_services() {
 	local -a services=()
 
 	while IFS= read -r dir; do
-		mapfile -t services < <(
-			cd "${dir}" && nfs_services
-		)
+		get_nfs_services "${dir}"
 
 		if [[ "${#services[@]}" -gt 0 ]]; then
 			stack_name="${dir#"${BASE_DIR}"/}"
@@ -257,6 +328,13 @@ Commands:
   stop-nfs   Stop all services with profiles: ["nfs"].
   list       List allowlisted Compose stack directories.
   list-nfs   List detected nfs-profile services per stack.
+
+Compose checkout:
+  ${BASE_DIR}
+
+Environment:
+  Automatic .env loading is disabled.
+  COMPOSE_PROFILES is cleared unless --profile nfs is explicitly used.
 EOF
 }
 
@@ -267,21 +345,27 @@ main() {
 
 	case "${command}" in
 	up-core)
+		validate_checkout
 		run_compose_up_core
 		;;
 	stop-core)
+		validate_checkout
 		run_compose_stop_core
 		;;
 	up-nfs)
+		validate_checkout
 		run_compose_up_nfs
 		;;
 	stop-nfs)
+		validate_checkout
 		run_compose_stop_nfs
 		;;
 	list)
+		validate_checkout
 		compose_dirs
 		;;
 	list-nfs)
+		validate_checkout
 		list_nfs_services
 		;;
 	-h | --help | help)
