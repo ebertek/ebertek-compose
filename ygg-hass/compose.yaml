@@ -533,7 +533,7 @@ services:
       REDACT_LOGS: "false"
       VALIDATE_VONAGE_SMS_SIGNATURE: "true"
     hostname: vonage
-    image: "ghcr.io/ebertek/vonage-ha-bridge:2.2.39"
+    image: "ghcr.io/ebertek/vonage-ha-bridge:2.2.46"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vonage.entrypoints: "websecure"
