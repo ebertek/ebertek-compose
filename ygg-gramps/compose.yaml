@@ -153,7 +153,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 10s
     hostname: rd-gramps
-    image: "docker.io/library/redis:8.10.1-alpine"
+    image: "docker.io/library/redis:8.10.2-alpine"
     mac_address: "0e:be:00:da:00:89"
     networks:
       macvlan1:
