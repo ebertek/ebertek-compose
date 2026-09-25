@@ -66,7 +66,7 @@ services:
       test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/12345' || exit 1"]
       timeout: 5s
     hostname: alloy
-    image: "docker.io/grafana/alloy:v1.19.2"
+    image: "docker.io/grafana/alloy:v1.20.0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.alloy.entrypoints: "websecure"
