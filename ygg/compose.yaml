@@ -46,7 +46,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: alloy
-    image: "docker.io/grafana/alloy:v1.19.2"
+    image: "docker.io/grafana/alloy:v1.20.0"
     volumes:
       - *tz
       - "/:/rootfs:ro"
