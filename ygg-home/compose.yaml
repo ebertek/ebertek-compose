@@ -81,7 +81,7 @@ services:
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
       TRUSTED_PROXY_COUNT: "2"
     hostname: books
-    image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.43"
+    image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.44"
     labels:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: "websecure"
