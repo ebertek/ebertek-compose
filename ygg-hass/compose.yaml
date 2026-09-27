@@ -443,7 +443,7 @@ services:
         ["CMD-SHELL", "ls -l /proc/*/exe 2>/dev/null | grep -q node || exit 1"]
       timeout: 10s
     hostname: ps5-mqtt
-    image: "ghcr.io/funkeyflo/ps5-mqtt:1.7.0"
+    image: "ghcr.io/funkeyflo/ps5-mqtt:1.7.2"
     mac_address: "0e:be:00:da:00:68"
     networks:
       macvlan1:
