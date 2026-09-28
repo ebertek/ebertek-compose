@@ -41,7 +41,7 @@ die() {
 	exit 1
 }
 
-write_persistent_config() {
+write_initial_persistent_config() {
 	mkdir -p "$NFTABLES_DIR"
 
 	cat >"$NFTABLES_CONF" <<'EOF'
@@ -139,17 +139,7 @@ EOF
 	fi
 
 	if [[ "$changed" == true ]]; then
-		write_persistent_config
-
-		if command -v systemctl >/dev/null 2>&1; then
-			if ! systemctl enable nftables --quiet; then
-				log "WARNING: Failed to enable nftables.service"
-			fi
-
-			if ! systemctl start nftables --quiet; then
-				log "WARNING: Failed to start nftables.service"
-			fi
-		fi
+		write_initial_persistent_config
 	fi
 }
 
@@ -210,6 +200,27 @@ update_set() {
 	log "${description} update complete (${count} entries loaded)"
 }
 
+persist_ruleset() {
+	local tmp_file
+
+	tmp_file=$(mktemp "${NFTABLES_CONF}.XXXXXX")
+
+	if ! nft --stateless list table "$NFT_FAMILY" "$NFT_TABLE" >"$tmp_file"; then
+		rm -f "$tmp_file"
+		die "Failed to export nftables ruleset"
+	fi
+
+	if ! nft -c -f "$tmp_file"; then
+		rm -f "$tmp_file"
+		die "Exported nftables ruleset failed validation"
+	fi
+
+	chmod 0644 "$tmp_file"
+	mv "$tmp_file" "$NFTABLES_CONF"
+
+	log "Persisted ${NFT_FAMILY} ${NFT_TABLE} to ${NFTABLES_CONF}"
+}
+
 ensure_logrotate() {
 	if [[ -f "$LOGROTATE_CONF" ]]; then
 		return
@@ -235,6 +246,10 @@ main() {
 
 	command -v nft >/dev/null 2>&1 || die "nft is not installed"
 	command -v curl >/dev/null 2>&1 || die "curl is not installed"
+	command -v awk >/dev/null 2>&1 || die "awk is not installed"
+	command -v sort >/dev/null 2>&1 || die "sort is not installed"
+	command -v paste >/dev/null 2>&1 || die "paste is not installed"
+	command -v mktemp >/dev/null 2>&1 || die "mktemp is not installed"
 
 	log "========== Starting nftables blacklist update =========="
 
@@ -255,6 +270,7 @@ main() {
 		log "WARNING: IPv6 blacklist download failed or returned no entries; existing set left unchanged"
 	fi
 
+	persist_ruleset
 	ensure_logrotate
 
 	log "========== nftables blacklist update complete =========="
