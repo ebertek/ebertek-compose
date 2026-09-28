@@ -50,7 +50,6 @@ services:
     volumes:
       - *tz
       - "/:/rootfs:ro"
-      - "/dev/disk/:/dev/disk:ro"
       - "/dev/mapper/:/dev/mapper:ro"
       - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
       - "/proc:/rootproc:ro"
