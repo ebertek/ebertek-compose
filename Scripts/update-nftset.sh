@@ -13,7 +13,7 @@ readonly IPV6_SET="blacklist6"
 readonly INPUT_CHAIN="input"
 
 readonly IPV4_URL="https://iplists.firehol.org/files/firehol_level3.netset"
-readonly IPV6_URL="https://iplists.firehol.org/files/firehol_level3_ipv6.netset"
+readonly IPV6_URL="https://www.spamhaus.org/drop/drop_v6.json"
 
 readonly NFTABLES_DIR="/etc/nftables"
 readonly NFTABLES_CONF="${NFTABLES_DIR}/tnt-blacklist.nft"
@@ -143,12 +143,10 @@ EOF
 	fi
 }
 
-download_list() {
-	local url=$1
-	local destination=$2
-	local description=$3
+download_ipv4_list() {
+	local destination=$1
 
-	log "Downloading ${description}"
+	log "Downloading IPv4 blacklist"
 
 	if ! curl \
 		--fail \
@@ -157,8 +155,41 @@ download_list() {
 		--location \
 		--connect-timeout 10 \
 		--max-time 30 \
-		"$url" |
+		"$IPV4_URL" |
 		awk '!/^[[:space:]]*#/ && NF' >"$destination"; then
+		return 1
+	fi
+
+	if [[ ! -s "$destination" ]]; then
+		return 1
+	fi
+
+	sort -u "$destination" -o "$destination"
+}
+
+download_ipv6_list() {
+	local destination=$1
+
+	log "Downloading IPv6 blacklist"
+
+	if ! curl \
+		--fail \
+		--silent \
+		--show-error \
+		--location \
+		--connect-timeout 10 \
+		--max-time 30 \
+		"$IPV6_URL" |
+		jq -r '
+			if type == "array" then
+				.[]
+			else
+				.
+			end
+			| select(.cidr? != null)
+			| .cidr
+		' |
+		awk 'NF' >"$destination"; then
 		return 1
 	fi
 
@@ -246,6 +277,7 @@ main() {
 
 	command -v nft >/dev/null 2>&1 || die "nft is not installed"
 	command -v curl >/dev/null 2>&1 || die "curl is not installed"
+	command -v jq >/dev/null 2>&1 || die "jq is not installed"
 	command -v awk >/dev/null 2>&1 || die "awk is not installed"
 	command -v sort >/dev/null 2>&1 || die "sort is not installed"
 	command -v paste >/dev/null 2>&1 || die "paste is not installed"
@@ -258,13 +290,13 @@ main() {
 	tmp_ipv4=$(mktemp /tmp/nft-blacklist-ipv4.XXXXXX)
 	tmp_ipv6=$(mktemp /tmp/nft-blacklist-ipv6.XXXXXX)
 
-	if download_list "$IPV4_URL" "$tmp_ipv4" "IPv4 blacklist"; then
+	if download_ipv4_list "$tmp_ipv4"; then
 		update_set "$IPV4_SET" "$tmp_ipv4" "IPv4 blacklist"
 	else
 		log "ERROR: IPv4 blacklist download failed or returned no entries; existing set left unchanged"
 	fi
 
-	if download_list "$IPV6_URL" "$tmp_ipv6" "IPv6 blacklist"; then
+	if download_ipv6_list "$tmp_ipv6"; then
 		update_set "$IPV6_SET" "$tmp_ipv6" "IPv6 blacklist"
 	else
 		log "WARNING: IPv6 blacklist download failed or returned no entries; existing set left unchanged"
