@@ -127,7 +127,7 @@ services:
       - "44"
       - "991"
     hostname: plex
-    image: "docker.io/plexinc/pms-docker:1.43.4.10903-e5521bd8c"
+    image: "docker.io/plexinc/pms-docker:latest@sha256:e0ab27395614a8e1a4fdf84c6bc60ac664915cfdde70c52d030c7728a1c48e14"
     labels:
       traefik.enable: "true"
       traefik.http.routers.plex.entrypoints: "websecure"
@@ -320,7 +320,7 @@ services:
     environment:
       <<: *env
     hostname: wolf
-    image: "ghcr.io/games-on-whales/wolf:stable"
+    image: "ghcr.io/games-on-whales/wolf:stable@sha256:5df8d062dfaa42312fa395e09b9fed1841b6e47deda47f91ff42cef8a1971a30"
     network_mode: host
     tmpfs:
       - /run/user/wolf

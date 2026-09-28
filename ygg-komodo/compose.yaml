@@ -81,7 +81,7 @@ services:
       KOMODO_TRANSPARENT_MODE: "false"
       KOMODO_WEBHOOK_SECRET_FILE: "/run/secrets/komodo-webhook-secret"
     hostname: komodo
-    image: "ghcr.io/moghtech/komodo-core:2"
+    image: "ghcr.io/moghtech/komodo-core:2.3.3"
     init: true
     labels:
       traefik.enable: "true"
@@ -172,7 +172,7 @@ services:
       PERIPHERY_PRETTY_STARTUP_CONFIG: "false"
       PERIPHERY_ROOT_DIRECTORY: "/volume2/docker/komodo/periphery"
     hostname: periphery
-    image: "ghcr.io/moghtech/komodo-periphery:2"
+    image: "ghcr.io/moghtech/komodo-periphery:2.3.3"
     init: true
     mac_address: "0e:be:00:da:00:99"
     networks:

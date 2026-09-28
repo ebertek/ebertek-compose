@@ -79,7 +79,7 @@ services:
       test: ["CMD-SHELL", "bash -c 'exec 6<> /dev/tcp/127.0.0.1/53' || exit 1"]
       timeout: 10s
     hostname: bind9
-    image: "docker.io/ubuntu/bind9:9.20-25.04_beta"
+    image: "docker.io/ubuntu/bind9:9.20-26.04_stable"
     network_mode: host
     volumes:
       - *tz
