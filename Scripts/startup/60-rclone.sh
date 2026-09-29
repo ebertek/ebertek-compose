@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly INSTALL_DIR="/var/services/homes/Hannibal/bin"
+readonly INSTALL_DIR="/volume1/homes/Hannibal/bin"
 readonly RCLONE="${INSTALL_DIR}/rclone"
 
 tmp_dir=""

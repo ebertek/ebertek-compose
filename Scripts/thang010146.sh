@@ -3,7 +3,7 @@ set -euo pipefail
 
 DOWNLOAD_DIR="/volume1/Downloads/YouTube/thang010146"
 ARCHIVE_FILE="/volume1/Downloads/YouTube/thang010146.txt"
-YT_DLP="/var/services/homes/Hannibal/bin/yt-dlp"
+YT_DLP="/volume1/homes/Hannibal/bin/yt-dlp"
 CHANNEL_URL="https://www.youtube.com/channel/UCli_RJkGWfZvw4IlDLHNCQg/videos"
 
 log() {

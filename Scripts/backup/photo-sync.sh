@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-RCLONE="/var/services/homes/Hannibal/bin/rclone"
+RCLONE="/volume1/homes/Hannibal/bin/rclone"
 RCLONE_CONFIG="$SCRIPT_DIR/rclone.conf"
 RCLONE_FILTER="$SCRIPT_DIR/rclone-filter.txt"
 

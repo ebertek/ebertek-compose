@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly BIN_DIR="/var/services/homes/Hannibal/bin"
+readonly BIN_DIR="/volume1/homes/Hannibal/bin"
 readonly YT_DLP="${BIN_DIR}/yt-dlp"
 readonly DENO="${BIN_DIR}/deno"
 

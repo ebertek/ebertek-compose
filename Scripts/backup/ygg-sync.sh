@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-RCLONE="/var/services/homes/Hannibal/bin/rclone"
+RCLONE="/volume1/homes/Hannibal/bin/rclone"
 RCLONE_CONFIG="$SCRIPT_DIR/rclone.conf"
 RCLONE_FILTER="$SCRIPT_DIR/rclone-filter.txt"
 
@@ -33,7 +33,7 @@ log "Syncing home directories to Hetzner Storage Box"
 	--filter-from "$RCLONE_FILTER" \
 	--links \
 	--local-no-check-updated \
-	/var/services/homes/ \
+	/volume1/homes/ \
 	storagebox:homes
 
 log "Home directories sync completed"
