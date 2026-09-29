@@ -164,6 +164,16 @@ run_directory = "ygg-other"
 ##
 
 [[repo]]
+name = "ebertek-compose"
+[repo.config]
+server = "pleiades.ygg.nu"
+builder = "Pleiades"
+git_account = "ebertek"
+repo = "ebertek/ebertek-compose"
+
+##
+
+[[repo]]
 name = "ygg-compose"
 [repo.config]
 server = "pleiades.ygg.nu"
@@ -437,3 +447,12 @@ name = "Pleiades"
 [builder.config]
 type = "Server"
 params.servers = ["pleiades.ygg.nu"]
+
+##
+
+[[resource_sync]]
+name = "ebertek-compose-resources"
+[resource_sync.config]
+linked_repo = "ebertek-compose"
+resource_path = ["komodo/resources.toml"]
+managed = true
