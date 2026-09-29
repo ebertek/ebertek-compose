@@ -62,7 +62,7 @@ services:
       KOMODO_DISABLE_NON_ADMIN_CREATE: "false"
       KOMODO_DISABLE_USER_REGISTRATION: "true"
       KOMODO_ENABLE_NEW_USERS: "false"
-      KOMODO_FIRST_SERVER_NAME: "Pleiades"
+      KOMODO_FIRST_SERVER_NAME: "pleiades.ygg.nu"
       KOMODO_GITHUB_OAUTH_ENABLED: "false"
       KOMODO_GOOGLE_OAUTH_ENABLED: "false"
       KOMODO_HOST: "https://komodo.ebi.nu"
@@ -162,7 +162,7 @@ services:
           memory: "64M"
     environment:
       <<: *env
-      PERIPHERY_CONNECT_AS: "Pleiades"
+      PERIPHERY_CONNECT_AS: "pleiades.ygg.nu"
       PERIPHERY_CORE_ADDRESS: "ws://komodo:9120"
       PERIPHERY_CORE_PUBLIC_KEYS: "file:/config/keys/core.pub"
       PERIPHERY_DISABLE_CONTAINER_TERMINALS: "false"
