@@ -1,51 +1,31 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
-# ---------------------------------------------------------------------------
-# Docker macvlan network name
-# ---------------------------------------------------------------------------
-DOCKER_NET="macvlan1"
+readonly DOCKER_NET="macvlan1"
 
-# ---------------------------------------------------------------------------
-# Physical/Open vSwitch parent interface
-# ---------------------------------------------------------------------------
-PARENT="enp86s0"
+readonly PARENT="enp86s0"
 
-# ---------------------------------------------------------------------------
-# Docker IPv4 configuration
-# ---------------------------------------------------------------------------
+readonly DOCKER_SUBNET4="10.4.20.0/23"
+readonly DOCKER_GATEWAY4="10.4.20.1"
+readonly DOCKER_RANGE4="10.4.21.0/25"
+readonly HOST_ADDR4="10.4.21.1/32"
 
-# Main LAN subnet
-DOCKER_SUBNET4="10.4.20.0/23"
+readonly DOCKER_SUBNET6="fd0e:be00:da00:20::/64"
+readonly DOCKER_GATEWAY6="fd0e:be00:da00:20::1"
+readonly DOCKER_RANGE6="fd0e:be00:da00:20:421::/80"
+readonly HOST_ADDR6="fd0e:be00:da00:20:421::1/128"
 
-# LAN gateway
-DOCKER_GATEWAY4="10.4.20.1"
+log() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
 
-# Range reserved for Docker macvlan containers
-DOCKER_RANGE4="10.4.21.0/25"
+error() {
+	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
 
-# Host-side macvlan IPv4 address
-HOST_ADDR4="10.4.21.1/32"
+log "Waiting for Docker daemon"
 
-# ---------------------------------------------------------------------------
-# Docker IPv6 configuration
-# ---------------------------------------------------------------------------
-
-# Main IPv6 LAN prefix
-DOCKER_SUBNET6="fd0e:be00:da00:20::/64"
-
-# IPv6 gateway
-DOCKER_GATEWAY6="fd0e:be00:da00:20::1"
-
-# IPv6 range reserved for Docker macvlan containers
-DOCKER_RANGE6="fd0e:be00:da00:20:421::/80"
-
-# Host-side macvlan IPv6 address
-HOST_ADDR6="fd0e:be00:da00:20:421::1/128"
-
-# ---------------------------------------------------------------------------
-# Wait for Docker to be available
-# ---------------------------------------------------------------------------
 for _ in {1..30}; do
 	if docker info >/dev/null 2>&1; then
 		break
@@ -55,30 +35,28 @@ for _ in {1..30}; do
 done
 
 if ! docker info >/dev/null 2>&1; then
-	echo "ERROR: Docker daemon is not available" >&2
+	error "Docker daemon is not available"
 	exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Create Docker macvlan network if it does not already exist
-# ---------------------------------------------------------------------------
-if ! docker network inspect "${DOCKER_NET}" >/dev/null 2>&1; then
+if docker network inspect "$DOCKER_NET" >/dev/null 2>&1; then
+	log "Docker macvlan network ${DOCKER_NET} already exists"
+else
+	log "Creating Docker macvlan network ${DOCKER_NET}"
+
 	docker network create \
 		--driver macvlan \
-		--subnet="${DOCKER_SUBNET4}" \
-		--gateway="${DOCKER_GATEWAY4}" \
-		--ip-range="${DOCKER_RANGE4}" \
+		--subnet="$DOCKER_SUBNET4" \
+		--gateway="$DOCKER_GATEWAY4" \
+		--ip-range="$DOCKER_RANGE4" \
 		--aux-address="host=${HOST_ADDR4%/*}" \
 		--ipv6 \
-		--subnet="${DOCKER_SUBNET6}" \
-		--gateway="${DOCKER_GATEWAY6}" \
-		--ip-range="${DOCKER_RANGE6}" \
+		--subnet="$DOCKER_SUBNET6" \
+		--gateway="$DOCKER_GATEWAY6" \
+		--ip-range="$DOCKER_RANGE6" \
 		--aux-address="host=${HOST_ADDR6%/*}" \
-		--opt parent="${PARENT}" \
-		"${DOCKER_NET}"
+		--opt parent="$PARENT" \
+		"$DOCKER_NET"
 fi
 
-# ---------------------------------------------------------------------------
-# Finished
-# ---------------------------------------------------------------------------
-echo "Docker macvlan network '${DOCKER_NET}' is ready"
+log "Docker macvlan network ${DOCKER_NET} is ready"

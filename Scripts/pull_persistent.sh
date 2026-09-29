@@ -1,6 +1,10 @@
 #!/bin/bash
-from="/volume2/docker"
-to="/volume2/docker/ebertek-compose-secrets/_persistent"
+
+set -euo pipefail
+
+readonly FROM="/volume2/docker"
+readonly TO="/volume2/docker/ebertek-compose-secrets/_persistent"
+
 files=(
 	"acmesh/account.conf"
 	"bazarr/config/config.yaml"
@@ -39,7 +43,6 @@ files=(
 	"hass/matter-server/chip_factory.ini"
 	"hass/matter-server/certificates/driver.json"
 	"hass/matter-server/config/driver.json"
-	"hass/matter-server/config/matter.pid"
 	"hass/matter-server/config/snapshot.json.gz"
 	"hass/mosquitto/config/mosquitto.conf"
 	"hass/mosquitto/config/password.txt"
@@ -91,15 +94,44 @@ files=(
 	"vw/rsa_key.pub.pem"
 )
 
-for file in "${files[@]}"; do
-	src="${from}/${file}"
-	dst="${to}/${file}"
+log() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
 
-	mkdir -p "$(dirname "$dst")"
+warn() {
+	printf '[%s] WARNING: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
 
-	if [[ -f "$src" ]]; then
-		cp -f "$src" "$dst"
-	else
-		echo "[WARNING] Missing source file: $src" >&2
+main() {
+	local missing=0
+	local copied=0
+	local file src dst
+
+	log "Starting persistent file pull"
+
+	for file in "${files[@]}"; do
+		src="${FROM}/${file}"
+		dst="${TO}/${file}"
+
+		mkdir -p "$(dirname "$dst")"
+
+		if [[ -f "$src" ]]; then
+			cp -f "$src" "$dst"
+			((copied += 1))
+		else
+			warn "Missing source file: $src"
+			((missing += 1))
+		fi
+	done
+
+	log "Copied ${copied} files"
+
+	if ((missing > 0)); then
+		warn "${missing} source files were missing"
+		return 1
 	fi
-done
+
+	log "Persistent file pull completed successfully"
+}
+
+main "$@"

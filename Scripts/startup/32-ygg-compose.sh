@@ -38,15 +38,15 @@ readonly -a NFS_PATHS=(
 )
 
 log() {
-	printf '%s\n' "$*"
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
 }
 
 warn() {
-	printf 'WARN: %s\n' "$*" >&2
+	printf '[%s] WARNING: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 }
 
 die() {
-	printf 'ERROR: %s\n' "$*" >&2
+	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 	exit 1
 }
 
@@ -80,8 +80,8 @@ require_commands() {
 	local command_name
 
 	for command_name in "${required_commands[@]}"; do
-		command -v "${command_name}" >/dev/null 2>&1 ||
-			die "required command not found: ${command_name}"
+		command -v "$command_name" >/dev/null 2>&1 ||
+			die "Required command not found: $command_name"
 	done
 }
 
@@ -95,17 +95,17 @@ validate_checkout() {
 	local stack
 	local compose_file
 
-	[[ -d "${BASE_DIR}" ]] ||
-		die "Komodo checkout is not available: ${BASE_DIR}"
+	[[ -d "$BASE_DIR" ]] ||
+		die "Komodo checkout is not available: $BASE_DIR"
 
 	for stack in "${STACKS[@]}"; do
 		compose_file="${BASE_DIR}/${stack}/compose.yaml"
 
-		[[ -f "${compose_file}" ]] ||
-			die "missing compose file: ${compose_file}"
+		[[ -f "$compose_file" ]] ||
+			die "Missing compose file: $compose_file"
 
-		[[ -r "${compose_file}" ]] ||
-			die "compose file is not readable: ${compose_file}"
+		[[ -r "$compose_file" ]] ||
+			die "Compose file is not readable: $compose_file"
 	done
 }
 
@@ -158,12 +158,12 @@ get_nfs_services() {
 	services=()
 
 	output="$(
-		cd "${dir}" &&
+		cd "$dir" &&
 			nfs_services
-	)" || die "failed to detect NFS services in: ${dir}"
+	)" || die "Failed to detect NFS services in: $dir"
 
-	if [[ -n "${output}" ]]; then
-		mapfile -t services <<<"${output}"
+	if [[ -n "$output" ]]; then
+		mapfile -t services <<<"$output"
 	fi
 }
 
@@ -173,7 +173,7 @@ wait_for_nfs() {
 	local nfs_fstype
 
 	for path in "${NFS_PATHS[@]}"; do
-		log "==> Checking NFS mount: ${path}"
+		log "Checking NFS mount: $path"
 
 		#
 		# Accessing the path triggers x-systemd.automount.
@@ -182,7 +182,7 @@ wait_for_nfs() {
 		# so systemd's Restart=on-failure can retry it later.
 		#
 		if ! timeout 30 stat "${path}/." >/dev/null 2>&1; then
-			die "NFS path is not reachable: ${path}"
+			die "NFS path is not reachable: $path"
 		fi
 
 		#
@@ -195,22 +195,22 @@ wait_for_nfs() {
 		# Accept the path if any reported filesystem type is
 		# nfs or nfs4.
 		#
-		fstypes="$(findmnt -T "${path}" -n -o FSTYPE 2>/dev/null || true)"
+		fstypes="$(findmnt -T "$path" -n -o FSTYPE 2>/dev/null || true)"
 
 		nfs_fstype="$(
-			printf '%s\n' "${fstypes}" |
+			printf '%s\n' "$fstypes" |
 				grep -m1 -xE 'nfs|nfs4' ||
 				true
 		)"
 
-		if [[ -z "${nfs_fstype}" ]]; then
-			die "path is not mounted via NFS: ${path} (fstype=${fstypes:-none})"
+		if [[ -z "$nfs_fstype" ]]; then
+			die "Path is not mounted via NFS: $path (fstype=${fstypes:-none})"
 		fi
 
-		log "==> NFS mount available: ${path} (${nfs_fstype})"
+		log "NFS mount available: $path ($nfs_fstype)"
 	done
 
-	log "==> All NFS mounts are available"
+	log "All NFS mounts are available"
 }
 
 #
@@ -223,10 +223,10 @@ run_compose_up_core() {
 	local dir
 
 	while IFS= read -r dir; do
-		log "==> Core up: ${dir}"
+		log "Core up: $dir"
 
 		(
-			cd "${dir}" || exit 1
+			cd "$dir" || exit 1
 			compose up -d
 		)
 	done < <(compose_dirs)
@@ -239,10 +239,10 @@ run_compose_stop_core() {
 	local dir
 
 	while IFS= read -r dir; do
-		log "==> Core stop: ${dir}"
+		log "Core stop: $dir"
 
 		(
-			cd "${dir}" || exit 1
+			cd "$dir" || exit 1
 			compose stop
 		)
 	done < <(compose_dirs_reverse)
@@ -261,17 +261,17 @@ run_compose_up_nfs() {
 	wait_for_nfs
 
 	while IFS= read -r dir; do
-		get_nfs_services "${dir}"
+		get_nfs_services "$dir"
 
 		if [[ "${#services[@]}" -eq 0 ]]; then
-			log "==> NFS up: ${dir} has no nfs-profile services, skipping"
+			log "NFS up: $dir has no nfs-profile services, skipping"
 			continue
 		fi
 
-		log "==> NFS up: ${dir}: ${services[*]}"
+		log "NFS up: $dir: ${services[*]}"
 
 		(
-			cd "${dir}" || exit 1
+			cd "$dir" || exit 1
 			compose --profile nfs up -d "${services[@]}"
 		)
 	done < <(compose_dirs)
@@ -285,17 +285,17 @@ run_compose_stop_nfs() {
 	local -a services=()
 
 	while IFS= read -r dir; do
-		get_nfs_services "${dir}"
+		get_nfs_services "$dir"
 
 		if [[ "${#services[@]}" -eq 0 ]]; then
-			log "==> NFS stop: ${dir} has no nfs-profile services, skipping"
+			log "NFS stop: $dir has no nfs-profile services, skipping"
 			continue
 		fi
 
-		log "==> NFS stop: ${dir}: ${services[*]}"
+		log "NFS stop: $dir: ${services[*]}"
 
 		(
-			cd "${dir}" || exit 1
+			cd "$dir" || exit 1
 			compose --profile nfs stop "${services[@]}"
 		)
 	done < <(compose_dirs_reverse)
@@ -307,7 +307,7 @@ list_nfs_services() {
 	local -a services=()
 
 	while IFS= read -r dir; do
-		get_nfs_services "${dir}"
+		get_nfs_services "$dir"
 
 		if [[ "${#services[@]}" -gt 0 ]]; then
 			stack_name="${dir#"${BASE_DIR}"/}"
@@ -342,7 +342,7 @@ main() {
 
 	require_commands
 
-	case "${command}" in
+	case "$command" in
 	up-core)
 		validate_checkout
 		run_compose_up_core

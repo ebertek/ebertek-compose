@@ -1,5 +1,42 @@
 #!/bin/bash
-{
-	/var/services/homes/Hannibal/bin/rclone sync --bwlimit 10M --config=/volume2/docker/ygg-compose/Scripts/backup/rclone.conf --fast-list --filter-from /volume2/docker/ygg-compose/Scripts/backup/rclone-filter.txt --links --local-no-check-updated -v /volume1/photo/Pictures/ storagebox:Pictures
-	/var/services/homes/Hannibal/bin/rclone sync --bwlimit 10M --config=/volume2/docker/ygg-compose/Scripts/backup/rclone.conf --fast-list --filter-from /volume2/docker/ygg-compose/Scripts/backup/rclone-filter.txt --links --local-no-check-updated -v /volume1/video/Movies/ storagebox:Movies
-} >"/var/services/homes/Hannibal/Logs/photo-sync/$(date +%F_%H-%M-%S.log)" 2>&1
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+RCLONE="/var/services/homes/Hannibal/bin/rclone"
+RCLONE_CONFIG="$SCRIPT_DIR/rclone.conf"
+RCLONE_FILTER="$SCRIPT_DIR/rclone-filter.txt"
+
+log() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
+
+log "Starting photo-sync"
+
+log "Syncing Pictures to Hetzner Storage Box"
+"$RCLONE" sync \
+	--bwlimit 10M \
+	--config="$RCLONE_CONFIG" \
+	--fast-list \
+	--filter-from "$RCLONE_FILTER" \
+	--links \
+	--local-no-check-updated \
+	-v \
+	/volume1/photo/Pictures/ \
+	storagebox:Pictures
+
+log "Pictures sync completed"
+
+log "Syncing Movies to Hetzner Storage Box"
+"$RCLONE" sync \
+	--bwlimit 10M \
+	--config="$RCLONE_CONFIG" \
+	--fast-list \
+	--filter-from "$RCLONE_FILTER" \
+	--links \
+	--local-no-check-updated \
+	-v \
+	/volume1/video/Movies/ \
+	storagebox:Movies
+
+log "Movies sync completed"
+log "photo-sync completed successfully"

@@ -4,8 +4,6 @@ set -euo pipefail
 
 readonly PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-readonly LOG_FILE="/var/log/update-nftset.log"
-
 readonly NFT_FAMILY="inet"
 readonly NFT_TABLE="tnt_blacklist"
 readonly IPV4_SET="blacklist"
@@ -18,7 +16,6 @@ readonly IPV6_URL="https://www.spamhaus.org/drop/drop_v6.json"
 readonly NFTABLES_DIR="/etc/nftables"
 readonly NFTABLES_CONF="${NFTABLES_DIR}/tnt-blacklist.nft"
 readonly NFTABLES_MAIN="/etc/sysconfig/nftables.conf"
-readonly LOGROTATE_CONF="/etc/logrotate.d/nftset"
 
 tmp_ipv4=""
 tmp_ipv6=""
@@ -30,14 +27,20 @@ cleanup() {
 
 trap cleanup EXIT
 
-exec >>"$LOG_FILE" 2>&1
-
 log() {
-	printf '%s %s\n' "$(date '+%F %T')" "$*"
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
+
+warn() {
+	printf '[%s] WARNING: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
+
+error() {
+	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 }
 
 die() {
-	log "ERROR: $*"
+	error "$*"
 	exit 1
 }
 
@@ -224,7 +227,7 @@ update_set() {
 
 		printf ' }\n'
 	} | nft -f -; then
-		log "ERROR: Failed to update ${description}; existing set left unchanged"
+		error "Failed to update ${description}; existing set left unchanged"
 		return 1
 	fi
 
@@ -252,25 +255,9 @@ persist_ruleset() {
 	log "Persisted ${NFT_FAMILY} ${NFT_TABLE} to ${NFTABLES_CONF}"
 }
 
-ensure_logrotate() {
-	if [[ -f "$LOGROTATE_CONF" ]]; then
-		return
-	fi
-
-	cat >"$LOGROTATE_CONF" <<'EOF'
-/var/log/update-nftset.log {
-	weekly
-	rotate 4
-	compress
-	missingok
-	notifempty
-}
-EOF
-
-	log "Created logrotate configuration"
-}
-
 main() {
+	local status=0
+
 	if ((EUID != 0)); then
 		die "This script must be run as root"
 	fi
@@ -283,7 +270,7 @@ main() {
 	command -v paste >/dev/null 2>&1 || die "paste is not installed"
 	command -v mktemp >/dev/null 2>&1 || die "mktemp is not installed"
 
-	log "========== Starting nftables blacklist update =========="
+	log "Starting nftables blacklist update"
 
 	ensure_nftables_objects
 
@@ -291,21 +278,31 @@ main() {
 	tmp_ipv6=$(mktemp /tmp/nft-blacklist-ipv6.XXXXXX)
 
 	if download_ipv4_list "$tmp_ipv4"; then
-		update_set "$IPV4_SET" "$tmp_ipv4" "IPv4 blacklist"
+		if ! update_set "$IPV4_SET" "$tmp_ipv4" "IPv4 blacklist"; then
+			status=1
+		fi
 	else
-		log "ERROR: IPv4 blacklist download failed or returned no entries; existing set left unchanged"
+		error "IPv4 blacklist download failed or returned no entries; existing set left unchanged"
+		status=1
 	fi
 
 	if download_ipv6_list "$tmp_ipv6"; then
-		update_set "$IPV6_SET" "$tmp_ipv6" "IPv6 blacklist"
+		if ! update_set "$IPV6_SET" "$tmp_ipv6" "IPv6 blacklist"; then
+			status=1
+		fi
 	else
-		log "WARNING: IPv6 blacklist download failed or returned no entries; existing set left unchanged"
+		warn "IPv6 blacklist download failed or returned no entries; existing set left unchanged"
+		status=1
 	fi
 
 	persist_ruleset
-	ensure_logrotate
 
-	log "========== nftables blacklist update complete =========="
+	if ((status != 0)); then
+		error "nftables blacklist update completed with errors"
+		return "$status"
+	fi
+
+	log "nftables blacklist update completed successfully"
 }
 
 main "$@"

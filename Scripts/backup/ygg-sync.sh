@@ -1,6 +1,53 @@
 #!/bin/bash
-{
-	/var/services/homes/Hannibal/bin/rclone sync --bwlimit 10M --config=/volume2/docker/ygg-compose/Scripts/backup/rclone.conf --fast-list --filter-from /volume2/docker/ygg-compose/Scripts/backup/rclone-filter.txt --links --local-no-check-updated /volume2/docker/ storagebox:docker
-	/var/services/homes/Hannibal/bin/rclone sync --bwlimit 10M --config=/volume2/docker/ygg-compose/Scripts/backup/rclone.conf --fast-list --filter-from /volume2/docker/ygg-compose/Scripts/backup/rclone-filter.txt --links --local-no-check-updated /var/services/homes/ storagebox:homes
-	/var/services/homes/Hannibal/bin/rclone sync --bwlimit 10M --config=/volume2/docker/ygg-compose/Scripts/backup/rclone.conf --fast-list --filter-from /volume2/docker/ygg-compose/Scripts/backup/rclone-filter.txt --links --local-no-check-updated /volume1/NetBackup/ storagebox:NetBackup
-} >"/var/services/homes/Hannibal/Logs/ygg-sync/$(date +%F_%H-%M-%S.log)" 2>&1
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+RCLONE="/var/services/homes/Hannibal/bin/rclone"
+RCLONE_CONFIG="$SCRIPT_DIR/rclone.conf"
+RCLONE_FILTER="$SCRIPT_DIR/rclone-filter.txt"
+
+log() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
+
+log "Starting ygg-sync"
+
+log "Syncing Docker data to Hetzner Storage Box"
+"$RCLONE" sync \
+	--bwlimit 10M \
+	--config="$RCLONE_CONFIG" \
+	--fast-list \
+	--filter-from "$RCLONE_FILTER" \
+	--links \
+	--local-no-check-updated \
+	/volume2/docker/ \
+	storagebox:docker
+
+log "Docker data sync completed"
+
+log "Syncing home directories to Hetzner Storage Box"
+"$RCLONE" sync \
+	--bwlimit 10M \
+	--config="$RCLONE_CONFIG" \
+	--fast-list \
+	--filter-from "$RCLONE_FILTER" \
+	--links \
+	--local-no-check-updated \
+	/var/services/homes/ \
+	storagebox:homes
+
+log "Home directories sync completed"
+
+log "Syncing NetBackup to Hetzner Storage Box"
+"$RCLONE" sync \
+	--bwlimit 10M \
+	--config="$RCLONE_CONFIG" \
+	--fast-list \
+	--filter-from "$RCLONE_FILTER" \
+	--links \
+	--local-no-check-updated \
+	/volume1/NetBackup/ \
+	storagebox:NetBackup
+
+log "NetBackup sync completed"
+log "ygg-sync completed successfully"

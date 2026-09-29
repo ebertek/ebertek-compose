@@ -1,55 +1,77 @@
 #!/bin/sh
-set -e
+set -eu
+
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SCRIPT_NAME=$(basename "$0")
 ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
-[ -f "$ENV_FILE" ] || {
-	echo "Error: $ENV_FILE file not found!"
-	exit 1
+
+log() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
 }
+
+warn() {
+	printf '[%s] WARNING: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
+
+error() {
+	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
+
+if [ ! -f "$ENV_FILE" ]; then
+	error "$ENV_FILE file not found"
+	exit 1
+fi
+
 while IFS='=' read -r key value; do
 	[ -z "$key" ] && continue
+
 	case "$key" in
 	\#*) continue ;;
 	esac
+
 	export "$key=$value"
 done <"$ENV_FILE"
 
 for var in MATTER_SERVER_SERVICE ULA_PREFIX HOST_IFACE THREAD_BR_MAC; do
-	eval "value=\${$var}"
+	eval "value=\${$var:-}"
+
 	if [ -z "$value" ]; then
-		echo "Error: $var not set in $ENV_FILE"
+		error "$var not set in $ENV_FILE"
 		exit 1
 	fi
 done
 
-echo "Preparing all variables:"
+log "Preparing Matter route update"
 
-# Fetch Matter Server container ID based on service name
-MATTER_SERVER_CONTAINER=$(docker ps --filter "label=com.docker.compose.service=${MATTER_SERVER_SERVICE}" --format '{{.ID}}' | head -n1)
+MATTER_SERVER_CONTAINER=$(
+	docker ps \
+		--filter "label=com.docker.compose.service=${MATTER_SERVER_SERVICE}" \
+		--format '{{.ID}}' |
+		head -n1
+)
+
 if [ -z "$MATTER_SERVER_CONTAINER" ]; then
-	echo "Error: No running container found for service '$MATTER_SERVER_SERVICE'"
+	error "No running container found for service '$MATTER_SERVER_SERVICE'"
 	exit 1
 fi
 
-# Define the Unique Local Address (ULA) prefix
 PREFIX_PART="${ULA_PREFIX%%::*}:"
 
-# Fetch the Matter devices' hostnames and IPv6 ULA addresses
-echo "Fetching the IPv6 addresses of all Matter devices..."
+log "Fetching IPv6 addresses of Matter devices"
+
 ULA_DEVICES=$(
 	avahi-browse -rpt _matter._tcp |
-		awk -F ";" -v prefix="$PREFIX_PART" '$8 ~ "^" prefix { print $7 ";" $8 }' |
+		awk -F ';' -v prefix="$PREFIX_PART" '$8 ~ "^" prefix { print $7 ";" $8 }' |
 		sort -u
 )
 
 if [ -z "$ULA_DEVICES" ]; then
-	echo "Error: No Matter devices found with prefix '$PREFIX_PART'"
+	error "No Matter devices found with prefix '$PREFIX_PART'"
 	exit 1
 fi
 
-# Fetch the Thread Border Router's link-local address
-echo "Fetching the link-local address of the Thread Border Router..."
+log "Fetching Thread Border Router link-local address"
+
 THREAD_BR=$(
 	rdisc6 "$HOST_IFACE" |
 		awk -v prefix="$ULA_PREFIX" '
@@ -58,10 +80,9 @@ THREAD_BR=$(
 		'
 )
 
-# Check if rdisc6 failed to fetch the address
 if [ -z "$THREAD_BR" ]; then
 	if [ -n "${UNIFI_HOST:-}" ] && [ -n "${UNIFI_KEY:-}" ]; then
-		echo "rdisc6 failed to fetch Thread Border Router's IPv6 address, attempting fallback with curl..."
+		warn "rdisc6 failed; attempting UniFi fallback"
 
 		THREAD_BR=$(
 			curl -k -X GET "https://$UNIFI_HOST/proxy/network/api/s/default/stat/sta" \
@@ -79,44 +100,43 @@ if [ -z "$THREAD_BR" ]; then
 				'
 		)
 	else
-		echo "rdisc6 failed and UNIFI_HOST / UNIFI_KEY not set — skipping UniFi fallback."
+		warn "rdisc6 failed and UNIFI_HOST / UNIFI_KEY are not set; skipping UniFi fallback"
 	fi
 
 	if [ -z "$THREAD_BR" ]; then
-		echo "Error: Unable to fetch Thread Border Router's IPv6 address."
+		error "Unable to fetch Thread Border Router IPv6 address"
 		exit 1
 	fi
 fi
 
-# Get the dynamic IPv6 address of eth0 inside the Docker container
-echo "Fetching the dynamic IPv6 address of eth0 of Matter Server..."
-DYNAMIC_IPV6=$(docker exec "$MATTER_SERVER_CONTAINER" sh -lc \
-	"hostname -I | tr ' ' '\n' | grep -E '^[0-9a-fA-F]*:.*' | grep -vE '^(fe80:|fd|fc)' | head -n1")
+log "Fetching dynamic IPv6 address of Matter Server"
 
-# Ensure DYNAMIC_IPV6 is not empty
+DYNAMIC_IPV6=$(
+	docker exec "$MATTER_SERVER_CONTAINER" sh -lc \
+		"hostname -I | tr ' ' '\n' | grep -E '^[0-9a-fA-F]*:.*' | grep -vE '^(fe80:|fd|fc)' | head -n1"
+)
+
 if [ -z "$DYNAMIC_IPV6" ]; then
-	echo "Error: Unable to fetch dynamic IPv6 address from container."
+	error "Unable to fetch dynamic IPv6 address from Matter Server container"
 	exit 1
 fi
 
-# Pick a helper image that has iproute2
 HELPER_IMAGE=${HELPER_IMAGE:-nicolaka/netshoot}
 
-echo ""
-echo "=================== IPv6 Route Setup Summary ==================="
-echo "Matter Server Container: ${MATTER_SERVER_CONTAINER}"
-echo "Helper Image:            ${HELPER_IMAGE}"
-echo "Host Interface:          ${HOST_IFACE}"
-echo "ULA Prefix:              ${ULA_PREFIX}"
-echo "Thread BR Address:       ${THREAD_BR}"
-echo "Dynamic IPv6 (eth0):     ${DYNAMIC_IPV6}"
-echo "Matter Devices:"
-echo "$ULA_DEVICES" | awk -F ';' '{printf " - %-24s %s\n", $1, $2}'
-echo "================================================================"
-echo ""
+printf '\n'
+printf '%s\n' "=================== IPv6 Route Setup Summary ==================="
+printf 'Matter Server Container: %s\n' "$MATTER_SERVER_CONTAINER"
+printf 'Helper Image:            %s\n' "$HELPER_IMAGE"
+printf 'Host Interface:          %s\n' "$HOST_IFACE"
+printf 'ULA Prefix:              %s\n' "$ULA_PREFIX"
+printf 'Thread BR Address:       %s\n' "$THREAD_BR"
+printf 'Dynamic IPv6 (eth0):     %s\n' "$DYNAMIC_IPV6"
+printf '%s\n' "Matter Devices:"
+printf '%s\n' "$ULA_DEVICES" | awk -F ';' '{printf " - %-24s %s\n", $1, $2}'
+printf '%s\n' "================================================================"
+printf '\n'
 
-# Run the route management commands using a helper container in the same network namespace
-echo "Running the route management commands inside the Docker container:"
+log "Running route management commands inside Matter Server network namespace"
 
 docker run --rm \
 	--network "container:${MATTER_SERVER_CONTAINER}" \
@@ -157,4 +177,4 @@ EOF
 		done
 	"
 
-echo "Done."
+log "Matter route update completed successfully"
