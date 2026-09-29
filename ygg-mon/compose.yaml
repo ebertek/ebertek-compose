@@ -172,7 +172,7 @@ services:
         ]
       timeout: 5s
     hostname: grafana
-    image: "docker.io/grafana/grafana:13.2.2"
+    image: "docker.io/grafana/grafana:13.2.3"
     labels:
       traefik.enable: "true"
       traefik.http.routers.grafana.entrypoints: "websecure"
