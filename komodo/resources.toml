@@ -1,0 +1,439 @@
+[[server]]
+name = "hc.ebi.nu"
+[server.config]
+enabled = true
+
+##
+
+[[server]]
+name = "pleiades.ygg.nu"
+[server.config]
+enabled = true
+
+##
+
+[[server]]
+name = "ygg.ebi.nu"
+[server.config]
+enabled = true
+send_disk_alerts = false
+disk_warning = 97.0
+disk_critical = 98.0
+
+##
+
+[[stack]]
+name = "ebertek"
+[stack.config]
+server = "hc.ebi.nu"
+linked_repo = "ygg-compose"
+run_directory = "ebertek"
+
+##
+
+[[stack]]
+name = "tntphoto"
+[stack.config]
+server = "hc.ebi.nu"
+linked_repo = "ygg-compose"
+run_directory = "tntphoto"
+
+##
+
+[[stack]]
+name = "ygg"
+[stack.config]
+server = "ygg.ebi.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg"
+
+##
+
+[[stack]]
+name = "ygg-arr"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-arr"
+environment = """
+COMPOSE_PROFILES = nfs
+"""
+
+##
+
+[[stack]]
+name = "ygg-birdnet"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-birdnet"
+
+##
+
+[[stack]]
+name = "ygg-core"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-core"
+
+##
+
+[[stack]]
+name = "ygg-download"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-download"
+environment = """
+COMPOSE_PROFILES = nfs
+"""
+
+##
+
+[[stack]]
+name = "ygg-gramps"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-gramps"
+
+##
+
+[[stack]]
+name = "ygg-hass"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-hass"
+environment = """
+COMPOSE_PROFILES = nfs
+"""
+
+##
+
+[[stack]]
+name = "ygg-home"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-home"
+environment = """
+COMPOSE_PROFILES = nfs
+"""
+
+##
+
+[[stack]]
+name = "ygg-immich"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-immich"
+environment = """
+COMPOSE_PROFILES = nfs
+"""
+
+##
+
+[[stack]]
+name = "ygg-komodo"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-komodo"
+
+##
+
+[[stack]]
+name = "ygg-mon"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-mon"
+
+##
+
+[[stack]]
+name = "ygg-other"
+[stack.config]
+server = "pleiades.ygg.nu"
+linked_repo = "ygg-compose"
+run_directory = "ygg-other"
+
+##
+
+[[repo]]
+name = "ygg-compose"
+[repo.config]
+server = "pleiades.ygg.nu"
+builder = "Pleiades"
+git_account = "ebertek"
+repo = "ebertek/ygg-compose"
+
+##
+
+[[procedure]]
+name = "Backup Core Database"
+description = "Triggers the Core database backup at the scheduled time."
+tags = ["system"]
+config.schedule = "Every day at 01:00"
+
+[[procedure.config.stage]]
+name = "Stage 1"
+enabled = true
+executions = [
+  { execution.type = "BackupCoreDatabase", execution.params = {}, enabled = true }
+]
+
+##
+
+[[procedure]]
+name = "Global Auto Update"
+description = "Pulls and auto updates Stacks and Deployments using 'poll_for_updates' or 'auto_update'."
+tags = ["system"]
+config.schedule = "Every day at 03:00"
+
+[[procedure.config.stage]]
+name = "Stage 1"
+enabled = true
+executions = [
+  { execution.type = "GlobalAutoUpdate", execution.params.skip_auto_update = false, enabled = true }
+]
+
+##
+
+[[procedure]]
+name = "Rotate Server Keys"
+description = "Rotates all currently connected Server keys."
+tags = ["system"]
+config.schedule = "Every day at 06:00"
+
+[[procedure.config.stage]]
+name = "Stage 1"
+enabled = true
+executions = [
+  { execution.type = "RotateAllServerKeys", execution.params = {}, enabled = true }
+]
+
+##
+
+[[procedure]]
+name = "ygg-compose-gitops"
+description = "Deploy changed Docker Compose stacks from ebertek/ygg-compose."
+
+[[procedure.config.stage]]
+name = "Deploy changed stacks"
+enabled = true
+executions = [
+  { execution.type = "BatchDeployStackIfChanged", execution.params.pattern = "ygg-arr, ygg-birdnet, ygg-core, ygg-download, ygg-gramps, ygg-hass, ygg-home, ygg-immich, ygg-mon, ygg-other", execution.params.tags = [], enabled = true }
+]
+
+[[procedure.config.stage]]
+name = "Pull ygg-compose"
+enabled = true
+executions = [
+  { execution.type = "RunAction", execution.params.action = "Pull ygg-compose", execution.params.args = {}, enabled = true }
+]
+
+##
+
+[[action]]
+name = "Pull ygg-compose"
+[action.config]
+file_contents = """
+async function run(server, terminal, command) {
+  console.log(`\\n===== ${server} =====`);
+
+  await komodo.execute_server_terminal(
+    {
+      server,
+      terminal,
+      command,
+      init: {
+        command: "bash",
+      },
+    },
+    {
+      onLine: (line) => console.log(`[${server}] ${line}`),
+      onFinish: (code) => {
+        console.log(`[${server}] Exit code: ${code}`);
+
+        if (Number(code) !== 0) {
+          throw new Error(`${server} failed with exit code ${code}`);
+        }
+      },
+    },
+  );
+}
+
+await run(
+  "hc.ebi.nu",
+  "action-git-pull-hc",
+  "git -C /root/ygg-compose pull --ff-only",
+);
+
+await run(
+  "ygg.ebi.nu",
+  "action-git-pull-ygg",
+  "su -s /bin/sh docker -c 'git -C /volume2/docker/ygg-compose pull --ff-only'",
+);
+"""
+
+##
+
+[[action]]
+name = "hc-sync"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 5 0 * * ?"
+file_contents = """
+await komodo.execute_server_terminal(
+  {
+    server: "hc.ebi.nu",
+    terminal: "action-hc-sync",
+    command: "bash /root/ygg-compose/Scripts/backup/hc-sync.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      console.log("Exit code:", code);
+
+      if (Number(code) !== 0) {
+        throw new Error(`hc-sync failed with exit code ${code}`);
+      }
+    },
+  },
+);
+"""
+
+##
+
+[[action]]
+name = "photo-sync"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 22 * * ?"
+file_contents = """
+await komodo.execute_server_terminal(
+  {
+    server: "ygg.ebi.nu",
+    terminal: "action-photo-sync",
+    command: "bash /volume2/docker/ygg-compose/Scripts/backup/photo-sync.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      console.log("Exit code:", code);
+
+      if (Number(code) !== 0) {
+        throw new Error(`photo-sync failed with exit code ${code}`);
+      }
+    },
+  },
+);
+"""
+
+##
+
+[[action]]
+name = "thang010146"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 23 ? * SAT"
+file_contents = """
+await komodo.execute_server_terminal(
+  {
+    server: "ygg.ebi.nu",
+    terminal: "action-thang010146",
+    command: "bash /volume2/docker/ygg-compose/Scripts/thang010146.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      console.log("Exit code:", code);
+
+      if (Number(code) !== 0) {
+        throw new Error(`thang010146 failed with exit code ${code}`);
+      }
+    },
+  },
+);
+"""
+
+##
+
+[[action]]
+name = "update-nftset"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 0 * * ?"
+file_contents = """
+await komodo.execute_server_terminal(
+  {
+    server: "hc.ebi.nu",
+    terminal: "action-update-nftset",
+    command: "bash /root/ygg-compose/Scripts/update-nftset.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      console.log("Exit code:", code);
+
+      if (Number(code) !== 0) {
+        throw new Error(`update-nftset failed with exit code ${code}`);
+      }
+    },
+  },
+);
+"""
+
+##
+
+[[action]]
+name = "ygg-sync"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 15 ? * TUE"
+file_contents = """
+await komodo.execute_server_terminal(
+  {
+    server: "ygg.ebi.nu",
+    terminal: "action-ygg-sync",
+    command: "bash /volume2/docker/ygg-compose/Scripts/backup/ygg-sync.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      console.log("Exit code:", code);
+
+      if (Number(code) !== 0) {
+        throw new Error(`ygg-sync failed with exit code ${code}`);
+      }
+    },
+  },
+);
+"""
+
+##
+
+[[builder]]
+name = "Pleiades"
+[builder.config]
+type = "Server"
+params.servers = ["pleiades.ygg.nu"]
