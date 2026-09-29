@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 
+readonly PACKAGE="ActiveInsight"
 readonly FILE="/var/packages/ActiveInsight/target/configs/resource_monitor.json"
 readonly KEY="enable_file_activity_module"
 
@@ -12,8 +13,13 @@ error() {
 	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 }
 
+if [ ! -d "/var/packages/$PACKAGE" ]; then
+	log "$PACKAGE package is not installed, skipping"
+	exit 0
+fi
+
 if [ ! -f "$FILE" ]; then
-	error "Active Insight configuration file not found: $FILE"
+	error "$PACKAGE is installed but configuration file was not found: $FILE"
 	exit 1
 fi
 
@@ -23,7 +29,7 @@ if grep -Fq "\"${KEY}\": true" "$FILE"; then
 	sed -i "s/\"${KEY}\": true/\"${KEY}\": false/g" "$FILE"
 
 	log "Restarting ActiveInsight package"
-	synopkg restart ActiveInsight
+	synopkg restart "$PACKAGE"
 
 	log "Active Insight file activity module disabled successfully"
 else
