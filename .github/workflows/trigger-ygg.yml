@@ -50,4 +50,4 @@ jobs:
           if [ "$HTTP_RESPONSE" != "204" ]; then
             echo "Error: repository_dispatch failed with HTTP $HTTP_RESPONSE"
             exit 1
-          fi
+            fi
