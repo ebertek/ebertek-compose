@@ -4,8 +4,7 @@ name: Trigger ygg-compose sync
 on:
   workflow_run:
     workflows: ["Lint"]
-    types:
-      - completed
+    types: [completed]
 
 permissions:
   contents: read
