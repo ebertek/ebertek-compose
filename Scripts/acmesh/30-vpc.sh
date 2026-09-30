@@ -90,19 +90,16 @@ log "Renaming certificate directories"
 sudo mv "$ARCHIVE_DIR/ebertek.com_ecc" "$ARCHIVE_DIR/ebertek.com"
 sudo mv "$ARCHIVE_DIR/linda-ebert.com_ecc" "$ARCHIVE_DIR/linda-ebert.com"
 sudo mv "$ARCHIVE_DIR/tnt.photo_ecc" "$ARCHIVE_DIR/tnt.photo"
-sudo mv "$ARCHIVE_DIR/ld25.se_ecc" "$ARCHIVE_DIR/ld25.se"
 
 log "Updating certificate permissions"
 
 sudo chmod 0644 "$ARCHIVE_DIR/ebertek.com/"*
 sudo chmod 0644 "$ARCHIVE_DIR/linda-ebert.com/"*
 sudo chmod 0644 "$ARCHIVE_DIR/tnt.photo/"*
-sudo chmod 0644 "$ARCHIVE_DIR/ld25.se/"*
 
 sudo chmod 0600 "$ARCHIVE_DIR/ebertek.com/ebertek.com.key"
 sudo chmod 0600 "$ARCHIVE_DIR/linda-ebert.com/linda-ebert.com.key"
 sudo chmod 0600 "$ARCHIVE_DIR/tnt.photo/tnt.photo.key"
-sudo chmod 0600 "$ARCHIVE_DIR/ld25.se/ld25.se.key"
 
 sudo chown -R 101:101 "$ARCHIVE_DIR"
 

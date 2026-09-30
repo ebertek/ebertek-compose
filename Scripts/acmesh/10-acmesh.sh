@@ -17,11 +17,10 @@ error() {
 
 certificate_state() {
 	for file in \
-		"$ACME_HOME/ebi.nu_ecc/fullchain.cer" \
-		"$ACME_HOME/tnt.photo_ecc/fullchain.cer" \
-		"$ACME_HOME/linda-ebert.com_ecc/fullchain.cer" \
 		"$ACME_HOME/ebertek.com_ecc/fullchain.cer" \
-		"$ACME_HOME/ld25.se_ecc/fullchain.cer"; do
+		"$ACME_HOME/ebi.nu_ecc/fullchain.cer" \
+		"$ACME_HOME/linda-ebert.com_ecc/fullchain.cer" \
+		"$ACME_HOME/tnt.photo_ecc/fullchain.cer"; do
 
 		if [ -f "$file" ]; then
 			sha256sum "$file"
