@@ -284,9 +284,133 @@ await run(
 );
 
 await run(
+  "pleiades.ygg.nu",
+  "action-git-pull-pleiades",
+  "su -s /bin/sh docker -c 'git -C /home/docker/ygg-compose pull --ff-only'",
+);
+
+await run(
   "ygg.ebi.nu",
   "action-git-pull-ygg",
   "su -s /bin/sh docker -c 'git -C /volume2/docker/ygg-compose pull --ff-only'",
+);
+"""
+
+##
+
+[[action]]
+name = "Update SSL certificates"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 4 ? * SUN"
+file_contents = """
+const pleiades = {
+  server: "pleiades.ygg.nu",
+  base: "/home/docker/ygg-compose/Scripts/acmesh",
+};
+
+const ygg = {
+  server: "ygg.ebi.nu",
+  base: "/volume2/docker/ygg-compose/Scripts/acmesh",
+};
+
+async function run(target, script) {
+  console.log(`\\n===== ${script} @ ${target.server} =====`);
+
+  let exitCode = 0;
+
+  await komodo.execute_server_terminal(
+    {
+      server: target.server,
+      terminal: `action-ssl-${script.replace(".sh", "")}`,
+      command: `bash ${target.base}/${script}`,
+      init: {
+        command: "bash",
+      },
+    },
+    {
+      onLine: (line) =>
+        console.log(`[${target.server}] [${script}] ${line}`),
+      onFinish: (code) => {
+        exitCode = Number(code);
+
+        console.log(
+          `[${target.server}] [${script}] Exit code: ${exitCode}`,
+        );
+      },
+    },
+  );
+
+  return exitCode;
+}
+
+const acmeshCode = await run(pleiades, "10-acmesh.sh");
+
+if (acmeshCode === 10) {
+  console.log(
+    "\\nNo certificates were renewed; deployment steps are not required.",
+  );
+  return;
+}
+
+if (acmeshCode !== 0) {
+  throw new Error(
+    `10-acmesh.sh failed with exit code ${acmeshCode}`,
+  );
+}
+
+const failures = [];
+
+for (const script of [
+  "20-plex.sh",
+  "30-vpc.sh",
+]) {
+  const code = await run(pleiades, script);
+
+  if (code !== 0) {
+    failures.push(`${script} (${code})`);
+  }
+}
+
+const synoCopyCode = await run(
+  pleiades,
+  "40-syno-copy.sh",
+);
+
+if (synoCopyCode !== 0) {
+  failures.push(
+    `40-syno-copy.sh (${synoCopyCode})`,
+  );
+} else {
+  const synoInstallCode = await run(
+    ygg,
+    "41-syno-install.sh",
+  );
+
+  if (synoInstallCode !== 0) {
+    failures.push(
+      `41-syno-install.sh (${synoInstallCode})`,
+    );
+  }
+}
+
+const hassCode = await run(
+  pleiades,
+  "50-hass.sh",
+);
+
+if (hassCode !== 0) {
+  failures.push(`50-hass.sh (${hassCode})`);
+}
+
+if (failures.length > 0) {
+  throw new Error(
+    `SSL certificate deployment completed with failures: ${failures.join(", ")}`,
+  );
+}
+
+console.log(
+  "\\nAll renewed certificates were deployed successfully",
 );
 """
 
