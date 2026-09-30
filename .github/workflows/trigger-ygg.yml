@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: trigger-ygg-compose-sync
+  cancel-in-progress: true
+
 jobs:
   dispatch:
     if: >-
@@ -19,22 +23,31 @@ jobs:
         github.event.workflow_run.head_branch == 'main'
       }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Send repository_dispatch to ygg-compose
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          set -e
+          set -euo pipefail
 
           echo "Sending repository_dispatch to ygg-compose..."
 
-          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null \
-            -X POST https://api.github.com/repos/ebertek/ygg-compose/dispatches \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-            -d '{"event_type": "trigger-sync"}')
+          HTTP_RESPONSE=$(
+            curl --silent --show-error \
+              --write-out "%{http_code}" \
+              --output /dev/null \
+              --request POST \
+              --url "https://api.github.com/repos/ebertek/ygg-compose/dispatches" \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header "X-GitHub-Api-Version: 2026-03-10" \
+              --data '{"event_type":"trigger-sync"}'
+          )
 
-          echo "HTTP Response: $HTTP_RESPONSE"
+          echo "HTTP response: $HTTP_RESPONSE"
 
-          if [ "$HTTP_RESPONSE" -ne 204 ]; then
-            echo "Error: Failed to dispatch event. HTTP Status: $HTTP_RESPONSE"
+          if [ "$HTTP_RESPONSE" != "204" ]; then
+            echo "Error: repository_dispatch failed with HTTP $HTTP_RESPONSE"
             exit 1
           fi
