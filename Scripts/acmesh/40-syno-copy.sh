@@ -34,6 +34,7 @@ ssh \
 log "Copying certificate files to ${REMOTE_HOST}"
 
 scp \
+	-O \
 	-P "$REMOTE_PORT" \
 	"${SOURCE_DIR}/ebi.nu.cer" \
 	"${SOURCE_DIR}/ca.cer" \

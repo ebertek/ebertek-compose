@@ -5,12 +5,30 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SCRIPT_NAME=$(basename "$0")
 ENV_FILE="${SCRIPT_DIR}/${SCRIPT_NAME%.sh}.txt"
 
+ACME_HOME="/volume2/docker/acmesh"
+
 log() {
 	printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
 }
 
 error() {
 	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
+}
+
+certificate_state() {
+	for file in \
+		"$ACME_HOME/ebi.nu_ecc/fullchain.cer" \
+		"$ACME_HOME/tnt.photo_ecc/fullchain.cer" \
+		"$ACME_HOME/linda-ebert.com_ecc/fullchain.cer" \
+		"$ACME_HOME/ebertek.com_ecc/fullchain.cer" \
+		"$ACME_HOME/ld25.se_ecc/fullchain.cer"; do
+
+		if [ -f "$file" ]; then
+			sha256sum "$file"
+		else
+			printf 'MISSING %s\n' "$file"
+		fi
+	done
 }
 
 if [ ! -f "$ENV_FILE" ]; then
@@ -47,54 +65,22 @@ fi
 
 log "Using acmesh container $ACMESH_CONTAINER"
 
-log "Issuing certificate for ebi.nu and ygg.nu"
-docker exec "$ACMESH_CONTAINER" \
-	--issue \
-	-d ebi.nu \
-	-d '*.ebi.nu' \
-	-d ygg.nu \
-	-d '*.ygg.nu' \
-	--server letsencrypt \
-	--dns dns_cf \
-	--force
+before=$(certificate_state)
 
-log "Issuing certificate for tnt.photo"
-docker exec "$ACMESH_CONTAINER" \
-	--issue \
-	-d tnt.photo \
-	-d '*.tnt.photo' \
-	--server letsencrypt \
-	--dns dns_cf \
-	--force
+log "Checking certificates for renewal"
 
-log "Issuing certificate for linda-ebert.com"
 docker exec "$ACMESH_CONTAINER" \
-	--issue \
-	-d linda-ebert.com \
-	-d '*.linda-ebert.com' \
-	--server letsencrypt \
-	--dns dns_cf \
-	--force
+	--renew-all \
+	--treat-skip-as-success
 
-log "Issuing certificate for ebertek.com"
-docker exec "$ACMESH_CONTAINER" \
-	--issue \
-	-d ebertek.com \
-	-d '*.ebertek.com' \
-	--server letsencrypt \
-	--dns dns_cf \
-	--force
+after=$(certificate_state)
 
-log "Issuing certificates for ld25.se and lindi-david.se"
-docker exec "$ACMESH_CONTAINER" \
-	--issue \
-	-d ld25.se \
-	-d '*.ld25.se' \
-	-d lindi-david.se \
-	-d '*.lindi-david.se' \
-	--server letsencrypt \
-	--dns dns_cf \
-	--force
+if [ "$before" = "$after" ]; then
+	log "No certificates were renewed"
+	exit 10
+fi
+
+log "One or more certificates were renewed"
 
 log "Exporting ebi.nu certificate to PKCS"
 docker exec "$ACMESH_CONTAINER" \
@@ -108,4 +94,4 @@ docker exec "$ACMESH_CONTAINER" \
 	-d tnt.photo \
 	--password "$PASSWORD"
 
-log "acme.sh certificate update completed successfully"
+log "acme.sh certificate renewal completed successfully"
