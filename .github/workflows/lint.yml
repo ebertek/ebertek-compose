@@ -47,12 +47,11 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_PYTHON_RUFF_FORMAT: false
           VALIDATE_SPELL_CODESPELL: false
-          VALIDATE_YAML_PRETTIER: true
 
       - name: Show YAML Prettier diff on failure
         if: failure()
         run: |
-          npx --yes prettier@3.6.2 --write '**/*.{yml,yaml}'
+          npx --yes prettier@3.8.4 --write '**/*.{yml,yaml}'
           git diff
 
   compose-config:
