@@ -7,7 +7,6 @@ readonly SOURCE_DIR="/volume2/docker/acmesh/ebi.nu_ecc"
 readonly REMOTE_HOST="ygg.ebi.nu"
 readonly REMOTE_USER="Hannibal"
 readonly REMOTE_PORT="38022"
-
 readonly REMOTE_TMP="/tmp/ygg-syno-cert"
 
 log() {
@@ -18,7 +17,7 @@ error() {
 	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 }
 
-for file in cert.pem fullchain.pem privkey.pem; do
+for file in ebi.nu.cer ca.cer fullchain.cer ebi.nu.key; do
 	if [[ ! -f "${SOURCE_DIR}/${file}" ]]; then
 		error "Certificate source not found: ${SOURCE_DIR}/${file}"
 		exit 1
@@ -36,9 +35,10 @@ log "Copying certificate files to ${REMOTE_HOST}"
 
 scp \
 	-P "$REMOTE_PORT" \
-	"${SOURCE_DIR}/cert.pem" \
-	"${SOURCE_DIR}/fullchain.pem" \
-	"${SOURCE_DIR}/privkey.pem" \
+	"${SOURCE_DIR}/ebi.nu.cer" \
+	"${SOURCE_DIR}/ca.cer" \
+	"${SOURCE_DIR}/fullchain.cer" \
+	"${SOURCE_DIR}/ebi.nu.key" \
 	"${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_TMP}/"
 
 log "Synology certificate files copied successfully"

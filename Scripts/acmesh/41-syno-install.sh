@@ -1,5 +1,6 @@
-#!/bin/sh
-set -eu
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 readonly CERT_DESC="Yggdrasil wildcard"
 readonly ARCHIVE_ROOT="/usr/syno/etc/certificate/_archive"
@@ -14,19 +15,19 @@ error() {
 	printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >&2
 }
 
-if [ "$(id -u)" -ne 0 ]; then
+if [[ "$(id -u)" -ne 0 ]]; then
 	error "This script must be run as root"
 	exit 1
 fi
 
-for file in cert.pem fullchain.pem privkey.pem; do
-	if [ ! -f "${SOURCE_DIR}/${file}" ]; then
+for file in ebi.nu.cer ca.cer fullchain.cer ebi.nu.key; do
+	if [[ ! -f "${SOURCE_DIR}/${file}" ]]; then
 		error "Certificate source not found: ${SOURCE_DIR}/${file}"
 		exit 1
 	fi
 done
 
-if [ ! -f "$INFO_FILE" ]; then
+if [[ ! -f "$INFO_FILE" ]]; then
 	error "Synology certificate metadata not found: $INFO_FILE"
 	exit 1
 fi
@@ -62,24 +63,27 @@ PY
 
 DEST="${ARCHIVE_ROOT}/${cert_id}"
 
-if [ ! -d "$DEST" ]; then
+if [[ ! -d "$DEST" ]]; then
 	error "Synology certificate destination not found: $DEST"
 	exit 1
 fi
 
 log "Installing certificate into ${DEST}"
 
-cp "${SOURCE_DIR}/cert.pem" "${DEST}/cert.pem"
-cp "${SOURCE_DIR}/fullchain.pem" "${DEST}/fullchain.pem"
-cp "${SOURCE_DIR}/privkey.pem" "${DEST}/privkey.pem"
+cp "${SOURCE_DIR}/ebi.nu.cer" "${DEST}/cert.pem"
+cp "${SOURCE_DIR}/ca.cer" "${DEST}/chain.pem"
+cp "${SOURCE_DIR}/fullchain.cer" "${DEST}/fullchain.pem"
+cp "${SOURCE_DIR}/ebi.nu.key" "${DEST}/privkey.pem"
 
 chown root:root \
 	"${DEST}/cert.pem" \
+	"${DEST}/chain.pem" \
 	"${DEST}/fullchain.pem" \
 	"${DEST}/privkey.pem"
 
 chmod 0400 \
 	"${DEST}/cert.pem" \
+	"${DEST}/chain.pem" \
 	"${DEST}/fullchain.pem" \
 	"${DEST}/privkey.pem"
 
