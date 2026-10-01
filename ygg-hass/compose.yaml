@@ -576,7 +576,7 @@ services:
         ]
       timeout: 5s
     hostname: zigbee2mqtt
-    image: "docker.io/koenkk/zigbee2mqtt:2.14.1"
+    image: "docker.io/koenkk/zigbee2mqtt:2.14.2"
     labels:
       traefik.enable: "true"
       traefik.http.routers.zigbee2mqtt.entrypoints: "websecure"
