@@ -173,7 +173,7 @@ services:
       test: ["CMD", "plextraktsync", "healthcheck"]
       timeout: 10s
     hostname: plextraktsync
-    image: "ghcr.io/taxel/plextraktsync:0.35.18"
+    image: "ghcr.io/taxel/plextraktsync:0.35.19"
     mac_address: "0e:be:00:da:00:94"
     networks:
       macvlan1:
