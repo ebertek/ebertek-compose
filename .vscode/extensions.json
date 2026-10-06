@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "docker.docker",
+    "esbenp.prettier-vscode",
     "ESPHome.esphome-vscode",
     "github.vscode-github-actions",
     "Grafana.grafana-alloy",
