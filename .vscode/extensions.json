@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "docker.docker",
+    "ESPHome.esphome-vscode",
+    "github.vscode-github-actions",
+    "Grafana.grafana-alloy",
+    "keesschollaart.vscode-home-assistant",
+    "redhat.vscode-xml",
+    "redhat.vscode-yaml"
+  ]
+}
