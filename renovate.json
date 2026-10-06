@@ -1,4 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"]
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "allowedVersions": "/^0\\.\\d+\\.\\d+$/",
+      "description": "Ignore Ofelia's legacy/inconsistent v-prefixed tags",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["mcuadros/ofelia"]
+    }
+  ]
 }
