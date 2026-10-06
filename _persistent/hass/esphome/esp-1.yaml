@@ -290,20 +290,25 @@ sensor:
 
   - platform: template
     accuracy_decimals: 2
+    device_class: pressure
     filters:
       - filter_out: nan
-    icon: "mdi:gauge"
+    icon: "mdi:waves-arrow-up"
     id: aht20_vpd
     lambda: |-
-      if (isnan(id(aht20_t).state) || isnan(id(aht20_h).state))
-        return NAN;
+      const float temperature = id(aht20_t).state;
+      const float humidity = id(aht20_h).state;
 
-      return ((100.0 - id(aht20_h).state) / 100.0) *
-            (0.6108 * exp(
-              (17.27 * id(aht20_t).state) /
-              (id(aht20_t).state + 237.3)
-            ));
+      if (isnan(temperature) || isnan(humidity)) {
+        return NAN;
+      }
+
+      const float saturation_vapor_pressure =
+          0.6108f * expf((17.27f * temperature) / (temperature + 237.3f));
+
+      return saturation_vapor_pressure * (1.0f - humidity / 100.0f);
     name: VPD
+    state_class: measurement
     update_interval: 60s
     unit_of_measurement: kPa
   - platform: adc
