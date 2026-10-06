@@ -1,6 +1,15 @@
 {
+  "docker.lsp.experimental.scout.criticalHighVulnerabilities": false,
+  "editor.formatOnSave": true,
   "files.associations": {
     "**/_persistent/hass/config/*.yaml": "home-assistant",
-    "**/_persistent/hass/esphome/*.yaml": "esphome"
-  }
+    "**/_persistent/hass/esphome/*.yaml": "esphome",
+    "**/compose.yaml": "dockercompose",
+    "**/compose.yml": "dockercompose",
+    "**/*.alloy": "alloy",
+    "**/*.labels": "properties"
+  },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true
 }
