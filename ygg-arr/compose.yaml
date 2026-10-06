@@ -297,7 +297,7 @@ services:
       test: ["CMD-SHELL", "recyclarr --version >/dev/null 2>&1 || exit 1"]
       timeout: 5s
     hostname: recyclarr
-    image: "ghcr.io/recyclarr/recyclarr:8.7.2"
+    image: "ghcr.io/recyclarr/recyclarr:8.7.3"
     mac_address: "0e:be:00:da:00:62"
     networks:
       macvlan1:
