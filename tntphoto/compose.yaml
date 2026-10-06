@@ -54,6 +54,7 @@ services:
       - "127.0.0.1:3306:3306"
     ulimits:
       memlock: 262144
+    # user: 999
     volumes:
       - *tz
       - "/mnt/data/tntphoto_mariadb_config/_data/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro"

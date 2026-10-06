@@ -379,7 +379,7 @@ services:
     security_opt:
       - "apparmor:unconfined"
     stop_grace_period: 30s
-    user: "1000:1000"
+    user: 1000:1000
     volumes:
       - *tz
       - "/run/dbus:/run/dbus"

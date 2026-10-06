@@ -70,8 +70,6 @@ services:
           memory: "48M"
     environment:
       <<: *env
-      PUID: "100"
-      PGID: "101"
     healthcheck:
       interval: 1m
       retries: 5
@@ -81,6 +79,7 @@ services:
     hostname: bind9
     image: "docker.io/ubuntu/bind9:9.20-26.04_stable"
     network_mode: host
+    # user: 584792
     volumes:
       - *tz
       - "/mnt/data/ebertek_bind9_data/_data/etc/bind:/etc/bind"

@@ -334,7 +334,7 @@ services:
       - postgres-passwd
       - postgres-user
     shm_size: 128mb
-    user: "999:999"
+    user: 999:999
     volumes:
       - *tz
       - "/volume2/docker/postgres:/var/lib/postgresql"
