@@ -87,7 +87,7 @@ services:
       - 10.64.0.1
       - 10.4.21.34
       - 1.1.1.1
-    env_file: gluetun.txt
+    env_file: gluetun.env
     environment:
       <<: *env
       BLOCK_MALICIOUS: "off"

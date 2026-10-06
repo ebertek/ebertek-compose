@@ -39,7 +39,7 @@ services:
         reservations:
           cpus: "0.1"
           memory: "160M"
-    env_file: mariadb.txt
+    env_file: mariadb.env
     environment:
       <<: *env
       MARIADB_AUTO_UPGRADE: "1"
@@ -121,7 +121,7 @@ services:
         reservations:
           cpus: "0.1"
           memory: "192M"
-    env_file: wordpress.txt
+    env_file: wordpress.env
     environment:
       <<: *env
       PUID: "82"

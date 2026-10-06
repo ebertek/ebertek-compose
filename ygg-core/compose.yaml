@@ -101,7 +101,7 @@ services:
         reservations:
           cpus: "0.02"
           memory: "32M"
-    env_file: cloudflared.txt
+    env_file: cloudflared.env
     environment:
       <<: *env
       TUNNEL_METRICS: "0.0.0.0:60123"
@@ -187,7 +187,7 @@ services:
         reservations:
           cpus: "0.1"
           memory: "384M"
-    env_file: keycloak.txt
+    env_file: keycloak.env
     environment:
       <<: *env
       JAVA_OPTS_KC_HEAP: "-Xms256m -Xmx1024m"
@@ -246,7 +246,7 @@ services:
         reservations:
           cpus: "0.01"
           memory: "16M"
-    env_file: oauth2-proxy.txt
+    env_file: oauth2-proxy.env
     environment:
       <<: *env
       OAUTH2_PROXY_CLIENT_ID: "oauth2-proxy"

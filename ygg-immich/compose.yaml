@@ -53,7 +53,7 @@ services:
           memory: "384M"
     devices:
       - /dev/dri:/dev/dri
-    env_file: db.txt
+    env_file: db.env
     environment:
       <<: *env
       IMMICH_TELEMETRY_INCLUDE: "all"
@@ -100,7 +100,7 @@ services:
     devices:
       - /dev/accel:/dev/accel
       - /dev/dri:/dev/dri
-    env_file: db.txt
+    env_file: db.env
     environment:
       <<: *env
       NO_COLOR: "true"
@@ -136,8 +136,8 @@ services:
           cpus: "0.05"
           memory: "196M"
     env_file:
-      - db.txt
-      - pg.txt
+      - db.env
+      - pg.env
     environment:
       <<: *env
       POSTGRES_DB: "immich"
@@ -173,7 +173,7 @@ services:
         reservations:
           cpus: "0.02"
           memory: "32M"
-    env_file: db.txt
+    env_file: db.env
     environment:
       <<: *env
     healthcheck:

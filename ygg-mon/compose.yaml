@@ -138,7 +138,7 @@ services:
             editable: false
         EOF
         exec /run.sh
-    env_file: grafana.txt
+    env_file: grafana.env
     environment:
       <<: *env
       GF_AUTH_GENERIC_OAUTH_ENABLED: "true"

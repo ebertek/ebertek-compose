@@ -44,7 +44,7 @@ services:
         reservations:
           cpus: "0.02"
           memory: "64M"
-    env_file: bjornify.txt
+    env_file: bjornify.env
     environment:
       <<: *env
     hostname: bjornify
@@ -117,7 +117,7 @@ services:
         reservations:
           cpus: "0.1"
           memory: "128M"
-    env_file: plex.txt
+    env_file: plex.env
     environment:
       <<: *env
       PLEX_UID: "1028"

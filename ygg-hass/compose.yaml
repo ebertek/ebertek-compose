@@ -52,7 +52,7 @@ services:
         reservations:
           cpus: "0.02"
           memory: "64M"
-    # env_file: esphome.txt
+    # env_file: esphome.env
     environment:
       <<: *env
     hostname: esphome
@@ -92,7 +92,7 @@ services:
     devices:
       - "/dev/accel:/dev/accel"
       - "/dev/dri/renderD128:/dev/dri/renderD128"
-    env_file: frigate.txt
+    env_file: frigate.env
     environment:
       <<: *env
     group_add:
@@ -469,7 +469,6 @@ services:
           memory: "1024M"
     devices:
       - "/dev/dri:/dev/dri"
-    env_file: scrypted.txt
     environment:
       <<: *env
       SCRYPTED_DOCKER_AVAHI: "true"
@@ -524,7 +523,7 @@ services:
         reservations:
           cpus: "0.01"
           memory: "32M"
-    env_file: vonage.txt
+    env_file: vonage.env
     environment:
       <<: *env
       BASE_URL: "https://vonage.ebi.nu"

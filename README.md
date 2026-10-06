@@ -215,7 +215,7 @@ For legacy Synology deployments:
    - `networks`
    - `user`
    - `volumes`
-2. Update the `.txt` files with your own secrets.
+2. Update the `.env` and `.txt` files with your own secrets.
 3. Deploy:
 
    ```sh

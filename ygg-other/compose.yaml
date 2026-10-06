@@ -39,7 +39,7 @@ services:
         reservations:
           cpus: "0.01"
           memory: "16M"
-    env_file: acmesh.txt
+    env_file: acmesh.env
     environment:
       <<: *env
       PUID: "1028"
@@ -84,7 +84,7 @@ services:
         reservations:
           cpus: "0.02"
           memory: "64M"
-    env_file: atuin.txt
+    env_file: atuin.env
     environment:
       <<: *env
       ATUIN_HOST: "0.0.0.0"
@@ -247,7 +247,7 @@ services:
         reservations:
           cpus: "0.05"
           memory: "128M"
-    env_file: atuin.txt
+    env_file: atuin.env
     environment:
       <<: *env
     healthcheck:
@@ -284,7 +284,7 @@ services:
         reservations:
           cpus: "0.01"
           memory: "32M"
-    env_file: smtp.txt
+    env_file: smtp.env
     environment:
       <<: *env
       POSTCONF_compatibility_level: "2"
@@ -330,7 +330,7 @@ services:
         reservations:
           cpus: "0.01"
           memory: "32M"
-    env_file: vw.txt
+    env_file: vw.env
     environment:
       <<: *env
       PUID: "1028"
