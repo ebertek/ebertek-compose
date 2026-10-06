@@ -25,8 +25,9 @@ RUN set -eux; \
 	apk del --no-network .build-deps
 
 HEALTHCHECK --interval=1m --timeout=10s --start-period=60s --retries=3 \
-	CMD php-fpm -t >/dev/null 2>&1 || exit 1
+	CMD ["php-fpm", "-t"]
 
+# hadolint ignore=DL3066
 USER www-data
 
 CMD ["php-fpm"]
