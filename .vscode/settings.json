@@ -11,5 +11,8 @@
   },
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "json.schemaDownload.trustedDomains": {
+    "https://docs.renovatebot.com": true
+  }
 }
