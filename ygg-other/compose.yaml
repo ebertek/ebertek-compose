@@ -354,7 +354,7 @@ services:
       TRASH_AUTO_DELETE_DAYS: "30"
       WEBSOCKET_ENABLED: "true"
     hostname: vw
-    image: "ghcr.io/dani-garcia/vaultwarden:1.37.3"
+    image: "ghcr.io/dani-garcia/vaultwarden:1.37.4"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vw.entrypoints: "websecure"
