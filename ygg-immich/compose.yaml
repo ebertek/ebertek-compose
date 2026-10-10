@@ -62,7 +62,7 @@ services:
       - "44"
       - "991"
     hostname: immich
-    image: "ghcr.io/immich-app/immich-server:v3.2.4"
+    image: "ghcr.io/immich-app/immich-server:v3.3.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.immich.entrypoints: "websecure"
@@ -108,7 +108,7 @@ services:
       - "44"
       - "991"
     hostname: immich-machine-learning
-    image: "ghcr.io/immich-app/immich-machine-learning:v3.2.4-openvino"
+    image: "ghcr.io/immich-app/immich-machine-learning:v3.3.1-openvino"
     labels:
       autoheal: "true"
     mac_address: "0e:be:00:da:00:49"
