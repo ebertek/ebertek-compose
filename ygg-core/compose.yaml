@@ -35,28 +35,6 @@ secrets:
     file: postgres-user.txt
 
 services:
-  autoheal:
-    container_name: autoheal
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: "1"
-          memory: "128M"
-        reservations:
-          cpus: "0.01"
-          memory: "8M"
-    environment:
-      AUTOHEAL_INTERVAL: "30"
-      AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
-      AUTOHEAL_START_PERIOD: "120"
-    image: "docker.io/willfarrell/autoheal:latest@sha256:d57aa4ac8d5aa5a8616c66db9e0db3173d2d084cc9eb4bf9d4819d8b7aaaa527"
-    network_mode: none
-    restart: always
-    volumes:
-      - *tz
-      - "/var/run/docker.sock:/var/run/docker.sock"
-
   cloudflare-ddns:
     <<: *common
     cap_drop: [all]
