@@ -51,7 +51,6 @@ Main areas:
 
 ### [ygg-core/](ygg-core/)
 
-- **[autoheal](https://hub.docker.com/r/willfarrell/autoheal)**: Monitor and restart unhealthy docker containers.
 - **[cloudflare-ddns](https://hub.docker.com/r/favonia/cloudflare-ddns)**: A small, feature-rich, and robust Cloudflare DDNS updater.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
