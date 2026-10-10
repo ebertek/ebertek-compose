@@ -103,6 +103,7 @@ services:
     env_file: db.env
     environment:
       <<: *env
+      MACHINE_LEARNING_MODEL_REVISION: "v2"
       NO_COLOR: "true"
     group_add:
       - "44"
