@@ -1,0 +1,30 @@
+---
+name: Security
+
+on: # yamllint disable-line rule:truthy
+  push: null
+  pull_request: null
+  workflow_dispatch: null
+
+permissions:
+  contents: read
+
+jobs:
+  trivy:
+    name: Trivy - Misconfigurations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Scan repository
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "0"
