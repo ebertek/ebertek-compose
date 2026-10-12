@@ -299,6 +299,63 @@ await run(
 ##
 
 [[action]]
+name = "Update Linux hosts"
+[action.config]
+file_contents = """
+
+const servers = [
+  {
+    name: "hc.ebi.nu",
+    command:
+      "dnf upgrade --refresh -y && " +
+      "dnf autoremove -y && " +
+      "dnf clean all && uptime",
+  },
+  {
+    name: "pleiades.ygg.nu",
+    command:
+      "apt-get update && " +
+      "DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y && " +
+      "DEBIAN_FRONTEND=noninteractive apt-get autoremove --purge -y && " +
+      "apt-get autoclean && uptime",
+  },
+];
+
+for (const server of servers) {
+  console.log(`Updating ${server.name}...`);
+
+  let exitCode: number | undefined;
+
+  await komodo.execute_server_terminal(
+    {
+      server: server.name,
+      terminal: "system-update",
+      command: server.command,
+      init: {
+        command: "bash",
+        recreate: Types.TerminalRecreateMode.Always,
+      },
+    },
+    {
+      onLine: (line) => console.log(`[${server.name}] ${line}`),
+      onFinish: (code) => {
+        exitCode = Number(code);
+        console.log(`[${server.name}] Exit code: ${code}`);
+      },
+    },
+  );
+
+  if (exitCode !== 0) {
+    throw new Error(`${server.name} update failed: ${exitCode}`);
+  }
+
+  console.log(`${server.name} updated successfully.`);
+}
+"""
+
+##
+
+[[action]]
 name = "Update SSL certificates"
 [action.config]
 schedule_format = "Cron"
