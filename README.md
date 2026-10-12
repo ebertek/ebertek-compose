@@ -206,18 +206,20 @@ For legacy Synology deployments:
 ## Usage
 
 1. Update the following elements in `compose.yaml` to work with your environment:
-  - `dns`
-  - `dns_search`
-  - `environment`
-  - `extra_hosts`
-  - `mac_address`
-  - `networks`
-  - `user`
-  - `volumes`
+
+- `dns`
+- `dns_search`
+- `environment`
+- `extra_hosts`
+- `mac_address`
+- `networks`
+- `user`
+- `volumes`
+
 2. Update the `.env` and `.txt` files with your own secrets.
 3. Deploy:
 
-  ```sh
-  cd <folder-name>
-  docker compose up -d
-  ```
+```sh
+cd <folder-name>
+docker compose up -d
+```

@@ -131,6 +131,7 @@ compose_dirs_reverse() {
 # Called from within the relevant Compose directory.
 #
 nfs_services() {
+	# editorconfig-checker-disable
 	compose --profile nfs config --format json |
 		python3 -c '
 import json
@@ -143,6 +144,7 @@ for name, service in services.items():
     if "nfs" in service.get("profiles", []):
         print(name)
 '
+	# editorconfig-checker-enable
 }
 
 #
