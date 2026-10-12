@@ -208,7 +208,7 @@ services:
       interval: 60s
       retries: 3
       start_period: 30s
-      test: ["CMD-SHELL", "test \"$(cat /proc/1/comm)\" = ofelia"]
+      test: ["CMD-SHELL", 'test "$(cat /proc/1/comm)" = ofelia']
       timeout: 10s
     image: "docker.io/mcuadros/ofelia:0.3.22"
     labels:
