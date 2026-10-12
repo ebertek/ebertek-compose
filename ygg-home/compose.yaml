@@ -170,7 +170,7 @@ services:
       interval: 60s
       retries: 3
       start_period: 30s
-      test: ["CMD", "plextraktsync", "healthcheck"]
+      test: ["CMD", "plextraktsync", "healthcheck", "--max-age", "300"]
       timeout: 10s
     hostname: plextraktsync
     image: "ghcr.io/taxel/plextraktsync:0.35.19"
@@ -181,7 +181,6 @@ services:
         ipv6_address: fd0e:be00:da00:20:421::94
     profiles:
       - nfs
-    restart: on-failure:2
     tmpfs:
       - /app/xdg
     volumes:
