@@ -33,6 +33,7 @@ if [[ ! -f "$INFO_FILE" ]]; then
 fi
 
 cert_id=$(
+	# editorconfig-checker-disable
 	python3 - "$CERT_DESC" "$INFO_FILE" <<'PY'
 import json
 import sys
@@ -59,6 +60,7 @@ if len(matches) != 1:
 
 print(matches[0])
 PY
+	# editorconfig-checker-enable
 )
 
 DEST="${ARCHIVE_ROOT}/${cert_id}"

@@ -317,6 +317,7 @@ list_nfs_services() {
 }
 
 usage() {
+	# editorconfig-checker-disable
 	cat <<EOF
 Usage: $(basename "$0") {up-core|stop-core|up-nfs|stop-nfs|list|list-nfs}
 
@@ -335,6 +336,7 @@ Environment:
   Automatic .env loading is disabled.
   COMPOSE_PROFILES is cleared unless --profile nfs is explicitly used.
 EOF
+	# editorconfig-checker-enable
 }
 
 main() {
