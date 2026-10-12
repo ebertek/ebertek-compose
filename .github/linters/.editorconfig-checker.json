@@ -1,0 +1,3 @@
+{
+  "Exclude": ["^komodo/resources\\.(toml|yaml)$"]
+}
