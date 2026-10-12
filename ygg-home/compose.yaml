@@ -204,6 +204,12 @@ services:
           memory: "16M"
     environment:
       <<: *env
+    healthcheck:
+      interval: 60s
+      retries: 3
+      start_period: 30s
+      test: ["CMD", "pgrep", "-x", "ofelia"]
+      timeout: 10s
     image: "docker.io/mcuadros/ofelia:0.3.22"
     labels:
       ofelia.job-run.plextraktsync.schedule: "@every 6h"
