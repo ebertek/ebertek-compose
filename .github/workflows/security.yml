@@ -5,13 +5,15 @@ on: # yamllint disable-line rule:truthy
   push: null
   pull_request: null
   workflow_dispatch: null
+  schedule:
+    - cron: "0 4 * * 0"
 
 permissions:
   contents: read
 
 jobs:
-  trivy:
-    name: Trivy - Misconfigurations
+  trivy-repository:
+    name: Trivy - Repository
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +25,101 @@ jobs:
       - name: Scan repository
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: config
+          scan-type: fs
           scan-ref: .
+          scanners: vuln,secret,misconfig,license
           format: table
-          severity: HIGH,CRITICAL
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          exit-code: "0"
+
+  discover-images:
+    name: Discover container images
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    outputs:
+      images: ${{ steps.discover.outputs.images }}
+      has_images: ${{ steps.discover.outputs.has_images }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install YAML parser
+        run: python3 -m pip install --user PyYAML
+
+      - name: Discover images
+        id: discover
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          import yaml
+
+          images = set()
+
+          for path in Path(".").rglob("*"):
+              if path.name not in ("compose.yaml", "compose.yml"):
+                  continue
+
+              with path.open(encoding="utf-8") as f:
+                  data = yaml.safe_load(f) or {}
+
+              if not isinstance(data, dict):
+                  continue
+
+              for service in (data.get("services") or {}).values():
+                  if not isinstance(service, dict):
+                      continue
+
+                  image = service.get("image")
+
+                  if not isinstance(image, str):
+                      continue
+
+                  # Unresolved Compose variables cannot be scanned.
+                  if "$" in image:
+                      print(f"Skipping unresolved image: {image}")
+                      continue
+
+                  images.add(image)
+
+          result = sorted(images)
+
+          print(f"Discovered {len(result)} unique images")
+
+          if len(result) > 256:
+              raise SystemExit("Too many images for one matrix")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"images={json.dumps(result)}\n")
+              f.write(f"has_images={str(bool(result)).lower()}\n")
+          PY
+
+  trivy-images:
+    name: Trivy - ${{ matrix.image }}
+    needs: discover-images
+    if: needs.discover-images.outputs.has_images == 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        image: ${{ fromJSON(needs.discover-images.outputs.images) }}
+
+    steps:
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ matrix.image }}
+          scanners: vuln,secret,misconfig,license
+          format: table
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
           exit-code: "0"
