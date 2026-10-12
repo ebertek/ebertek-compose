@@ -64,8 +64,8 @@ jobs:
 
       - name: Validate docker compose config
         run: |
-          find . -name 'compose.yaml' -print0 \
+          find . -type f -name 'compose.yaml' -print0 \
             | while IFS= read -r -d '' file; do
               echo "Validating $file"
-              docker compose -f "$file" config
+              docker compose -f "$file" config --quiet
             done
