@@ -69,3 +69,19 @@ jobs:
               echo "Validating $file"
               docker compose -f "$file" config --quiet
             done
+
+  renovate-config:
+    name: Renovate configuration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Validate Renovate configuration
+        run: npx --yes --package renovate -- renovate-config-validator --strict
