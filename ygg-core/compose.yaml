@@ -249,6 +249,12 @@ services:
       OAUTH2_PROXY_TRUSTED_PROXY_IPS: "10.4.21.44/32,fd0e:be00:da00:20:421::44/128"
       OAUTH2_PROXY_UPSTREAMS: "static://202"
       OAUTH2_PROXY_WHITELIST_DOMAINS: ".ebi.nu"
+    healthcheck:
+      interval: 60s
+      retries: 3
+      start_period: 30s
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:4180/ready"]
+      timeout: 10s
     hostname: oauth2-proxy
     image: "quay.io/oauth2-proxy/oauth2-proxy:v7.15.5-alpine" # gitleaks:allow
     label_file: oauth2-proxy.labels
