@@ -1,0 +1,30 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yaml,yml,json,jsonc,js,md,mdx}]
+indent_style = space
+indent_size = 2
+
+[compose.yaml]
+indent_style = space
+indent_size = 2
+
+[compose.yml]
+indent_style = space
+indent_size = 2
+
+[*.alloy]
+indent_style = space
+indent_size = 2
+
+[*.{sh,bash}]
+indent_style = tab
+tab_width = 4
+
+[Makefile]
+indent_style = tab

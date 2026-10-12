@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "docker.docker",
+    "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
     "ESPHome.esphome-vscode",
     "github.vscode-github-actions",
