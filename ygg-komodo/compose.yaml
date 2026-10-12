@@ -81,6 +81,12 @@ services:
       KOMODO_TITLE: "Komodo"
       KOMODO_TRANSPARENT_MODE: "false"
       KOMODO_WEBHOOK_SECRET_FILE: "/run/secrets/komodo-webhook-secret"
+    healthcheck:
+      interval: 60s
+      retries: 3
+      start_period: 30s
+      test: ["CMD", "curl", "-fsS", "--max-time", "5", "http://127.0.0.1:9120/"]
+      timeout: 10s
     hostname: komodo
     image: "ghcr.io/moghtech/komodo-core:2.3.3"
     init: true
