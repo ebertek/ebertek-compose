@@ -44,6 +44,7 @@ services:
     depends_on:
       pg-arr:
         condition: service_healthy
+        restart: true
     deploy:
       resources:
         limits:
@@ -89,6 +90,7 @@ services:
     depends_on:
       pg-arr:
         condition: service_healthy
+        restart: true
     deploy:
       resources:
         limits:
@@ -178,6 +180,7 @@ services:
     depends_on:
       pg-arr:
         condition: service_healthy
+        restart: true
       radarr:
         condition: service_started
       sonarr:
@@ -229,6 +232,7 @@ services:
     depends_on:
       pg-arr:
         condition: service_healthy
+        restart: true
     deploy:
       resources:
         limits:
@@ -364,6 +368,7 @@ services:
     depends_on:
       pg-arr:
         condition: service_healthy
+        restart: true
     deploy:
       resources:
         limits:
