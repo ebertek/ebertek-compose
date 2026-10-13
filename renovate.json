@@ -11,7 +11,10 @@
     {
       "description": "Update Autoheal Docker image digest weekly",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["willfarrell/autoheal", "docker.io/willfarrell/autoheal"],
+      "matchPackageNames": [
+        "willfarrell/autoheal",
+        "docker.io/willfarrell/autoheal"
+      ],
       "matchUpdateTypes": ["digest"],
       "schedule": ["* * * * 0"],
       "updateNotScheduled": false
