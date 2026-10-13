@@ -19,9 +19,9 @@ set -Eeuo pipefail
 readonly BASE_DIR="/volume2/docker/komodo/periphery/repos/ygg-compose"
 
 readonly -a STACKS=(
+	"ygg-core"
 	"ygg-arr"
 	"ygg-birdnet"
-	"ygg-core"
 	"ygg-download"
 	"ygg-gramps"
 	"ygg-hass"
