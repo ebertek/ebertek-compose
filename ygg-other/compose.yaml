@@ -356,6 +356,7 @@ services:
     hostname: vw
     image: "ghcr.io/dani-garcia/vaultwarden:1.37.4"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.vw.entrypoints: "websecure"
       traefik.http.routers.vw.rule: "Host(`vw.ebi.nu`)"

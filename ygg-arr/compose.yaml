@@ -66,6 +66,7 @@ services:
     hostname: bazarr
     image: "ghcr.io/hotio/bazarr:release-1.6.1"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.bazarr.entrypoints: "websecure"
       traefik.http.routers.bazarr.middlewares: "arr-chain@docker"
@@ -115,6 +116,7 @@ services:
     hostname: lidarr
     image: "ghcr.io/hotio/lidarr:release-3.1.0.4875"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.lidarr.entrypoints: "websecure"
       traefik.http.routers.lidarr.middlewares: "arr-chain@docker"
@@ -209,6 +211,7 @@ services:
     hostname: prowlarr
     image: "ghcr.io/hotio/prowlarr:release-2.5.2.5491"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.prowlarr.entrypoints: "websecure"
       traefik.http.routers.prowlarr.middlewares: "arr-chain@docker"
@@ -257,6 +260,7 @@ services:
     hostname: radarr
     image: "ghcr.io/hotio/radarr:release-6.3.0.10514"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.radarr.entrypoints: "websecure"
       traefik.http.routers.radarr.middlewares: "arr-chain@docker"
@@ -346,6 +350,7 @@ services:
     hostname: requestrr
     image: "ghcr.io/hotio/requestrr:release-2.1.10"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.requestrr.entrypoints: "websecure"
       traefik.http.routers.requestrr.rule: "Host(`requestrr.ebi.nu`)"
@@ -393,6 +398,7 @@ services:
     hostname: sonarr
     image: "ghcr.io/hotio/sonarr:release-4.0.19.2979"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.sonarr.entrypoints: "websecure"
       traefik.http.routers.sonarr.middlewares: "arr-chain@docker"

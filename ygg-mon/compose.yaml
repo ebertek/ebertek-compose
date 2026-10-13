@@ -68,6 +68,7 @@ services:
     hostname: alloy
     image: "docker.io/grafana/alloy:v1.20.1"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.alloy.entrypoints: "websecure"
       traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`)"
@@ -174,6 +175,7 @@ services:
     hostname: grafana
     image: "docker.io/grafana/grafana:13.2.3"
     labels:
+      autoheal: "true"
       traefik.enable: "true"
       traefik.http.routers.grafana.entrypoints: "websecure"
       traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`)"
