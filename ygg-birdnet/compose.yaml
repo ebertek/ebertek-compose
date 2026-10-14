@@ -41,8 +41,9 @@ services:
           cpus: "0.5"
           memory: "512M"
     devices:
-      - /dev/dri:/dev/dri
-      - /dev/snd:/dev/snd
+      - "/dev/accel:/dev/accel"
+      - "/dev/dri:/dev/dri"
+      - "/dev/snd:/dev/snd"
     environment:
       <<: *env
       BIRDNET_GID: "100"
@@ -51,6 +52,9 @@ services:
       BIRDNET_WEBSERVER_PORT: "8080"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    group_add:
+      - "44"
+      - "991"
     hostname: birdnet
     image: "ghcr.io/tphakala/birdnet-go:20261014"
     labels:
