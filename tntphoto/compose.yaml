@@ -82,7 +82,7 @@ services:
       <<: *hc
       test: ["CMD-SHELL", "nc -z localhost 443 || exit 1"]
     hostname: nginx
-    image: "docker.io/nginx:1.31.6-alpine"
+    image: "docker.io/nginx:1.31.7-alpine"
     networks:
       wp_net:
         aliases:
