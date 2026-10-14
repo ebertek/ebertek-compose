@@ -19,7 +19,7 @@ x-common: &common
       max-file: "3"
       max-size: "10m"
   restart: unless-stopped
-  stop_grace_period: 2m
+  stop_grace_period: 20s
 
 x-env: &env
   TZ: "Europe/Stockholm"
@@ -29,6 +29,8 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 services:
   birdnet:
     <<: *common
+    cap_drop:
+      - NET_RAW
     container_name: birdnet
     deploy:
       resources:
@@ -38,17 +40,19 @@ services:
         reservations:
           cpus: "0.5"
           memory: "512M"
-    # devices:
-    #   - /dev/snd:/dev/snd
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/snd:/dev/snd
     environment:
       <<: *env
       BIRDNET_GID: "100"
       BIRDNET_HOST: "birdnet.ebi.nu"
       BIRDNET_UID: "1028"
+      BIRDNET_WEBSERVER_PORT: "8080"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     hostname: birdnet
-    image: "ghcr.io/tphakala/birdnet-go:20261010"
+    image: "ghcr.io/tphakala/birdnet-go:20261014"
     labels:
       traefik.enable: "true"
       traefik.http.routers.birdnet.entrypoints: "websecure"
@@ -60,9 +64,12 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.75
         ipv6_address: fd0e:be00:da00:20:421::75
+    security_opt:
+      - no-new-privileges:true
     tmpfs:
       - /config/hls:exec,size=50M,uid=1028,gid=100,mode=0755
     volumes:
       - *tz
+      - "/run/avahi-daemon:/run/avahi-daemon:ro"
       - "/volume2/docker/birdnet/config:/config"
       - "/volume2/docker/birdnet/data:/data"
