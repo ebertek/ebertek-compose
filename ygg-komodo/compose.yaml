@@ -138,7 +138,7 @@ services:
           'mongosh --quiet --eval ''db.adminCommand("ping").ok'' | grep -q ''^1$''',
         ]
       timeout: 5s
-    image: "docker.io/library/mongo:9.0.2"
+    image: "docker.io/library/mongo:9.0.4"
     labels:
       komodo.skip: ""
     mac_address: "0e:be:00:da:00:98"
