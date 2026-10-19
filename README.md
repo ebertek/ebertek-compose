@@ -27,7 +27,7 @@ Main areas:
 
 - **[mariadb](https://hub.docker.com/_/mariadb)**: Relational database for WordPress.
 - **[nginx](https://hub.docker.com/_/nginx)**: Reverse proxy server for WordPress.
-- **[wordpress](https://github.com/ebertek/ebertek-wordpress)**: Custom WordPress (content management system) PHP-FPM image based on `wordpress:php8.3-fpm-alpine`, with `pdo_mysql` added.
+- **[wordpress](https://github.com/ebertek/ebertek-wordpress)**: Custom WordPress (content management system) PHP-FPM image based on `wordpress:php8.5-fpm-alpine`, with `pdo_mysql` added.
 
 ### [ygg/](ygg/)
 
