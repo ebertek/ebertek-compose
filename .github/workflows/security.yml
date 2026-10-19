@@ -165,36 +165,3 @@ jobs:
           format: table
           severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
           exit-code: "0"
-
-  trivy-wordpress:
-    name: Trivy - WordPress
-    if: >-
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Build WordPress image
-        run: |
-          docker build \
-            -t tntphoto-wordpress:php8.3-fpm-alpine \
-            tntphoto/wordpress
-
-      - name: Scan WordPress image
-        uses: aquasecurity/trivy-action@v0.36.0
-        env:
-          TRIVY_IMAGE_SRC: docker
-        with:
-          scan-type: image
-          image-ref: tntphoto-wordpress:php8.3-fpm-alpine
-          scanners: vuln,secret,misconfig,license
-          format: table
-          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
-          exit-code: "0"

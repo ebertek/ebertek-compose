@@ -108,8 +108,6 @@ services:
 
   wordpress:
     <<: *common
-    build:
-      context: ./wordpress
     container_name: wordpress
     depends_on:
       mariadb:
@@ -129,10 +127,9 @@ services:
       PGID: "82"
       WORDPRESS_DB_HOST: "mariadb:3306"
     hostname: wordpress
-    image: "tntphoto-wordpress:php8.3-fpm-alpine"
+    image: "ghcr.io/ebertek/ebertek-wordpress:7.1.3-php8.3-fpm-alpine"
     networks:
       - wp_net
-    pull_policy: build
     volumes:
       - *tz
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
