@@ -135,6 +135,16 @@ services:
     group_add:
       - "44"
       - "991"
+    healthcheck:
+      interval: 60s
+      retries: 3
+      start_period: 120s
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider --timeout=5 http://127.0.0.1:5800/ || exit 1",
+        ]
+      timeout: 10s
     hostname: picard
     image: "docker.io/jlesage/musicbrainz-picard:latest"
     labels:
