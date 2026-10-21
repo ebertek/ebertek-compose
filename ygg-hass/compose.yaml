@@ -368,7 +368,7 @@ services:
         ["CMD-SHELL", "curl -fsS http://127.0.0.1:5580/ >/dev/null || exit 1"]
       timeout: 10s
     hostname: matter-server
-    image: "ghcr.io/matter-js/matterjs-server:1.4.0"
+    image: "ghcr.io/matter-js/matterjs-server:1.5.2"
     mac_address: "0e:be:00:da:00:66"
     networks:
       macvlan1:
