@@ -56,7 +56,7 @@ services:
     environment:
       <<: *env
     hostname: esphome
-    image: "ghcr.io/esphome/esphome:2026.9.1"
+    image: "ghcr.io/esphome/esphome:2026.10.0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.esphome.entrypoints: "websecure"
