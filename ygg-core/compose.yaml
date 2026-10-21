@@ -123,7 +123,7 @@ services:
         ]
       timeout: 30s
     hostname: cloudflared
-    image: "docker.io/cloudflare/cloudflared:2026.10.2"
+    image: "docker.io/cloudflare/cloudflared:2026.10.3"
     network_mode: host
     ulimits:
       nofile:
