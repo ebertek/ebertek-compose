@@ -162,6 +162,8 @@ services:
     profiles:
       - nfs
     shm_size: "1gb"
+    tmpfs:
+      - "/storage:rw,size=256m,mode=1777"
     volumes:
       - *tz
       - "/volume1/Downloads/Music:/storage/Music"
