@@ -123,6 +123,7 @@ services:
       DISPLAY_HEIGHT: "1080"
       DISPLAY_WIDTH: "1920"
       GROUP_ID: "100"
+      INSTALL_PACKAGES: "mkvtoolnix"
       KEEP_APP_RUNNING: "1"
       LANG: "en_US.UTF-8"
       UMASK: "002"
