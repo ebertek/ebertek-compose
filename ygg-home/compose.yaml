@@ -79,7 +79,10 @@ services:
       HARDCOVER_TOKEN_FILE: "/run/secrets/hardcover_token"
       NETWORK_SHARE_MODE: "true"
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1"
+      PGID: "100"
+      PUID: "1028"
       TRUSTED_PROXY_COUNT: "2"
+      UMASK: "002"
     hostname: books
     image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.51"
     labels:
