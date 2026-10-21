@@ -126,7 +126,7 @@ services:
       INSTALL_PACKAGES: "mkvtoolnix"
       KEEP_APP_RUNNING: "1"
       LANG: "en_US.UTF-8"
-      UMASK: "002"
+      UMASK: "0002"
       USER_ID: "1028"
       WEB_AUDIO: "1"
       WEB_FILE_MANAGER: "0"

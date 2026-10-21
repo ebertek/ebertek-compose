@@ -428,8 +428,14 @@ services:
         reservations:
           cpus: "0.02"
           memory: "32M"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - umask 0002; exec /unpackerr
     environment:
       <<: *env
+      UN_DIR_MODE: "0777"
+      UN_FILE_MODE: "0666"
       UN_FOLDER_0_PATH: "/downloads/Uncategorized"
       UN_WEBSERVER_METRICS: "true"
     healthcheck:

@@ -47,6 +47,7 @@ services:
       QBT_TORRENTING_PORT: "56213"
       QBT_VERSION: "latest"
       QBT_WEBUI_PORT: "8080"
+      UMASK: "002"
     healthcheck:
       interval: 30s
       retries: 3
