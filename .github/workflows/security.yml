@@ -15,6 +15,7 @@ jobs:
   trivy-repository:
     name: Trivy - Repository
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -24,7 +25,11 @@ jobs:
 
       - name: Scan repository
         uses: aquasecurity/trivy-action@v0.36.0
+        env:
+          TRIVY_NO_PROGRESS: "true"
+          TRIVY_TIMEOUT: 15m
         with:
+          version: v0.76.1
           scan-type: fs
           scan-ref: .
           scanners: secret,misconfig
@@ -39,6 +44,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     outputs:
       images: ${{ steps.discover.outputs.images }}
@@ -135,30 +141,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull container image
-        env:
-          IMAGE: ${{ matrix.image }}
-        run: |
-          for attempt in 1 2 3 4; do
-            if docker pull "$IMAGE"; then
-              exit 0
-            fi
-
-            if [ "$attempt" -eq 4 ]; then
-              echo "::error::Failed to pull $IMAGE after 4 attempts"
-              exit 1
-            fi
-
-            delay=$((15 * 2 ** (attempt - 1)))
-            echo "Pull failed. Retrying in ${delay}s..."
-            sleep "$delay"
-          done
-
       - name: Scan container image
         uses: aquasecurity/trivy-action@v0.36.0
         env:
-          TRIVY_IMAGE_SRC: docker
+          TRIVY_IMAGE_SRC: remote
+          TRIVY_NO_PROGRESS: "true"
+          TRIVY_TIMEOUT: 15m
         with:
+          version: v0.76.1
           scan-type: image
           image-ref: ${{ matrix.image }}
           scanners: vuln,secret,misconfig,license
