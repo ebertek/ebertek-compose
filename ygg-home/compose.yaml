@@ -104,6 +104,58 @@ services:
       - "/volume2/docker/calibre-plugins:/config/.config/calibre/plugins"
       - "/volume2/docker/calibre-web:/config"
 
+  picard:
+    <<: *common
+    container_name: picard
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2048M"
+        reservations:
+          cpus: "0.1"
+          memory: "256M"
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      <<: *env
+      DARK_MODE: "1"
+      DISPLAY_HEIGHT: "1080"
+      DISPLAY_WIDTH: "1920"
+      GROUP_ID: "100"
+      KEEP_APP_RUNNING: "1"
+      LANG: "en_US.UTF-8"
+      UMASK: "002"
+      USER_ID: "1028"
+      WEB_AUDIO: "1"
+      WEB_FILE_MANAGER: "0"
+      WEB_HOST_CLIPBOARD_SYNC: "1"
+      WEB_TERMINAL: "0"
+    group_add:
+      - "44"
+      - "991"
+    hostname: picard
+    image: "docker.io/jlesage/musicbrainz-picard:latest"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.picard.entrypoints: "websecure"
+      traefik.http.routers.picard.middlewares: "oauth-chain@docker"
+      traefik.http.routers.picard.rule: "Host(`picard.ebi.nu`)"
+      traefik.http.routers.picard.tls: "true"
+      traefik.http.services.picard.loadbalancer.server.port: "5800"
+    mac_address: "0e:be:00:da:01:00"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.100
+        ipv6_address: fd0e:be00:da00:20:421::100
+    profiles:
+      - nfs
+    shm_size: "1gb"
+    volumes:
+      - *tz
+      - "/volume1/Downloads/Music:/storage/Music"
+      - "/volume2/docker/picard:/config"
+
   plex:
     <<: *common
     container_name: plex
