@@ -249,6 +249,182 @@ executions = [
 ##
 
 [[action]]
+name = "Mirror websites"
+[action.config]
+schedule_format = "Cron"
+schedule = "0 0 */6 * * *"
+file_contents = """
+const shellQuote = (value: string): string =>
+  "'" + value.replace(/'/g, "'\\''") + "'";
+
+// Runs inside the temporary Alpine container.
+const crawler = [
+  "set -eu",
+  "apk add --no-cache wget ca-certificates >/dev/null",
+  'domain="$1"',
+  'dest="$2"',
+  'url="https://$domain/"',
+
+  'echo "Downloading $url"',
+  "set +e",
+
+  'wget --recursive --level=5 --page-requisites ' +
+    '--convert-links --adjust-extension --no-parent ' +
+    '--no-host-directories ' +
+    '--domains="$domain,www.$domain" ' +
+    '--timeout=20 --tries=2 ' +
+    '--directory-prefix="$dest" ' +
+    '--output-file=/tmp/wget.log "$url"',
+
+  "status=$?",
+  "set -e",
+  'echo "Wget exit code: $status"',
+
+  // Permit HTTP errors such as missing optional assets.
+  'case "$status" in',
+  "  0|8) ;;",
+  "  *)",
+  '    echo "ERROR: Wget failed"',
+  "    tail -n 30 /tmp/wget.log",
+  "    exit 1",
+  "    ;;",
+  "esac",
+
+  // Validate the captured homepage.
+  'if [ ! -s "$dest/index.html" ]; then',
+  '  echo "ERROR: Homepage missing or empty"',
+  "  exit 1",
+  "fi",
+
+  'if ! grep -Eiq "<(html|!doctype html)" ' +
+    '"$dest/index.html"; then',
+  '  echo "ERROR: Invalid homepage HTML"',
+  "  exit 1",
+  "fi",
+
+  // Report useful statistics.
+  'files=$(find "$dest" -type f | wc -l)',
+  'size=$(du -sh "$dest" | cut -f1)',
+  'errors=$(grep -Ec "ERROR [0-9]+:" ' +
+    '/tmp/wget.log || true)',
+
+  'echo "Files: $files"',
+  'echo "Size: $size"',
+  'echo "HTTP errors: $errors"',
+
+  'if [ "$errors" -gt 0 ]; then',
+  '  echo "Recent HTTP errors:"',
+  '  grep "ERROR [0-9]*:" /tmp/wget.log | ' +
+    'tail -n 10 || true',
+  "fi",
+
+  'echo "Snapshot validation passed"',
+].join("\n");
+
+// Runs in a separate Bash subprocess on Pleiades.
+const script = [
+  "set -Eeuo pipefail",
+  'base="/volume2/docker/nginx/data"',
+  "failed=0",
+
+  'mkdir -p "$base"',
+  'chown 101:101 "$base"',
+
+  // Prevent concurrent executions.
+  "exec 9>/tmp/komodo-mirror-websites.lock",
+  "if ! flock -n 9; then",
+  '  echo "ERROR: Mirroring already running"',
+  "  exit 1",
+  "fi",
+
+  "for domain in ebertek.com linda-ebert.com tnt.photo; do",
+  '  echo "===== Mirroring $domain ====="',
+
+  '  stamp="$(date -u +%Y%m%d-%H%M%S)"',
+  '  site="$base/$domain"',
+  '  release="$site/releases/$stamp"',
+
+  '  mkdir -p "$release"',
+  '  chown 101:101 "$site" "$site/releases"',
+
+  // Execute the crawler in an ephemeral container.
+  "  if timeout -k 10s 900s docker run --rm " +
+    '--network bridge ' +
+    '-v "$base:/mirror" ' +
+    "alpine:3.22 sh -c " +
+    shellQuote(crawler) +
+    ' sh "$domain" ' +
+    '"/mirror/$domain/releases/$stamp"; then',
+
+  // Set ownership before publishing.
+  '    chown -R 101:101 "$release"',
+
+  // Atomic symlink replacement.
+  '    ln -s "releases/$stamp" "$site/.next-$stamp"',
+  '    mv -Tf "$site/.next-$stamp" "$site/current"',
+  '    chown -h 101:101 "$site/current"',
+
+  '    echo "SUCCESS: $domain"',
+
+  // Keep the three newest snapshots.
+  '    find "$site/releases" ' +
+    '-mindepth 1 -maxdepth 1 -type d ' +
+    "-printf '%f\\n' | " +
+    "sort -r | tail -n +4 | " +
+    'while IFS= read -r old; do ' +
+    'rm -rf -- "$site/releases/$old"; ' +
+    "done",
+
+  "  else",
+  '    echo "FAILED: $domain"',
+  '    echo "Previous snapshot preserved"',
+  '    rm -rf -- "$release"',
+  "    failed=1",
+  "  fi",
+
+  "done",
+
+  'echo "===== Mirror job finished ====="',
+  'test "$failed" -eq 0',
+].join("\n");
+
+// Keep the Komodo terminal alive while the subprocess exits.
+const command = "bash -c " + shellQuote(script);
+
+let exitCode: string | undefined;
+
+await komodo.execute_server_terminal(
+  {
+    server: "pleiades.ygg.nu",
+    terminal: "mirror-websites",
+    command,
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      exitCode = code;
+      console.log("Exit code:", code);
+    },
+  }
+);
+
+if (exitCode !== "0") {
+  throw new Error(
+    "Website mirroring failed (exit code: " +
+      (exitCode ?? "unknown") +
+      ")"
+  );
+}
+
+console.log("Mirror Websites completed successfully");
+"""
+
+##
+
+[[action]]
 name = "Pull ygg-compose"
 [action.config]
 file_contents = """
