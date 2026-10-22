@@ -3,12 +3,17 @@
   "extends": ["config:recommended", ":automergeStableNonMajor"],
   "packageRules": [
     {
-      "automerge": true,
-      "description": "Automatically pin and update WordPress image digests",
+      "description": "Pin WordPress image to a SHA-256 digest",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["ghcr.io/ebertek/ebertek-wordpress"],
-      "matchUpdateTypes": ["digest", "pinDigest"],
       "pinDigests": true
+    },
+    {
+      "automerge": true,
+      "description": "Automatically merge WordPress digest updates",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/ebertek/ebertek-wordpress"],
+      "matchUpdateTypes": ["digest", "pinDigest"]
     },
     {
       "allowedVersions": "/^0\\.\\d+\\.\\d+$/",
