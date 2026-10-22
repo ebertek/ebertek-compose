@@ -3,6 +3,14 @@
   "extends": ["config:recommended", ":automergeStableNonMajor"],
   "packageRules": [
     {
+      "automerge": true,
+      "description": "Automatically pin and update WordPress image digests",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/ebertek/ebertek-wordpress"],
+      "matchUpdateTypes": ["digest", "pinDigest"],
+      "pinDigests": true
+    },
+    {
       "allowedVersions": "/^0\\.\\d+\\.\\d+$/",
       "description": "Ignore Ofelia's legacy tags",
       "matchDatasources": ["docker"],
