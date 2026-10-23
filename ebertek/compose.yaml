@@ -59,8 +59,6 @@ services:
 
   bind9:
     <<: *common
-    cap_add:
-      - NET_BIND_SERVICE
     container_name: bind9
     deploy:
       resources:
@@ -80,7 +78,9 @@ services:
       timeout: 10s
     hostname: bind9
     image: "docker.io/ubuntu/bind9:9.20-26.04_stable"
-    network_mode: host
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
     # user: 584792
     volumes:
       - *tz
