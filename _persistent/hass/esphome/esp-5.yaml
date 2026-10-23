@@ -1,9 +1,9 @@
 ---
 esphome:
-  area: Living room
+  area: Family room
   compile_process_limit: 2
-  friendly_name: esp-living-1
-  min_version: 2025.11.0
+  friendly_name: esp-family-1
+  min_version: 2026.8.0
   name: esp-5
 
 esp32:
@@ -82,13 +82,12 @@ light:
       - random:
       - strobe:
     id: rgb
-    is_rgbw: true
     name: RGB
     num_leds: 1
     pin: GPIO20
     power_supply: rgbpwr
     restore_mode: RESTORE_DEFAULT_OFF
-    rgb_order: GRB
+    channel_colors: GRBW
 
 power_supply:
   - id: rgbpwr

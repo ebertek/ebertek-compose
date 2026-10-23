@@ -3,7 +3,7 @@ esphome:
   area: Sunroom
   compile_process_limit: 2
   friendly_name: esp-sunroom-2
-  min_version: 2026.3.0
+  min_version: 2026.8.0
   name: esp-4
 
 esp32:
@@ -133,7 +133,7 @@ light:
     num_leds: 4
     pin: GPIO35
     restore_mode: RESTORE_DEFAULT_OFF
-    rgb_order: GRB
+    channel_colors: GRB
     rmt_symbols: 192
     use_dma: true
 
