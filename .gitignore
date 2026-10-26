@@ -1,3 +1,31 @@
 # macOS and Synology trash
 **/.DS_Store
 @eaDir
+
+# Terraform runtime and state
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/crash.log
+**/crash.*.log
+
+# Terraform local variables and overrides
+**/*.tfvars
+**/*.tfvars.json
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+
+# Terraform CLI configuration and credentials
+**/.terraformrc
+**/terraform.rc
+
+# Terraform local diagnostic and backup files
+**/*.tfplan.txt
+**/*.tf.bak
+
+# Python cache
+**/__pycache__/
+**/*.pyc
