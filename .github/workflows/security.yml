@@ -2,14 +2,16 @@
 name: Security
 
 on: # yamllint disable-line rule:truthy
-  push: null
-  pull_request: null
   workflow_dispatch: null
   schedule:
-    - cron: "0 4 * * 0"
+    - cron: "17 4 * * 0"
 
 permissions:
   contents: read
+
+concurrency:
+  group: security-scan
+  cancel-in-progress: false
 
 jobs:
   trivy-repository:
@@ -39,10 +41,6 @@ jobs:
 
   discover-images:
     name: Discover container images
-    if: >-
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
