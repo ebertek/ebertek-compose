@@ -3,4 +3,3 @@ resource "cloudflare_zero_trust_tunnel_cloudflared" "terraform_managed_resource_
   config_src = "cloudflare"
   name       = "pleiades"
 }
-

@@ -234,4 +234,3 @@ resource "cloudflare_dns_record" "terraform_managed_resource_ec418548e1371e2d0b9
   zone_id  = "74ca30b14b96ba174a06c9ba1f6886ce"
   settings = {}
 }
-
