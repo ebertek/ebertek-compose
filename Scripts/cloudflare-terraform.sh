@@ -10,12 +10,12 @@ readonly PROVIDER_CONFIG="${HOME}/cloudflare-provider-dev/policy-fix.tfrc"
 readonly PROVIDER_BINARY_DIR="${HOME}/cloudflare-provider-dev/policy-fix"
 
 fail() {
-  printf 'ERROR: %s\n' "$*" >&2
-  exit 1
+	printf 'ERROR: %s\n' "$*" >&2
+	exit 1
 }
 
 usage() {
-  cat <<'USAGE'
+	cat <<'USAGE'
 Usage: cloudflare-terraform.sh <terraform-command> [arguments...]
 
 Examples:
@@ -31,33 +31,38 @@ file; no direct or automatic apply is permitted. Destroy remains blocked.
 USAGE
 }
 
-[[ $# -gt 0 ]] || { usage >&2; exit 2; }
+[[ $# -gt 0 ]] || {
+	usage >&2
+	exit 2
+}
 case "$1" in
-  -h|--help|help) usage; exit 0 ;;
-  destroy|force-unlock|import|state|apply|plan|validate|fmt|show|output|providers|version|init|refresh|console|graph|test)
-    ;;
-  *) fail "Unsupported Terraform command: $1" ;;
+-h | --help | help)
+	usage
+	exit 0
+	;;
+destroy | force-unlock | import | state | apply | plan | validate | fmt | show | output | providers | version | init | refresh | console | graph | test) ;;
+*) fail "Unsupported Terraform command: $1" ;;
 esac
 
 command_name="$1"
 shift
 
 if [[ "$command_name" == destroy || "$command_name" == refresh ]]; then
-  fail "'$command_name' is blocked. Use a reviewed plan and explicit apply procedure."
+	fail "'$command_name' is blocked. Use a reviewed plan and explicit apply procedure."
 fi
 
 if [[ "$command_name" == apply ]]; then
-  [[ "${1:-}" == --allow-apply ]] || fail "Apply requires: apply --allow-apply <saved-plan-file>"
-  shift
-  [[ $# -eq 1 && "$1" != -* && -f "$1" ]] || fail "Apply requires one existing saved plan file."
+	[[ "${1:-}" == --allow-apply ]] || fail "Apply requires: apply --allow-apply <saved-plan-file>"
+	shift
+	[[ $# -eq 1 && "$1" != -* && -f "$1" ]] || fail "Apply requires one existing saved plan file."
 fi
 
 # Block state-changing subcommands; state list/show/pull remain available.
 if [[ "$command_name" == state ]]; then
-  case "${1:-}" in
-    list|show|pull) ;;
-    *) fail "Only read-only state list/show/pull are supported by this wrapper." ;;
-  esac
+	case "${1:-}" in
+	list | show | pull) ;;
+	*) fail "Only read-only state list/show/pull are supported by this wrapper." ;;
+	esac
 fi
 
 [[ -d "$CONFIG_DIR" ]] || fail "Missing merged Terraform configuration: $CONFIG_DIR"
