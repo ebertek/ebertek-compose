@@ -140,6 +140,7 @@ services:
           'mongosh --quiet --eval ''db.adminCommand("ping").ok'' | grep -q ''^1$''',
         ]
       timeout: 5s
+    hostname: mongo
     image: "docker.io/library/mongo:9.0.4"
     labels:
       komodo.skip: ""

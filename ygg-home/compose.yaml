@@ -285,6 +285,7 @@ services:
       start_period: 30s
       test: ["CMD-SHELL", 'test "$(cat /proc/1/comm)" = ofelia']
       timeout: 10s
+    hostname: scheduler
     image: "docker.io/mcuadros/ofelia:0.3.22"
     labels:
       ofelia.job-run.plextraktsync.schedule: "@every 6h"
