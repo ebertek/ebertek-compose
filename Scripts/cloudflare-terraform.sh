@@ -15,6 +15,7 @@ fail() {
 }
 
 usage() {
+	# editorconfig-checker-disable
 	cat <<'USAGE'
 Usage: cloudflare-terraform.sh <terraform-command> [arguments...]
 
@@ -29,6 +30,7 @@ The apply and destroy commands are blocked by default. For an intentional
 apply, pass --allow-apply immediately after 'apply' and provide a saved plan
 file; no direct or automatic apply is permitted. Destroy remains blocked.
 USAGE
+	# editorconfig-checker-enable
 }
 
 [[ $# -gt 0 ]] || {
