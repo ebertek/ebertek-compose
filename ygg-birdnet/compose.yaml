@@ -63,6 +63,8 @@ services:
       traefik.http.routers.birdnet.rule: "Host(`birdnet.ebi.nu`)"
       traefik.http.routers.birdnet.tls: "true"
       traefik.http.services.birdnet.loadbalancer.server.port: "8080"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:75"
     networks:
       macvlan1:

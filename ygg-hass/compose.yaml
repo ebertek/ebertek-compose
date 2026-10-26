@@ -64,6 +64,8 @@ services:
       traefik.http.routers.esphome.tls: "true"
       traefik.http.services.esphome.loadbalancer.server.port: "6052"
       traefik.http.services.esphome.loadbalancer.server.scheme: "http"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:71"
     networks:
       macvlan1:
@@ -106,6 +108,8 @@ services:
       traefik.http.routers.frigate.rule: "Host(`frigate.ebi.nu`)"
       traefik.http.routers.frigate.tls: "true"
       traefik.http.services.frigate.loadbalancer.server.port: "8971"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:77"
     networks:
       macvlan1:
@@ -163,6 +167,8 @@ services:
       traefik.http.routers.hass.rule: "Host(`hass.ebi.nu`)"
       traefik.http.routers.hass.tls: "true"
       traefik.http.services.hass.loadbalancer.server.port: "8123"
+      cf.access: 'true'
+      cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     logging:
       options:
         max-file: "2"
@@ -214,6 +220,8 @@ services:
       traefik.http.routers.influxdb.rule: "Host(`influxdb.ebi.nu`)"
       traefik.http.routers.influxdb.tls: "true"
       traefik.http.services.influxdb.loadbalancer.server.port: "8086"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:72"
     networks:
       macvlan1:
@@ -268,6 +276,8 @@ services:
       traefik.http.routers.mass-stream.service: "mass-stream"
       traefik.http.routers.mass-stream.tls: "true"
       traefik.http.services.mass-stream.loadbalancer.server.port: "8097"
+      cf.access: 'true'
+      cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:65"
     networks:
       macvlan1:
@@ -325,6 +335,8 @@ services:
       traefik.http.routers.mass-alexa.rule: "Host(`mass-alexa.ebi.nu`)"
       traefik.http.routers.mass-alexa.tls: "true"
       traefik.http.services.mass-alexa.loadbalancer.server.port: "5000"
+      cf.access: 'true'
+      cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:74"
     networks:
       macvlan1:
@@ -498,6 +510,8 @@ services:
       traefik.http.routers.scrypted.rule: "Host(`scrypted.ebi.nu`)"
       traefik.http.routers.scrypted.tls: "true"
       traefik.http.services.scrypted.loadbalancer.server.port: "11080"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     logging:
       options:
         max-file: "2"
@@ -539,6 +553,8 @@ services:
       traefik.http.routers.vonage.rule: "Host(`vonage.ebi.nu`)"
       traefik.http.routers.vonage.tls: "true"
       traefik.http.services.vonage.loadbalancer.server.port: "3000"
+      cf.access: 'true'
+      cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:73"
     networks:
       macvlan1:
@@ -582,6 +598,8 @@ services:
       traefik.http.routers.zigbee2mqtt.rule: "Host(`zigbee2mqtt.ebi.nu`)"
       traefik.http.routers.zigbee2mqtt.tls: "true"
       traefik.http.services.zigbee2mqtt.loadbalancer.server.port: "8099"
+      cf.access: 'true'
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:69"
     networks:
       macvlan1:
