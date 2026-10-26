@@ -199,7 +199,7 @@ services:
       - "44"
       - "991"
     hostname: plex
-    image: "docker.io/plexinc/pms-docker:latest@sha256:01bdf0ad6d53198da4331540c1e73ab65db7a72e961fff97ecb0847d46055c5f"
+    image: "docker.io/plexinc/pms-docker:latest@sha256:6d778d41daae68f89115aa87a44ae14a96b23e71a2093da173b5a9aac4091336"
     labels:
       autoheal: "true"
       traefik.enable: "true"
