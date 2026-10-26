@@ -74,7 +74,7 @@ services:
       traefik.http.routers.alloy.rule: "Host(`alloy.ebi.nu`)"
       traefik.http.routers.alloy.tls: "true"
       traefik.http.services.alloy.loadbalancer.server.port: "12345"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:81"
     networks:
@@ -183,7 +183,7 @@ services:
       traefik.http.routers.grafana.rule: "Host(`grafana.ebi.nu`)"
       traefik.http.routers.grafana.tls: "true"
       traefik.http.services.grafana.loadbalancer.server.port: "3000"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:82"
     networks:
@@ -224,7 +224,7 @@ services:
       traefik.http.routers.kuma.rule: "Host(`kuma.ebi.nu`)"
       traefik.http.routers.kuma.tls: "true"
       traefik.http.services.kuma.loadBalancer.server.port: "3001"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:86"
     networks:
@@ -265,7 +265,7 @@ services:
       traefik.http.routers.loki.rule: "Host(`loki.ebi.nu`)"
       traefik.http.routers.loki.tls: "true"
       traefik.http.services.loki.loadbalancer.server.port: "3100"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","918b5d0c-bc97-43a0-bd75-a30ced36ee34","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     logging:
       options:
@@ -319,7 +319,7 @@ services:
       traefik.http.routers.prometheus.rule: "Host(`prometheus.ebi.nu`)"
       traefik.http.routers.prometheus.tls: "true"
       traefik.http.services.prometheus.loadbalancer.server.port: "9090"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","918b5d0c-bc97-43a0-bd75-a30ced36ee34","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:83"
     networks:

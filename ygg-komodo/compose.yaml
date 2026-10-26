@@ -96,7 +96,7 @@ services:
       traefik.http.routers.komodo.rule: "Host(`komodo.ebi.nu`)"
       traefik.http.routers.komodo.tls: "true"
       traefik.http.services.komodo.loadbalancer.server.port: "9120"
-      cf.access: 'true'
+      cf.access: "true"
       cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:47"
     networks:
