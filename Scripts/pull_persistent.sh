@@ -24,8 +24,6 @@ files=(
 	"hass/config/scripts.yaml"
 	"hass/config/secrets.yaml"
 	"hass/config/ps5-mqtt/credentials.json"
-	"hass/config/zigbee2mqtt/configuration.yaml"
-	"hass/config/zigbee2mqtt/database.db"
 	"hass/config/.storage/core.config"
 	"hass/config/.storage/lovelace.dashboard_floorplan"
 	"hass/config/.storage/lovelace.dashboard_lights"
