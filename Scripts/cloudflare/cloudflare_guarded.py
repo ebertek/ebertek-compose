@@ -84,6 +84,22 @@ def check_plan(report, maximum=10):
     return sorted(actions, key=lambda a: (ORDER[a["kind"]], a["hostname"]))
 
 
+AUTO_SUPPORTED = {
+    "create_access_app",
+    "add_tunnel_ingress",
+    "create_dns_cname",
+    "update_docker_dns_a",
+}
+
+
+def check_unattended_plan(report, maximum=3):
+    """Fail closed on existing Access policy mutations and oversized plans."""
+    actions = check_plan(report, maximum=maximum)
+    if any(action["kind"] not in AUTO_SUPPORTED for action in actions):
+        raise UnsafePlan("Access policy updates require manual approval")
+    return actions
+
+
 def verify_access(client, account, hostname, wanted):
     """Require exactly one live self-hosted application with these policies."""
     matches = [
