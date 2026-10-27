@@ -23,7 +23,9 @@ def policy_links(policies):
         not isinstance(policies, list)
         or not policies
         or len(policies) != len(set(policies))
-        or not all(isinstance(value, str) and UUID.fullmatch(value) for value in policies)
+        or not all(
+            isinstance(value, str) and UUID.fullmatch(value) for value in policies
+        )
     ):
         raise ValueError("Access policies must be a unique, nonempty list of UUIDs")
     return [
@@ -57,9 +59,7 @@ class CloudflareWriter(CloudflareClient):
                 f"Cloudflare returned HTTP {error.code} for {method} {path}"
             ) from None
         except (URLError, TimeoutError, ValueError) as error:
-            raise CloudflareError(
-                f"Cloudflare {method} {path} failed"
-            ) from error
+            raise CloudflareError(f"Cloudflare {method} {path} failed") from error
         if not isinstance(result, dict) or result.get("success") is not True:
             raise CloudflareError(f"Cloudflare rejected {method} {path}")
         return result.get("result")
@@ -76,9 +76,7 @@ class CloudflareWriter(CloudflareClient):
             "destinations": [{"type": "public", "uri": hostname}],
             "policies": policy_links(policies),
         }
-        return self._write(
-            "POST", f"/accounts/{checked_id(account)}/access/apps", body
-        )
+        return self._write("POST", f"/accounts/{checked_id(account)}/access/apps", body)
 
     def put_tunnel_ingress(self, account, tunnel, config):
         """Replace a validated complete Tunnel config; never omit existing routes."""
@@ -98,7 +96,8 @@ class CloudflareWriter(CloudflareClient):
         if not HOST.fullmatch(hostname) or not target.endswith(".cfargotunnel.com"):
             raise ValueError("Invalid managed DNS CNAME request")
         return self._write(
-            "POST", f"/zones/{checked_id(zone)}/dns_records",
+            "POST",
+            f"/zones/{checked_id(zone)}/dns_records",
             {
                 "name": hostname,
                 "type": "CNAME",
@@ -112,7 +111,9 @@ class CloudflareWriter(CloudflareClient):
         """Change an existing Docker A record's content without touching its flags."""
         from ipaddress import ip_address  # pylint: disable=import-outside-toplevel
 
-        from cloudflare_live_diff import DOCKER_NETWORK  # pylint: disable=import-outside-toplevel
+        from cloudflare_live_diff import (
+            DOCKER_NETWORK,
+        )  # pylint: disable=import-outside-toplevel
 
         if ip_address(address) not in DOCKER_NETWORK:
             raise ValueError("Refusing a DNS update outside the Docker subnet")
