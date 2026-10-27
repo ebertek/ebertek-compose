@@ -67,7 +67,9 @@ def hydrate_apps(client, account_id, apps):
     return result
 
 
-def run_audit(client, root, settings, skip_docker=False):  # pylint: disable=too-many-locals
+def run_audit(
+    client, root, settings, skip_docker=False
+):  # pylint: disable=too-many-locals
     """Query Cloudflare, validate reusable policies, and return pure drift."""
     account = checked_id(settings["account_id"], "account ID")
     ebi = settings.get("ebi_zone_id") or client.zone_id(settings["ebi_zone"], account)
