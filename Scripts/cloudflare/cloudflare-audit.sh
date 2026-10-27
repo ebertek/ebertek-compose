@@ -23,4 +23,10 @@ if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
   exit 1
 fi
 
+# Unattended writes require a separate, owner-only opt-in outside GitOps.
+# Existing policy updates always remain manual.
+if [[ -f "/home/docker/cloudflare/enable-auto" ]]; then
+  exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
+fi
+
 exec "${python}" Scripts/cloudflare/cloudflare-live.py
