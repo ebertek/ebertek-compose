@@ -101,9 +101,7 @@ class PolicySyncTests(unittest.TestCase):
             (merged / "access-self-hosted.tf").write_text(SAMPLE)
             (merged / "access-picard.tf").write_text(SAMPLE)
             with self.assertRaises(ValueError):
-                plan_access_policy_updates(
-                    merged, {"grafana.ebi.nu": [THREE]}
-                )
+                plan_access_policy_updates(merged, {"grafana.ebi.nu": [THREE]})
 
     def test_planning_excludes_private_reusable_policies(self):
         """Reusable policy resources must never be rewritten as applications."""
