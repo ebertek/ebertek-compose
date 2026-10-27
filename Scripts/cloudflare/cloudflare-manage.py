@@ -59,7 +59,7 @@ def plan(client, root, settings, limit):
     return report, context, actions, fingerprint(report, context)
 
 
-def main():
+def main():  # pylint: disable=too-many-locals
     """Preview operations or execute exactly one revalidated approval."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.home() / "ygg-compose")
