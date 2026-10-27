@@ -11,6 +11,7 @@ import ipaddress
 import json
 
 from cloudflare_desired import HOST
+from cloudflare_write_api import policy_links
 from cloudflare_live_diff import (
     DOCKER_NETWORK,
     ordered_policy_ids,
@@ -70,10 +71,13 @@ def check_plan(report, maximum=10):
     if len(entries) != len(set(entries)):
         raise UnsafePlan("The plan contains duplicate operations")
     for entry in actions:
-        if entry["kind"] != "update_docker_dns_a" and not HOST.fullmatch(
-            entry["hostname"]
-        ):
-            raise UnsafePlan("A proposed public hostname is not in ebi.nu")
+        if entry["kind"] != "update_docker_dns_a":
+            if not HOST.fullmatch(entry["hostname"]):
+                raise UnsafePlan("A proposed public hostname is not in ebi.nu")
+            try:
+                policy_links(entry["policies"])
+            except (KeyError, TypeError, ValueError) as error:
+                raise UnsafePlan("Missing or invalid approved Access policy links") from error
     return sorted(actions, key=lambda a: (ORDER[a["kind"]], a["hostname"]))
 
 
@@ -125,11 +129,6 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
     remaining steps if a request fails mid-plan.
     """
     actions = check_plan(report, maximum)
-    policy_by_host = {}
-    for action in report["actions"]:
-        if action["kind"] == "create_access_app":
-            policy_by_host[action["hostname"]] = action["policies"]
-
     # Preflight all Tunnel shapes before any write. This avoids creating
     # orphan Access apps if a Tunnel replacement would be unsafe.
     if any(action["kind"] == "add_tunnel_ingress" for action in actions):
@@ -160,12 +159,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
             verify_access(client, context["account"], hostname, action["policies"])
 
         elif kind == "add_tunnel_ingress":
-            wanted = policy_by_host.get(hostname)
-            if wanted is None:
-                raise UnsafePlan(
-                    f"{hostname}: route changes require a newly created Access app"
-                )
-            verify_access(client, context["account"], hostname, wanted)
+            verify_access(client, context["account"], hostname, action["policies"])
             remote = client.tunnel_configuration(
                 context["account"], context["tunnel"]
             )
@@ -184,12 +178,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 raise UnsafePlan(f"{hostname}: Tunnel ingress verification failed")
 
         elif kind == "create_dns_cname":
-            wanted = policy_by_host.get(hostname)
-            if wanted is None:
-                raise UnsafePlan(
-                    f"{hostname}: DNS publication requires a newly created Access app"
-                )
-            verify_access(client, context["account"], hostname, wanted)
+            verify_access(client, context["account"], hostname, action["policies"])
             if not audit_tunnel_route(client, context, hostname):
                 raise UnsafePlan(f"{hostname}: Tunnel ingress is not ready")
             if any(
