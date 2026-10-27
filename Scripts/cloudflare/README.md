@@ -89,11 +89,7 @@ The supported writes in this first phase are:
 - New proxied `ebi.nu` CNAMEs, **only after Access and Tunnel verification**.
 - Updates to existing Docker-subnet `ygg.nu` A records, but not static devices.
 
-This initial writer **does not support changing policies on existing Access
-applications**. If any such change is proposed, the entire apply is rejected
-rather than silently altering an existing application's other settings.
-Deletes and Terraform writes are never supported. No Komodo schedule or
-unattended apply is configured yet.
+Existing Access policy changes use validated, full-application PUT requests. Unknown live application settings are rejected, not discarded. Deletes and Terraform writes are never supported. Scheduled Komodo work is audit-only; unattended mutation remains disabled.
 
 An interrupted apply is not rolled back: rerunning the live audit determines
 which operations remain. Every operation is checked against current live
@@ -105,3 +101,27 @@ The API token used for writes needs narrowly scoped Access application,
 Tunnel and DNS permissions. Keep it out of source files and logs. Retain
 your prior Terraform state and configuration as a migration reference until
 the API-only approach has been validated on actual changes.
+
+## Existing Access policy changes
+
+The guarded writer supports changing the ordered reusable policies of an
+existing self-hosted application. It fetches the complete application,
+verifies its ID, hostname, and old policy order, and refuses to write if the
+API returns an unrecognized setting. For supported settings it uses the
+full-application PUT and rechecks policies afterward.
+
+The update has offline test coverage, but it still needs a controlled live
+policy change before being considered safe for unattended execution.
+Manual fingerprint approval remains required.
+
+## Komodo scheduled audit
+
+The "Cloudflare audit" Komodo action is scheduled every six hours. Its
+cloudflare-audit.sh entrypoint runs as docker on Pleiades, sources the
+existing private terraform/cloudflare/cloudflare.env in the deployed
+checkout, and runs cloudflare-live.py. It is **GET-only** and neither
+changes Cloudflare nor modifies the GitOps checkout.
+
+The action depends on /home/docker/cloudflare/.venv. When Terraform is
+retired, migrate credentials to a dedicated runtime secret outside the
+GitOps checkout. Automatic mutation is intentionally not enabled.
