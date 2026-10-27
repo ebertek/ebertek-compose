@@ -108,7 +108,7 @@ def main():
             print(f"  {action['kind']}: {action['hostname']}")
         if actions:
             print(f"Approval fingerprint: {token}")
-            print(f"To apply: cloudflare-manage.py --apply {token}")
+            print(f"To apply: python3 Scripts/cloudflare/cloudflare-manage.py --apply {token}")
         else:
             print("Already synchronized. No changes required.")
         print("No changes made.")
