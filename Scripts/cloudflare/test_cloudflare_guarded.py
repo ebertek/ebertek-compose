@@ -116,6 +116,7 @@ class FakeWriter:
 
     def create_dns_cname(self, zone, hostname, target):
         """Create a proxied CNAME only after route verification."""
+        assert zone == ZONE
         self.events.append("dns")
         self.dns.append(
             {
@@ -309,7 +310,7 @@ class GuardedTests(unittest.TestCase):
         """Refuse DELETE and all unsupported HTTP method names."""
         client = CloudflareWriter("test-token")
         with self.assertRaises(ValueError):
-            client._write("DELETE", "/accounts/a", {})
+            client._write("DELETE", "/accounts/a", {})  # pylint: disable=protected-access
 
     def test_policy_links_are_ordered_and_unique(self):
         """Reusable policy references maintain explicit precedence."""
