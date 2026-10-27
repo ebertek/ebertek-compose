@@ -104,6 +104,7 @@ def sync_access_policies(text, desired):  # pylint: disable=too-many-locals
             )
             + f"\n{indent}]"
         )
+        replacements.append((opening, closing, new_list))
         changed.append(hostname)
     for opening, closing, replacement in reversed(replacements):
         text = text[:opening] + replacement + text[closing:]
