@@ -91,13 +91,13 @@ class OnboardingTests(unittest.TestCase):
             project = root / "ygg-example"
             project.mkdir()
             (project / "compose.yaml").write_text(
-                'services:\n'
-                '  example:\n'
-                '    labels:\n'
+                "services:\n"
+                "  example:\n"
+                "    labels:\n"
                 '      traefik.enable: "true"\n'
                 '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\n'
                 '      cf.access: "true"\n'
-                f'      cf.access.policies: \'["{policy}"]\'\n'
+                f"      cf.access.policies: '[\"{policy}\"]'\n"
             )
             containers = onboarding.compose_inventory(root)
             self.assertEqual(containers[0]["Name"], "ygg-example/compose.yaml/example")
@@ -110,9 +110,9 @@ class OnboardingTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "compose.yaml").write_text(
-                'services:\n'
-                '  nginx:\n'
-                '    labels:\n'
+                "services:\n"
+                "  nginx:\n"
+                "    labels:\n"
                 '      traefik.enable: "true"\n'
                 '      traefik.http.routers.nginx.rule: "Host(`ebertek.com`)"\n'
             )
@@ -126,9 +126,9 @@ class OnboardingTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "compose.yaml").write_text(
-                'services:\n'
-                '  new-app:\n'
-                '    labels:\n'
+                "services:\n"
+                "  new-app:\n"
+                "    labels:\n"
                 '      traefik.enable: "true"\n'
                 '      traefik.http.routers.new.rule: "Host(`new.ebi.nu`)"\n'
             )
