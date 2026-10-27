@@ -21,6 +21,7 @@ from cloudflare_guarded import (
     UnsafePlan,
     apply_actions,
     check_plan,
+    check_unattended_plan,
     fingerprint,
     preflight_compatibility,
 )
@@ -85,14 +86,19 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         help="Explicit approval of the exact live plan fingerprint",
     )
     parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Unattended apply, only when securely opted in outside GitOps",
+    )
+    parser.add_argument(
         "--max-operations",
         type=int,
         default=10,
         help="Hard limit for a single approved reconciliation (default 10)",
     )
     args = parser.parse_args()
-    if args.preflight and args.apply is not None:
-        raise ValueError("--preflight and --apply are mutually exclusive")
+    if sum((args.preflight, args.apply is not None, args.auto)) > 1:
+        raise ValueError("--preflight, --apply and --auto are mutually exclusive")
     if not 1 <= args.max_operations <= 10:
         raise ValueError("Maximum operations must be between 1 and 10")
     root = args.root.expanduser().resolve()
@@ -111,7 +117,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             settings[key] = os.environ[envname]
     client = CloudflareWriter(os.environ.get("CLOUDFLARE_API_TOKEN"))
 
-    if args.apply is None:
+    if args.apply is None and not args.auto:
         report, context, actions, token = plan(
             client, root, settings, args.max_operations
         )
@@ -146,8 +152,19 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             client, root, settings, args.max_operations
         )
         if not actions:
+            if args.auto:
+                print("Cloudflare auto reconciliation: no changes required.")
+                return 0
             raise UnsafePlan("Refusing apply: no operations remain")
-        if token != args.apply:
+        if args.auto:
+            marker = Path.home() / "cloudflare" / "enable-auto"
+            status = marker.stat()
+            if status.st_uid != os.getuid() or status.st_mode & 0o077:
+                raise UnsafePlan("Auto-apply marker permissions must be owner-only")
+            if marker.read_text().strip() != "enabled":
+                raise UnsafePlan("Auto-apply marker does not explicitly enable writes")
+            check_unattended_plan(report, maximum=min(3, args.max_operations))
+        elif token != args.apply:
             raise UnsafePlan("Live plan changed; review a new fingerprint")
         completed = apply_actions(
             client,
