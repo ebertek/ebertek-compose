@@ -174,11 +174,14 @@ def main():
     """Audit merged DNS A records and optionally export a GitHub source plan."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--root", type=Path, default=Path.home() / "ygg-compose",
+        "--root",
+        type=Path,
+        default=Path.home() / "ygg-compose",
         help="Merged GitOps checkout containing the private DNS source",
     )
     parser.add_argument(
-        "--output-plan", type=Path,
+        "--output-plan",
+        type=Path,
         help="Save a source-update plan outside the merged Git checkout",
     )
     parser.add_argument(
