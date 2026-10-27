@@ -260,13 +260,15 @@ class GuardedTests(unittest.TestCase):
 
     def test_unattended_rejects_existing_policy_changes(self):
         """Existing Access applications require a reviewed fingerprint."""
-        plan = report({
-            "kind": "update_access_policies",
-            "hostname": "grafana.ebi.nu",
-            "app_id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
-            "before": [POLICY],
-            "policies": [POLICY],
-        })
+        plan = report(
+            {
+                "kind": "update_access_policies",
+                "hostname": "grafana.ebi.nu",
+                "app_id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+                "before": [POLICY],
+                "policies": [POLICY],
+            }
+        )
         with self.assertRaises(UnsafePlan):
             check_unattended_plan(plan)
 
@@ -275,9 +277,7 @@ class GuardedTests(unittest.TestCase):
         approved = check_unattended_plan(new_host_actions())
         self.assertEqual(len(approved), 3)
         with self.assertRaises(UnsafePlan):
-            check_unattended_plan(
-                report(*(new_host_actions()["actions"] * 2))
-            )
+            check_unattended_plan(report(*(new_host_actions()["actions"] * 2)))
 
     def test_empty_report_requires_no_action(self):
         """An already synchronized account produces an empty execution list."""
@@ -361,7 +361,9 @@ class GuardedTests(unittest.TestCase):
             "policies": policy_links([POLICY]),
         }
         with patch.object(client, "_write", return_value={}) as writer:
-            client.update_access_policies(ACCOUNT, "dddddddd-dddd-dddd-dddd-dddddddddddd", app, [POLICY])
+            client.update_access_policies(
+                ACCOUNT, "dddddddd-dddd-dddd-dddd-dddddddddddd", app, [POLICY]
+            )
         payload = writer.call_args.args[2]
         self.assertEqual(payload["session_duration"], "12h")
         self.assertTrue(payload["http_only_cookie"])
