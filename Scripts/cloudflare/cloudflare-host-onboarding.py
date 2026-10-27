@@ -18,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from cloudflare_policy_sync import plan_access_policy_updates
+
 HOST = re.compile(r"^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\.ebi\.nu$")
 RULE = re.compile(r"^traefik\.http\.routers\.[^.]+\.rule$")
 HOST_RULE = re.compile(r"Host\(\s*`([^`]+)`\s*\)")
@@ -268,8 +270,11 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         or host not in dns_present
         or host not in existing_ingress
     )
-    if not new:
-        print(f"No new hostnames. Inspected {len(hosts)} labeled hostnames.")
+    policy_writes, changed_policies = plan_access_policy_updates(public, merged, hosts)
+    if not new and not policy_writes:
+        print(
+            f"No new hostnames or policy changes. Inspected {len(hosts)} labeled hostnames."
+        )
         return
     sample_access = (merged / "access-self-hosted.tf").read_text()
     sample_dns = (merged / "dns-ebi.tf").read_text()
@@ -285,7 +290,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         "tunnel CNAME target",
     )
     # Each source should match the currently deployed equivalent before editing.
-    writes = {}
+    writes = dict(policy_writes)
     access_source = public / "access-auto.tf"
     dns_source = public / "dns-ebi-auto.tf"
     for path, filename, kind, factory in (
@@ -298,6 +303,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         (dns_source, "dns-ebi-auto.tf", "dns", lambda h: dns_block(h, zone, tunnel)),
     ):
         before = path.read_text() if path.exists() else ""
+        current = writes[path][1] if path in writes else before
         deployed = merged / filename
         if deployed.exists() and deployed.read_text() != before:
             raise ValueError(f"GitOps deployed/source mismatch for {filename}")
@@ -306,7 +312,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             for h in new
             if h not in (access_present if kind == "access" else dns_present)
         )
-        after = render(before, additions)
+        after = render(current, additions)
         if after != before:
             writes[path] = (before, after)
     source_tunnel = tunnel_text
@@ -330,7 +336,9 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             )
         )
     print(
-        f"New/incomplete hostname definitions: {len(new)}; files to change: {len(writes)}"
+        f"New/incomplete hostnames: {len(new)}; "
+        f"existing policy updates: {len(changed_policies)}; "
+        f"files to change: {len(writes)}"
     )
     if not args.write_source:
         print(
