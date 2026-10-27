@@ -5,10 +5,15 @@ No Cloudflare API calls, git commits, or Terraform apply actions are performed.
 Only a Git source repository's dns-ygg.tf may be written; deployed ygg-compose is read-only.
 """
 
+# Preserve established kebab-case CLI entry point filename.
+# pylint: disable=invalid-name
+
 import argparse
 import difflib
 import fcntl
+import hashlib
 import ipaddress
+import json
 import os
 import re
 import subprocess
@@ -22,7 +27,7 @@ VALID_HOST = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.ygg\.nu$")
 DOCKER_SUBNET = ipaddress.ip_network("10.4.21.0/24")
 
 
-def records(text):
+def records(text):  # pylint: disable=too-many-locals,too-many-branches
     """Return resource metadata and offsets, with balanced HCL braces and quoted strings."""
     result = []
     for match in A_RESOURCE.finditer(text):
@@ -63,19 +68,19 @@ def records(text):
             fields[key] = found.group(3)
             positions[key] = (body_start + found.start(3), body_start + found.end(3))
         result.append(
-            dict(
-                id=match.group(1),
-                start=match.start(),
-                end=end,
-                fields=fields,
-                positions=positions,
-            )
+            {
+                "id": match.group(1),
+                "start": match.start(),
+                "end": end,
+                "fields": fields,
+                "positions": positions,
+            }
         )
     return result
 
 
 def docker_ipv4():
-    import json
+    """Discover unique Docker-subnet addresses for running containers."""
 
     ids = subprocess.check_output(["docker", "ps", "-q"], text=True).split()
     if not ids:
@@ -130,6 +135,7 @@ def update_existing(text, inventory):
 
 
 def add_static(text, hostname, ip):
+    """Append one explicitly requested static LAN A record, if unambiguous."""
     hostname = hostname.lower().rstrip(".")
     if not VALID_HOST.fullmatch(hostname):
         raise ValueError("Static name must be a one-label hostname under ygg.nu")
@@ -147,8 +153,6 @@ def add_static(text, hostname, ip):
     zones = {r["fields"].get("zone_id") for r in existing if r["fields"].get("zone_id")}
     if len(zones) != 1:
         raise ValueError("Could not unambiguously establish existing ygg.nu zone_id")
-    import hashlib
-
     identifier = "static_" + hashlib.sha256(hostname.encode()).hexdigest()[:16]
     if any(r["id"] == identifier for r in existing):
         raise ValueError("Terraform resource identifier collision")
@@ -167,7 +171,8 @@ def add_static(text, hostname, ip):
     return text.rstrip("\n") + "\n" + block
 
 
-def main():
+def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    """Preview or explicitly write Terraform source DNS updates."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--source",
