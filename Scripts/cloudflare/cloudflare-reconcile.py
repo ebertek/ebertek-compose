@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Read-only audit of Docker/Traefik against Terraform-managed Cloudflare DNS."""
 
+# Preserve established kebab-case CLI entry point filename.
+# pylint: disable=invalid-name
+
 import argparse
 import ipaddress
 import json
@@ -11,12 +14,13 @@ from pathlib import Path
 
 HOST = re.compile(r'\bHost\s*\(\s*[`"\']([^`"\']+)[`"\']\s*\)')
 RESOURCE = re.compile(
-    r'\bresource\s+"(cloudflare_dns_record|cloudflare_zero_trust_access_application)"\s+"[^"]+"\s*\{'
+    r'\bresource\s+"(cloudflare_dns_record|'
+    r'cloudflare_zero_trust_access_application)"\s+"[^"]+"\s*\{'
 )
 ASSIGN = re.compile(
-    r'^\s*(name|domain|type|content|proxied)\s*=\s*("[^"]*"|true|false)\s*$', re.M
+    r'^\s*(name|domain|type|content|proxied)\s*=\s*("[^"]*"|true|false)\s*$', re.MULTILINE
 )
-INGRESS_HOST = re.compile(r'^\s*hostname\s*=\s*"([^"]+)"\s*$', re.M)
+INGRESS_HOST = re.compile(r'^\s*hostname\s*=\s*"([^"]+)"\s*$', re.MULTILINE)
 
 
 def resources(text):
@@ -47,10 +51,12 @@ def resources(text):
 
 
 def fields(body):
+    """Extract string-like fields from an imported Terraform resource."""
     return {key: raw.strip('"') for key, raw in ASSIGN.findall(body)}
 
 
-def docker_inventory():
+def docker_inventory():  # pylint: disable=too-many-locals
+    """Read running Docker containers, their Traefik hosts and IPv4 addresses."""
     ids = subprocess.check_output(["docker", "ps", "-q"], text=True).split()
     if not ids:
         return set(), {}, []
@@ -82,7 +88,8 @@ def docker_inventory():
     return hosts, ips, warnings
 
 
-def audit(config):
+def audit(config):  # pylint: disable=too-many-locals,too-many-branches
+    """Compare Docker inventory with source-backed Cloudflare records."""
     tf_files = sorted(config.glob("*.tf"))
     if not tf_files:
         raise ValueError("No Terraform .tf files found")
@@ -195,7 +202,9 @@ def audit(config):
         "docker_ipv4_dns_mismatches_REVIEW_REQUIRED": mismatches,
         "docker_ipv4_dns_missing_REVIEW_ONLY": missing,
         "docker_ipv4_dns_ambiguous_REVIEW_ONLY": ambiguous,
-        "cloudflare_10_4_21_records_without_running_container_REVIEW_ONLY": unmatched_docker_network_records,
+        "cloudflare_10_4_21_records_without_running_container_REVIEW_ONLY": (
+            unmatched_docker_network_records
+        ),
         "docker_ipv4_dns_matched": matched,
         "container_ipv4_inventory": ips,
         "warnings": warnings,
@@ -211,6 +220,7 @@ def audit(config):
 
 
 def main():
+    """Run the audit and print a human-readable or JSON report."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config", type=Path, default=Path.home() / "ygg-compose/terraform/cloudflare"
