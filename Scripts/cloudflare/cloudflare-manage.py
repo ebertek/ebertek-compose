@@ -62,9 +62,7 @@ def plan(client, root, settings, limit):
 def main():
     """Preview operations or execute exactly one revalidated approval."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--root", type=Path, default=Path.home() / "ygg-compose"
-    )
+    parser.add_argument("--root", type=Path, default=Path.home() / "ygg-compose")
     parser.add_argument(
         "--settings",
         type=Path,
@@ -76,7 +74,9 @@ def main():
         help="Explicit approval of the exact live plan fingerprint",
     )
     parser.add_argument(
-        "--max-operations", type=int, default=10,
+        "--max-operations",
+        type=int,
+        default=10,
         help="Hard limit for a single approved reconciliation (default 10)",
     )
     args = parser.parse_args()
@@ -99,16 +99,16 @@ def main():
     client = CloudflareWriter(os.environ.get("CLOUDFLARE_API_TOKEN"))
 
     if args.apply is None:
-        report, _, actions, token = plan(
-            client, root, settings, args.max_operations
-        )
+        report, _, actions, token = plan(client, root, settings, args.max_operations)
         print("Cloudflare API reconciler — PLAN ONLY")
         print(f"Desired hostnames: {report['counts']['desired_hosts']}")
         for action in actions:
             print(f"  {action['kind']}: {action['hostname']}")
         if actions:
             print(f"Approval fingerprint: {token}")
-            print(f"To apply: python3 Scripts/cloudflare/cloudflare-manage.py --apply {token}")
+            print(
+                f"To apply: python3 Scripts/cloudflare/cloudflare-manage.py --apply {token}"
+            )
         else:
             print("Already synchronized. No changes required.")
         print("No changes made.")
@@ -127,7 +127,10 @@ def main():
         if token != args.apply:
             raise UnsafePlan("Live plan changed; review a new fingerprint")
         completed = apply_actions(
-            client, report, context, docker_addresses=LIVE.docker_ipv4,
+            client,
+            report,
+            context,
+            docker_addresses=LIVE.docker_ipv4,
             maximum=args.max_operations,
         )
         for item in completed:
