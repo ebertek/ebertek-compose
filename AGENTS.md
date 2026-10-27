@@ -1,94 +1,186 @@
 # Agent Instructions
 
-## Repository Overview
+This file is the repository-specific operating guide for AI assistants and
+other automated contributors. Follow the user's requested scope, inspect the
+current files before editing, and distinguish source-code changes from live
+infrastructure operations. For security reporting, also read [SECURITY.md](SECURITY.md).
 
-This repository contains Docker Compose deployments and supporting configuration for the Ygg self-hosted infrastructure.
+## Repository and deployment architecture
 
-The infrastructure includes containerized applications, networking, reverse proxies, monitoring, automation, and security services.
+- **`ebertek/ebertek-compose` (this repository):** public source of Docker
+  Compose stacks, scripts, Komodo resource definitions, nonsecret configuration,
+  and CI workflows. Make changes here through reviewed branches/PRs.
+- **`ebertek/ebertek-compose-secrets`:** separate private source of sensitive
+  deployment configuration. Do not assume it can be read or written from this
+  repository or from an assistant's GitHub permissions.
+- **`ebertek/ygg-compose`:** a merged GitOps deployment repository assembled
+  from the public and private sources. On Pleiades, it is checked out at
+  `/home/docker/ygg-compose`. **It is not an editable source checkout.**
+  Never edit tracked files in it, generate commits there, or assume separate
+  public/private source clones exist on Pleiades.
+- Komodo manages stacks across `pleiades.ygg.nu`, `ygg.ebi.nu`, and
+  `hc.ebi.nu`. Stack ownership, servers, run directories, schedules, and
+  GitOps actions are defined in [`komodo/resources.toml`](komodo/resources.toml).
+  Do not assume all services run on the same host.
+- Successful CI on a push to `main` can trigger a dispatch to the merged
+  repository through [`.github/workflows/trigger-ygg.yml`](.github/workflows/trigger-ygg.yml).
+  Source merging, deployment checkout updates, Komodo resource synchronization,
+  and container recreation are **distinct steps**. A changed Compose label does
+  not reach a running container until that service is redeployed.
 
-Changes must prioritize reliability, security, reproducibility, and compatibility with existing deployments.
+Use explicit paths, users, and hosts in instructions. `~` changes meaning
+under `sudo -s`: `/root` is not `/home/docker`. Run the Pleiades
+Cloudflare scripts with the `docker` user's virtual environment and checkout.
 
-## General Principles
+## Change discipline
 
-- Prefer minimal, targeted changes over broad refactoring.
-- Preserve existing configuration conventions and service names.
-- Do not introduce unnecessary dependencies, services, or helper files.
-- Do not modify unrelated services or configurations.
-- Do not assume that development, CI, and production environments are identical.
-- Do not make deployment changes or restart running services without explicit authorization.
-- Explain changes that affect runtime behavior, security, networking, or persistent data.
+- Favor minimal changes, preserve established names, settings, and comments,
+  and avoid sweeping refactors or unrelated reformatting.
+- Do not deploy stacks, restart services, modify DNS/Access/Tunnels, update
+  secrets, or execute destructive commands without explicit authorization.
+  A request to change repository files is **not** permission for a production
+  apply.
+- For each change, identify its source owner and how it reaches production.
+  Never write private configuration to this public repository.
+- If a workflow cannot be validated locally, state precisely what remains
+  unverified. Don't call a check green merely because it should pass.
+- Do not create placeholder credentials, guessed resource IDs, fabricated
+  service names, or speculative configuration entries.
 
-## Docker Compose
+## Docker Compose and networking
 
-- Follow the existing Compose specification and repository conventions.
-- Preserve YAML anchors, aliases, profiles, networks, and volume definitions.
-- Respect static IP addresses, MAC addresses, IPv6 assignments, and network modes.
-- Preserve resource limits, reservations, restart policies, healthchecks, and logging settings unless a change is explicitly required.
-- Do not replace pinned image versions or digests with floating tags.
-- Prefer upstream-supported application healthchecks over process-only checks where available.
-- Verify that proposed healthcheck commands and utilities exist in the target image.
-- Do not assume that minimal or distroless images contain a shell.
-- Never remove persistent volumes or introduce destructive maintenance commands without explicit authorization.
+- Preserve anchors, profiles, external networks, static IP/MAC/IPv6 addresses,
+  NFS dependencies, mount paths, restart policies, healthchecks, limits, and
+  existing reverse-proxy middleware unless the task requires changing them.
+- Never remove a persistent volume, database, or service data directory as a
+  cleanup shortcut. Verify network reachability and dependencies before
+  suggesting stack recreation.
+- Respect image tag and digest pinning, Renovate restrictions, and upstream
+  version semantics. Verify healthcheck commands exist in the target image,
+  especially for Alpine/minimal/distroless images.
+- For services exposed through Traefik, check the actual router
+  ``Host(`hostname`)`` expression, entrypoint, TLS, middleware, and service
+  port. Traefik accepts quoted `Host()` arguments; malformed rules must
+  raise validation errors, not silently vanish from Cloudflare discovery.
+- Public `*.ebi.nu` hostnames normally require `cf.access: "true"` and
+  ordered `cf.access.policies` labels. Preserve the intended policy order;
+  never infer that a named `bypass` policy is safe without inspecting its
+  match conditions.
 
-## Formatting and Linting
+## Cloudflare controller: current source of truth
 
-- Follow `.editorconfig`, `.gitattributes`, and repository-specific formatter settings.
-- Preserve the existing `.vscode/settings.json` language associations.
-- YAML, JSON, and JavaScript use two-space indentation.
-- Shell scripts use tabs with a tab width of four.
-- Respect the repository's existing Prettier configuration.
-- Maintain compatibility with Super-Linter v9 defaults.
-- Do not disable linting rules or add suppression comments merely to silence warnings without justification.
-- Do not reformat unrelated files.
+Read [`Scripts/cloudflare/README.md`](Scripts/cloudflare/README.md) and the
+current implementation before modifying controller behavior.
 
-## Dependencies and Renovate
+- For Compose-managed applications, desired state comes from merged Compose
+  labels; observed state comes from Cloudflare's APIs. Do not regenerate live
+  desired state from Cloudflare alone.
+- The direct API reconciler manages Access applications/policy references,
+  `ebi.nu` Tunnel CNAMEs and ingress, and existing Docker-subnet `ygg.nu`
+  A-record addresses. It must preserve unrelated and unmanaged resources.
+- `cloudflare-live.py` is GET-only. `cloudflare-manage.py` defaults to
+  planning, with `--preflight` for GET-only compatibility checks,
+  `--apply <fingerprint>` for a reviewed manual write, and `--auto` for
+  explicitly opted-in, bounded unattended operations.
+- The scheduled Komodo action `Cloudflare audit` uses
+  `Scripts/cloudflare/cloudflare-audit.sh`. **Do not infer its effects from
+  its name:** without `/home/docker/cloudflare/enable-auto` it performs a
+  GET-only audit; with the owner-only opt-in marker it invokes `--auto`.
+  Check this mode before describing a run as read-only.
+- Unattended mutations are restricted to a small allowlist and at most three
+  operations per run. **Existing Access application policy updates remain
+  manual-only**, even though a guarded PUT writer exists.
+- A new app must be verified protected by Access before its Tunnel route and
+  public DNS are published. Preserve the complete existing Tunnel
+  configuration (`ingress`, `originRequest`, and `warp-routing` where
+  present), including the terminal fallback. Treat unknown live fields and
+  conflicting resources as blockers, not attributes to discard.
+- Existing Access application changes use a full application PUT, not a
+  policies-only PATCH. Verify the current API shape and all writable versus
+  response-only fields; preserve app settings and require a controlled live
+  validation before claiming this path safe for automation.
+- Never automatically delete Cloudflare resources merely because a container
+  or Compose hostname is absent.
+- Older `terraform/cloudflare/` files and helper scripts are **migration/
+  recovery references**, not the authoritative controller for new services.
+  Do not run Terraform apply or enable simultaneous Terraform and API writers.
+  Preserve any existing external Terraform state and backup information
+  until a separate, approved retirement.
+- Runtime Python dependencies are declared in
+  `Scripts/cloudflare/requirements.txt`; the virtual environment belongs
+  outside the merged checkout, presently at
+  `/home/docker/cloudflare/.venv`. Do not use `pip --break-system-packages`
+  or require extra local source repositories.
 
-- Prefer official upstream container images and documented image tags.
-- Preserve Renovate package rules, versioning strategies, and update restrictions.
-- Do not introduce major-version upgrades unless explicitly requested.
-- Validate Renovate configuration changes.
-- Distinguish Docker image tags from application versions.
-- Do not assume that a newer tag represents a compatible release.
+## Komodo, GitOps and shell scripts
 
-## Security
+- Review the relevant `komodo/resources.toml` action or procedure before
+  changing schedules, server targets, terminal commands, execution order, or
+  permissions. A Resource Sync definition is not proof that the action has
+  been imported or run successfully.
+- Distinguish a read-only audit from an action that applies changes. Preserve
+  current safety gates, locks, exit-status propagation, and explicit opt-ins.
+- The GitHub source API may create files as nonexecutable (`100644`). Shell
+  entrypoints with a shebang must have executable Git mode (`100755`) where
+  required by CI. Check `git ls-files -s` rather than removing shebangs just
+  to satisfy an executable-bit lint rule.
+- Use `set -Eeuo pipefail` where appropriate, quote expansions, and never
+  echo tokens or full secret-bearing environment/configuration dumps.
 
-- Never commit credentials, access tokens, private keys, or other sensitive values.
-- Do not print secrets into CI logs or diagnostic output.
-- Respect existing Docker secrets, environment files, and authentication mechanisms.
-- Apply least privilege to GitHub Actions permissions and container capabilities.
-- Do not introduce privileged containers, host networking, or Docker socket access without explaining the security implications.
-- Do not suppress Gitleaks, Trivy, or other security findings without documenting the reason.
-- Preserve existing network isolation and authentication requirements.
+## Security rules
 
-## GitHub Actions
+- Follow [`SECURITY.md`](SECURITY.md). Never paste, commit, log, or reproduce
+  credentials, private keys, API tokens, webhook URLs, cookies or private
+  deployment secrets. Treat runtime credential files as sensitive even when
+  located inside a merged checkout.
+- The public repository must not contain private-repo file contents, secret
+  state files, Terraform state, credential-bearing snapshots, or live API
+  responses with sensitive fields.
+- Apply least privilege to GitHub Actions, containers, Docker socket access,
+  API tokens, Komodo terminals, and SSH. Do not weaken existing Access,
+  Keycloak, Traefik, or network controls for convenience.
+- Do not log sensitive payloads when debugging failures. Prefer resource
+  counts, schema keys, status codes, and redacted diagnostics.
+- Trivy's configured scans are currently scheduled/manual and use
+  `exit-code: "0"`; a successful security workflow alone is **not** proof
+  that there are no vulnerabilities. Review actual findings.
 
-- Follow existing workflow naming and formatting conventions.
-- Use official or well-maintained GitHub Actions where practical.
-- Prefer immutable action references where practical.
-- Apply least-privilege workflow permissions.
-- Avoid introducing redundant workflows or duplicate validation.
-- Ensure commands work in GitHub-hosted Ubuntu runners.
-- Keep validation jobs independent of production secrets wherever possible.
+## Formatting and validation before pushing
 
-## Validation
+Use [`.editorconfig`](.editorconfig), the existing formatter configuration,
+and [`.github/workflows/lint.yml`](.github/workflows/lint.yml).
+YAML/JSON/JavaScript/Markdown use two spaces; shell uses tabs (width four).
+Do not suppress linters without a documented reason.
 
-Before completing a change, perform applicable checks:
+**Run local checks before committing or opening a PR whenever tooling is
+available.** Repeatedly using a slow Super-Linter CI job as an iterative
+formatter is avoidable. Prefer running the configured Black, Ruff, Pylint,
+shfmt, ShellCheck and Prettier checks on changed files; inspect their current
+versions/settings rather than guessing at defaults. At minimum, run relevant
+commands such as:
 
-1. Validate YAML and formatting against the existing repository configuration.
-2. Run `docker compose config --quiet` for affected standalone Compose files when required environment files and variables are available.
-3. Validate Renovate configuration when modified.
-4. Run applicable linting and security checks when available.
-5. Review the diff for unrelated changes, exposed secrets, and unintended runtime effects.
+```bash
+python -m unittest discover -s Scripts/cloudflare -p 'test_cloudflare_*.py'
+docker compose -f ygg-arr/compose.yaml config --quiet
+npx prettier --check AGENTS.md SECURITY.md
+git diff --check
+git diff --stat
+```
 
-Never claim validation succeeded unless the checks were actually executed.
+Additional relevant CI gates include Super-Linter, Docker Compose config
+checks, Renovate validation, and the scheduled/manual security workflow.
+Some Compose checks require environment variables or external files; don't
+invent them when absent. Offline unit tests do **not** replace a GET-only
+production preflight or an explicitly approved live write test.
 
-When validation cannot be performed, explain what remains unverified.
+## Completion and handoff
 
-## Reporting Changes
-
-Summarize:
-
-- What changed and why.
-- Any compatibility or security implications.
-- Which validation checks passed.
-- Any remaining risks or manual deployment steps.
+- Report source paths changed, rationale, security/runtime implications,
+  tests actually run, and any missing validations.
+- Distinguish GitHub PR creation, passing CI, merging, merged-repo sync,
+  Komodo Resource Sync, and live deployment; none automatically proves the
+  later step happened.
+- Provide concrete, idempotent verification commands using the correct user
+  and paths. Do not ask users to edit `ygg-compose` tracked files.
+- When a deployment is already healthy, prefer observation and rollback
+  planning to speculative extra infrastructure changes.
