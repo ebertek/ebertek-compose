@@ -57,9 +57,7 @@ class PolicySyncTests(unittest.TestCase):
 
     def test_other_hosts_untouched(self):
         """Do not edit an unrelated Access application."""
-        result, changed, found = sync_access_policies(
-            SAMPLE, {"other.ebi.nu": [THREE]}
-        )
+        result, changed, found = sync_access_policies(SAMPLE, {"other.ebi.nu": [THREE]})
         self.assertEqual((result, changed, found), (SAMPLE, [], set()))
 
     def test_nonconsecutive_precedence_refused(self):
@@ -91,9 +89,7 @@ class PolicySyncTests(unittest.TestCase):
             merged.mkdir()
             (public / "access-self-hosted.tf").write_text(SAMPLE)
             with self.assertRaises(ValueError):
-                plan_access_policy_updates(
-                    public, merged, {"grafana.ebi.nu": [THREE]}
-                )
+                plan_access_policy_updates(public, merged, {"grafana.ebi.nu": [THREE]})
 
     def test_planning_rejects_mismatched_deployed_source(self):
         """Reject plans if merged Terraform differs from its source."""
@@ -105,9 +101,7 @@ class PolicySyncTests(unittest.TestCase):
             (public / "access-self-hosted.tf").write_text(SAMPLE)
             (merged / "access-self-hosted.tf").write_text(SAMPLE + "\n# drift\n")
             with self.assertRaises(ValueError):
-                plan_access_policy_updates(
-                    public, merged, {"grafana.ebi.nu": [THREE]}
-                )
+                plan_access_policy_updates(public, merged, {"grafana.ebi.nu": [THREE]})
 
 
 if __name__ == "__main__":
