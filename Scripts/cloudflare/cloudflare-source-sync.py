@@ -6,7 +6,7 @@ Only a Git source repository's dns-ygg.tf may be written; deployed ygg-compose i
 """
 
 # Preserve established kebab-case CLI entry point filename.
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,duplicate-code
 
 import argparse
 import difflib
