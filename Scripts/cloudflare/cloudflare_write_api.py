@@ -112,8 +112,9 @@ class CloudflareWriter(CloudflareClient):
             "custom_deny_message",
             "custom_deny_url",
             "enable_binding_cookie",
-            "http_only_cookie",
-            "same_site_cookie",
+            "http_only_cookie_attribute",
+            "eager_redirect_cookie_setting",
+            "same_site_cookie_attribute",
             "logo_url",
             "skip_interstitial",
             "service_auth_401_redirect",
@@ -122,6 +123,7 @@ class CloudflareWriter(CloudflareClient):
             "options_preflight_bypass",
             "read_service_tokens_from_header",
             "tags",
+            "self_hosted_domains",
         }
         readonly = {
             "id",
@@ -129,6 +131,7 @@ class CloudflareWriter(CloudflareClient):
             "created_at",
             "updated_at",
             "aud",
+            "uid",
             "domain",
             "type",
             "policies",
@@ -148,6 +151,9 @@ class CloudflareWriter(CloudflareClient):
         if not required.issubset(application):
             raise ValueError("Missing required Access application fields")
         body = {key: application[key] for key in fields if key in application}
+        if "destinations" in body:
+            # Cloudflare documents destinations as superseding self_hosted_domains.
+            body.pop("self_hosted_domains", None)
         body["policies"] = policy_links(policies)
         # Keep the original domain and type, without permitting caller overrides.
         return self._write(

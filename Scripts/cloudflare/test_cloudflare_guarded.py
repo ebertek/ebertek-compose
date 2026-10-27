@@ -357,7 +357,7 @@ class GuardedTests(unittest.TestCase):
             "domain": "grafana.ebi.nu",
             "type": "self_hosted",
             "session_duration": "12h",
-            "http_only_cookie": True,
+            "http_only_cookie_attribute": True,
             "policies": policy_links([POLICY]),
         }
         with patch.object(client, "_write", return_value={}) as writer:
@@ -366,9 +366,63 @@ class GuardedTests(unittest.TestCase):
             )
         payload = writer.call_args.args[2]
         self.assertEqual(payload["session_duration"], "12h")
-        self.assertTrue(payload["http_only_cookie"])
+        self.assertTrue(payload["http_only_cookie_attribute"])
         self.assertEqual(payload["policies"], policy_links([POLICY]))
         self.assertNotIn("id", payload)
+
+    def test_policy_put_supports_actual_live_application_fields(self):
+        """Preserve writable fields from a real self-hosted app's GET keys."""
+        client = CloudflareWriter("test-token")
+        identifier = "dddddddd-dddd-dddd-dddd-dddddddddddd"
+        app = {
+            "id": identifier,
+            "uid": identifier,
+            "name": "unpackerr",
+            "domain": "unpackerr.ebi.nu",
+            "type": "self_hosted",
+            "aud": "test-audience-tag",
+            "created_at": "2026-10-27T00:00:00Z",
+            "updated_at": "2026-10-27T00:00:00Z",
+            "allowed_idps": [],
+            "app_launcher_visible": False,
+            "auto_redirect_to_identity": False,
+            "destinations": [{"type": "public", "uri": "unpackerr.ebi.nu"}],
+            "self_hosted_domains": ["unpackerr.ebi.nu"],
+            "eager_redirect_cookie_setting": True,
+            "enable_binding_cookie": True,
+            "http_only_cookie_attribute": True,
+            "options_preflight_bypass": False,
+            "session_duration": "24h",
+            "tags": [],
+            "policies": policy_links([POLICY]),
+        }
+        with patch.object(client, "_write", return_value={}) as writer:
+            client.update_access_policies(ACCOUNT, identifier, app, [POLICY])
+        body = writer.call_args.args[2]
+        self.assertTrue(body["eager_redirect_cookie_setting"])
+        self.assertTrue(body["http_only_cookie_attribute"])
+        self.assertEqual(body["destinations"], app["destinations"])
+        self.assertNotIn("self_hosted_domains", body)
+        self.assertNotIn("uid", body)
+        self.assertNotIn("aud", body)
+
+    def test_policy_put_preserves_legacy_domains_if_no_destinations(self):
+        """Legacy hostname list is retained when destinations are absent."""
+        client = CloudflareWriter("test-token")
+        identifier = "dddddddd-dddd-dddd-dddd-dddddddddddd"
+        app = {
+            "id": identifier,
+            "name": "unpackerr",
+            "domain": "unpackerr.ebi.nu",
+            "type": "self_hosted",
+            "self_hosted_domains": ["unpackerr.ebi.nu"],
+        }
+        with patch.object(client, "_write", return_value={}) as writer:
+            client.update_access_policies(ACCOUNT, identifier, app, [POLICY])
+        self.assertEqual(
+            writer.call_args.args[2]["self_hosted_domains"],
+            ["unpackerr.ebi.nu"],
+        )
 
     def test_blocked_and_duplicate_actions_refused(self):
         """Reject blocked or duplicate mutations before contacting Cloudflare."""
