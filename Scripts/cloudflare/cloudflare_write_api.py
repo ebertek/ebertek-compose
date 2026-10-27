@@ -18,6 +18,22 @@ from cloudflare_api import (
 from cloudflare_desired import HOST, UUID
 from cloudflare_live_diff import DOCKER_NETWORK
 
+TUNNEL_CONFIG_KEYS = frozenset({"ingress", "originRequest", "warp-routing"})
+
+
+def validate_tunnel_config(config):
+    """Validate known Cloudflare Tunnel fields without modifying their values."""
+    if not isinstance(config, dict) or not isinstance(config.get("ingress"), list):
+        raise TypeError("Tunnel configuration must contain an ingress array")
+    unknown = set(config) - TUNNEL_CONFIG_KEYS
+    if unknown:
+        raise ValueError(
+            "Unsupported Tunnel configuration keys: " + ", ".join(sorted(unknown))
+        )
+    if "warp-routing" in config and not isinstance(config["warp-routing"], dict):
+        raise TypeError("Tunnel warp-routing must be an object")
+    return config
+
 
 def policy_links(policies):
     """Convert ordered reusable policy IDs into Cloudflare Access links."""
@@ -82,10 +98,7 @@ class CloudflareWriter(CloudflareClient):
 
     def put_tunnel_ingress(self, account, tunnel, config):
         """Replace a validated complete Tunnel config; never omit existing routes."""
-        if not isinstance(config, dict) or not isinstance(config.get("ingress"), list):
-            raise TypeError("Tunnel configuration must have ingress entries")
-        if set(config) - {"ingress", "originRequest"}:
-            raise ValueError("Unexpected Tunnel config keys; refusing replacement")
+        validate_tunnel_config(config)
         return self._write(
             "PUT",
             f"/accounts/{checked_id(account)}/cfd_tunnel/"

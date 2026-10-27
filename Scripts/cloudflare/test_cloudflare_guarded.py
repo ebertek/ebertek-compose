@@ -2,6 +2,7 @@
 
 import copy
 import unittest
+from unittest.mock import patch
 
 from cloudflare_guarded import (
     UnsafePlan,
@@ -54,6 +55,7 @@ class FakeWriter:
         self.dns = []
         self.policies = [{"id": POLICY}]
         self.configuration = {
+            "warp-routing": {"enabled": True},
             "ingress": [
                 {
                     "hostname": TEMPLATE,
@@ -61,7 +63,7 @@ class FakeWriter:
                     "originRequest": {"http2Origin": True},
                 },
                 {"service": "http_status:404"},
-            ]
+            ],
         }
         self.private_record = {
             "id": "c" * 32,
@@ -170,6 +172,39 @@ class GuardedTests(unittest.TestCase):
         self.assertEqual(result["template_access_policies"], 1)
         self.assertTrue(result["template_cname_verified"])
         self.assertEqual(client.events, [])
+        self.assertEqual(client.configuration["warp-routing"], {"enabled": True})
+
+    def test_preflight_refuses_unknown_tunnel_fields(self):
+        """Do not allow unknown top-level keys in a full Tunnel replacement."""
+        client = FakeWriter()
+        client.configuration["unexpected-option"] = {"enabled": True}
+        with self.assertRaisesRegex(UnsafePlan, "unexpected-option"):
+            preflight_compatibility(client, CONTEXT)
+        with self.assertRaisesRegex(UnsafePlan, "unexpected-option"):
+            apply_actions(client, new_host_actions(), CONTEXT)
+        self.assertEqual(client.events, [])
+
+    def test_put_preserves_warp_routing_verbatim(self):
+        """Pass the complete remotely managed Tunnel config to Cloudflare."""
+        client = CloudflareWriter("test-token")
+        config = copy.deepcopy(FakeWriter().configuration)
+        with patch.object(client, "_write", return_value={}) as sender:
+            client.put_tunnel_ingress(ACCOUNT, TUNNEL, config)
+        self.assertEqual(sender.call_args.args[0], "PUT")
+        self.assertEqual(sender.call_args.args[2], {"config": config})
+        self.assertEqual(config["warp-routing"], {"enabled": True})
+
+    def test_invalid_warp_routing_is_refused(self):
+        """Avoid replacing a Tunnel when warp-routing has an invalid shape."""
+        client = CloudflareWriter("test-token")
+        config = copy.deepcopy(FakeWriter().configuration)
+        config["warp-routing"] = "invalid"
+        with (
+            patch.object(client, "_write") as sender,
+            self.assertRaises(TypeError),
+        ):
+            client.put_tunnel_ingress(ACCOUNT, TUNNEL, config)
+        sender.assert_not_called()
 
     def test_preflight_refuses_incompatible_tunnel_template(self):
         """Reject unexpected existing origin before any write."""
@@ -259,6 +294,7 @@ class GuardedTests(unittest.TestCase):
         self.assertEqual(ingress[-2]["hostname"], HOST)
         self.assertEqual(ingress[-2]["originRequest"], {"http2Origin": True})
         self.assertEqual(ingress[0]["hostname"], TEMPLATE)
+        self.assertEqual(client.configuration["warp-routing"], {"enabled": True})
 
     def test_resume_after_access_was_already_created(self):
         """Complete ingress and DNS safely after an interrupted first apply."""
