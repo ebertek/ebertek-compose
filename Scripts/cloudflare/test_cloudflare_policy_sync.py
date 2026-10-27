@@ -90,11 +90,10 @@ class PolicySyncTests(unittest.TestCase):
             public.mkdir()
             merged.mkdir()
             (public / "access-self-hosted.tf").write_text(SAMPLE)
-            writes, changed = plan_access_policy_updates(
-                public, merged, {"grafana.ebi.nu": [THREE]}
-            )
-            self.fail("Expected a missing deployment check") if writes else None
-            self.assertEqual(changed, [])
+            with self.assertRaises(ValueError):
+                plan_access_policy_updates(
+                    public, merged, {"grafana.ebi.nu": [THREE]}
+                )
 
     def test_planning_rejects_mismatched_deployed_source(self):
         """Reject plans if merged Terraform differs from its source."""
