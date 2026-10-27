@@ -114,6 +114,7 @@ def compare_live(
                     "kind": "create_dns_cname",
                     "hostname": hostname,
                     "content": target,
+                    "policies": wanted,
                 }
             )
         elif (
@@ -130,7 +131,9 @@ def compare_live(
             )
 
         if hostname not in tunnel_hosts:
-            actions.append({"kind": "add_tunnel_ingress", "hostname": hostname})
+            actions.append(
+                {"kind": "add_tunnel_ingress", "hostname": hostname, "policies": wanted}
+            )
 
     if docker_addresses is not None:
         private_index = index_records(dns_ygg or [], "name")

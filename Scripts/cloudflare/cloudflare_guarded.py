@@ -1,0 +1,227 @@
+"""Guarded Cloudflare operations, ordered to avoid unprotected publication.
+
+This module is inert until explicitly called by a separately approved command.
+Existing Access policy updates are intentionally unsupported until complete
+application PUT payloads have been validated against real Cloudflare data.
+"""
+
+import copy
+import hashlib
+import ipaddress
+import json
+
+from cloudflare_desired import HOST
+from cloudflare_live_diff import (
+    DOCKER_NETWORK,
+    ordered_policy_ids,
+    validate_ingress,
+)
+from cloudflare_write_api import policy_links
+
+SUPPORTED = {
+    "create_access_app",
+    "add_tunnel_ingress",
+    "create_dns_cname",
+    "update_docker_dns_a",
+}
+ORDER = {
+    "create_access_app": 0,
+    "add_tunnel_ingress": 1,
+    "create_dns_cname": 2,
+    "update_docker_dns_a": 3,
+}
+TEMPLATE_HOST = "komodo.ebi.nu"
+TRAEFIK_SERVICE = "https://traefik.ygg.nu:443"
+
+
+class UnsafePlan(ValueError):
+    """A proposed mutation is unsafe or its preconditions have changed."""
+
+
+def fingerprint(report, context):
+    """Bind approval to all proposed operations and Cloudflare resource scope."""
+    message = {
+        "version": 1,
+        "account": context["account"],
+        "zone_ebi": context["ebi"],
+        "zone_ygg": context["ygg"],
+        "tunnel": context["tunnel"],
+        "actions": report["actions"],
+        "blocked": report["blocked"],
+    }
+    digest = hashlib.sha256(
+        json.dumps(message, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return digest[:16]
+
+
+def check_plan(report, maximum=10):
+    """Refuse blocked, unknown, duplicate, or unreasonably large mutations."""
+    if report["blocked"]:
+        raise UnsafePlan("The live audit contains blocked operations")
+    actions = report["actions"]
+    if len(actions) > maximum:
+        raise UnsafePlan(f"Plan has {len(actions)} operations (maximum {maximum})")
+    if any(action.get("kind") not in SUPPORTED for action in actions):
+        raise UnsafePlan(
+            "The plan contains unsupported operations; "
+            "existing Access policy changes require separate validation"
+        )
+    entries = [(a["kind"], a["hostname"]) for a in actions]
+    if len(entries) != len(set(entries)):
+        raise UnsafePlan("The plan contains duplicate operations")
+    for entry in actions:
+        if entry["kind"] != "update_docker_dns_a":
+            if not HOST.fullmatch(entry["hostname"]):
+                raise UnsafePlan("A proposed public hostname is not in ebi.nu")
+            try:
+                policy_links(entry["policies"])
+            except (KeyError, TypeError, ValueError) as error:
+                raise UnsafePlan(
+                    "Missing or invalid approved Access policy links"
+                ) from error
+    return sorted(actions, key=lambda a: (ORDER[a["kind"]], a["hostname"]))
+
+
+def verify_access(client, account, hostname, wanted):
+    """Require exactly one live self-hosted application with these policies."""
+    matches = [
+        app
+        for app in client.list_applications(account)
+        if app.get("domain") == hostname
+    ]
+    if len(matches) != 1 or not matches[0].get("id"):
+        raise UnsafePlan(f"{hostname}: expected one existing Access application")
+    app = client.get_application(account, matches[0]["id"])
+    if app.get("domain") != hostname or app.get("type") != "self_hosted":
+        raise UnsafePlan(f"{hostname}: Access application identity changed")
+    try:
+        current = ordered_policy_ids(app)
+    except (TypeError, ValueError) as error:
+        raise UnsafePlan(f"{hostname}: invalid live Access policies") from error
+    if current != wanted:
+        raise UnsafePlan(f"{hostname}: Access policies differ from approved plan")
+    return app
+
+
+def checked_template(config):
+    """Select an existing trusted Traefik route and reject unsafe variants."""
+    if set(config) - {"ingress", "originRequest"}:
+        raise UnsafePlan("Unknown Tunnel config keys; refusing full replacement")
+    hosts = validate_ingress(config.get("ingress"))
+    templates = hosts.get(TEMPLATE_HOST, [])
+    if len(templates) != 1 or templates[0].get("service") != TRAEFIK_SERVICE:
+        raise UnsafePlan("Expected a single existing Komodo Traefik route template")
+    source = templates[0]
+    if source.get("path") or (source.get("originRequest") or {}).get("access"):
+        raise UnsafePlan("The Tunnel route template has hostname-specific rules")
+    return source
+
+
+def audit_tunnel_route(client, context, hostname):
+    """Check a route was installed without changing other ingress entries."""
+    remote = client.tunnel_configuration(context["account"], context["tunnel"])
+    config = remote["config"]
+    return bool(validate_ingress(config["ingress"]).get(hostname))
+
+
+# pylint: disable=too-many-locals,too-many-branches,too-many-statements
+def apply_actions(client, report, context, docker_addresses=None, maximum=10):
+    """Apply only approved, narrowly scoped changes after live rechecks.
+
+    No operation is automatically rolled back; rerunning the audit identifies
+    remaining steps if a request fails mid-plan.
+    """
+    actions = check_plan(report, maximum)
+    # Preflight all Tunnel shapes before any write. This avoids creating
+    # orphan Access apps if a Tunnel replacement would be unsafe.
+    if any(action["kind"] == "add_tunnel_ingress" for action in actions):
+        tunnel_data = client.tunnel_configuration(context["account"], context["tunnel"])
+        checked_template(tunnel_data["config"])
+
+    done = []
+    for action in actions:
+        kind = action["kind"]
+        hostname = action["hostname"]
+        if kind == "create_access_app":
+            if any(
+                item.get("domain") == hostname
+                for item in client.list_applications(context["account"])
+            ):
+                raise UnsafePlan(f"{hostname}: Access application appeared")
+            live_policy_ids = {
+                value.get("id") for value in client.list_policies(context["account"])
+            }
+            if not set(action["policies"]).issubset(live_policy_ids):
+                raise UnsafePlan(f"{hostname}: reusable policy was removed")
+            client.create_access_app(context["account"], hostname, action["policies"])
+            verify_access(client, context["account"], hostname, action["policies"])
+
+        elif kind == "add_tunnel_ingress":
+            verify_access(client, context["account"], hostname, action["policies"])
+            remote = client.tunnel_configuration(context["account"], context["tunnel"])
+            before = remote["config"]
+            template = checked_template(before)
+            if hostname in validate_ingress(before["ingress"]):
+                raise UnsafePlan(f"{hostname}: Tunnel route already exists")
+            next_config = copy.deepcopy(before)
+            route = copy.deepcopy(template)
+            route["hostname"] = hostname
+            next_config["ingress"].insert(-1, route)
+            client.put_tunnel_ingress(
+                context["account"], context["tunnel"], next_config
+            )
+            if not audit_tunnel_route(client, context, hostname):
+                raise UnsafePlan(f"{hostname}: Tunnel ingress verification failed")
+
+        elif kind == "create_dns_cname":
+            verify_access(client, context["account"], hostname, action["policies"])
+            if not audit_tunnel_route(client, context, hostname):
+                raise UnsafePlan(f"{hostname}: Tunnel ingress is not ready")
+            if any(
+                value.get("name", "").lower() == hostname
+                for value in client.list_dns(context["ebi"])
+            ):
+                raise UnsafePlan(f"{hostname}: a DNS record appeared")
+            client.create_dns_cname(context["ebi"], hostname, action["content"])
+            records = [
+                value
+                for value in client.list_dns(context["ebi"])
+                if value.get("name", "").lower() == hostname
+            ]
+            if (
+                len(records) != 1
+                or records[0].get("type") != "CNAME"
+                or records[0].get("proxied") is not True
+                or records[0].get("content", "").lower() != action["content"]
+            ):
+                raise UnsafePlan(f"{hostname}: DNS CNAME verification failed")
+
+        elif kind == "update_docker_dns_a":
+            name = hostname.removesuffix(".ygg.nu")
+            if (
+                docker_addresses is None
+                or docker_addresses().get(name) != action["content"]
+            ):
+                raise UnsafePlan(f"{hostname}: running Docker address changed")
+            record = client.get_dns_record(context["ygg"], action["record_id"])
+            old = record.get("content")
+            # pylint: disable=too-many-boolean-expressions
+            if (
+                record.get("name") != hostname
+                or record.get("type") != "A"
+                or old != action["before"]
+                or record.get("proxied") is not False
+                or ipaddress.ip_address(old) not in DOCKER_NETWORK
+                or ipaddress.ip_address(action["content"]) not in DOCKER_NETWORK
+            ):
+                raise UnsafePlan(f"{hostname}: Docker DNS record changed")
+            # pylint: enable=too-many-boolean-expressions
+            client.patch_docker_a(
+                context["ygg"], action["record_id"], action["content"]
+            )
+            updated = client.get_dns_record(context["ygg"], action["record_id"])
+            if updated.get("content") != action["content"]:
+                raise UnsafePlan(f"{hostname}: Docker DNS verification failed")
+        done.append({"kind": kind, "hostname": hostname})
+    return done
