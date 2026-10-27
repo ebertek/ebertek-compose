@@ -47,9 +47,7 @@ class ClientTests(unittest.TestCase):
         def fake_open(request, timeout):
             """Return a harmless fake API response."""
             self.assertEqual(timeout, 25)
-            self.assertEqual(
-                request.get_header("Authorization"), "Bearer dummy-token"
-            )
+            self.assertEqual(request.get_header("Authorization"), "Bearer dummy-token")
             calls.append(request.full_url)
             return io.BytesIO(json.dumps(responses.pop(0)).encode())
 
@@ -65,9 +63,11 @@ class ClientTests(unittest.TestCase):
         error = HTTPError(
             "https://api.cloudflare.com/example", 403, "SECRET", {}, io.BytesIO()
         )
-        with patch("cloudflare_api.urlopen", side_effect=error):
-            with self.assertRaises(CloudflareError) as caught:
-                CloudflareClient("secret-token").get("/accounts/example")
+        with (
+            patch("cloudflare_api.urlopen", side_effect=error),
+            self.assertRaises(CloudflareError) as caught,
+        ):
+            CloudflareClient("secret-token").get("/accounts/example")
         message = str(caught.exception)
         self.assertNotIn("SECRET", message)
         self.assertNotIn("secret-token", message)
@@ -163,9 +163,7 @@ class LiveIntegrationTests(unittest.TestCase):
                 "ygg_zone": "ygg.nu",
                 "tunnel_name": "pleiades",
             }
-            report = live.run_audit(
-                FakeCloudflare(), root, settings, skip_docker=True
-            )
+            report = live.run_audit(FakeCloudflare(), root, settings, skip_docker=True)
             self.assertEqual(report["counts"]["desired_hosts"], 1)
             self.assertEqual(report["actions"], [])
             self.assertEqual(report["blocked"], [])
