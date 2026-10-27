@@ -54,9 +54,9 @@ class OnboardingTests(unittest.TestCase):
     def test_malformed_ebi_host_rule_is_not_silently_ignored(self):
         """An unquoted Host rule must block onboarding rather than disappear."""
         containers = self.labels()
-        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
-            "Host(example.ebi.nu)"
-        )
+        containers[0]["Config"]["Labels"][
+            "traefik.http.routers.example.rule"
+        ] = "Host(example.ebi.nu)"
         hosts, errors = onboarding.discover(
             containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
         )
@@ -67,9 +67,9 @@ class OnboardingTests(unittest.TestCase):
     def test_double_quoted_host_rule_is_valid(self):
         """Traefik also accepts double-quoted Host arguments."""
         containers = self.labels()
-        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
-            'Host("example.ebi.nu")'
-        )
+        containers[0]["Config"]["Labels"][
+            "traefik.http.routers.example.rule"
+        ] = 'Host("example.ebi.nu")'
         hosts, errors = onboarding.discover(
             containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
         )
@@ -81,9 +81,9 @@ class OnboardingTests(unittest.TestCase):
     def test_mixed_valid_and_malformed_ebi_host_rules_fail_closed(self):
         """Partially parsed multi-host rules must not permit writes."""
         containers = self.labels()
-        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
-            "Host(`example.ebi.nu`) || Host(unpackerr.ebi.nu)"
-        )
+        containers[0]["Config"]["Labels"][
+            "traefik.http.routers.example.rule"
+        ] = "Host(`example.ebi.nu`) || Host(unpackerr.ebi.nu)"
         _, errors = onboarding.discover(
             containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
         )
