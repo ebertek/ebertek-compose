@@ -5,7 +5,7 @@ import re
 
 HOST = re.compile(r"^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\.ebi\.nu$")
 RULE = re.compile(r"^traefik\.http\.routers\.[^.]+\.rule$")
-HOST_RULE = re.compile(r"Host\(\s*`([^`]+)`\s*\)")
+HOST_RULE = re.compile(r'Host\(\s*([`"])([^`"]+)\1\s*\)')
 UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
 
 
@@ -59,6 +59,23 @@ def compose_inventory(root):  # pylint: disable=too-many-locals,too-many-branche
     return containers
 
 
+def router_hosts(labels, name):
+    """Extract quoted Traefik Host rules and report unsupported ebi.nu syntax."""
+    hosts = set()
+    errors = []
+    for key, rule in labels.items():
+        if not RULE.fullmatch(key):
+            continue
+        expression = str(rule)
+        matches = list(HOST_RULE.finditer(expression))
+        hosts.update(match.group(2) for match in matches)
+        if ".ebi.nu" in expression.lower() and (
+            not matches or expression.count("Host(") != len(matches)
+        ):
+            errors.append(f"{name}: malformed Traefik Host() rule in {key}")
+    return hosts, errors
+
+
 def discover(containers, known_policies):  # pylint: disable=too-many-branches
     """Validate policy declarations for Traefik-enabled Compose services."""
     result = {}
@@ -67,16 +84,14 @@ def discover(containers, known_policies):  # pylint: disable=too-many-branches
         labels = container.get("Config", {}).get("Labels") or {}
         if str(labels.get("traefik.enable", "")).lower() != "true":
             continue
-        names = set()
-        for key, rule in labels.items():
-            if RULE.fullmatch(key):
-                names.update(HOST_RULE.findall(str(rule)))
+        name = container.get("Name", "").lstrip("/")
+        names, router_errors = router_hosts(labels, name)
+        errors.extend(router_errors)
         if not names:
             continue
         ebi = {v.lower() for v in names if v.lower().endswith(".ebi.nu")}
         if not ebi:
             continue
-        name = container.get("Name", "").lstrip("/")
         raw = labels.get("cf.access.policies")
         if labels.get("cf.access") != "true" or not raw:
             errors.append(f"{name}: missing cf.access=true or cf.access.policies")
