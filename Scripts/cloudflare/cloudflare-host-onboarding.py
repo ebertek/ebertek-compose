@@ -272,7 +272,9 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     )
     policy_writes, changed_policies = plan_access_policy_updates(public, merged, hosts)
     if not new and not policy_writes:
-        print(f"No new hostnames or policy changes. Inspected {len(hosts)} labeled hostnames.")
+        print(
+            f"No new hostnames or policy changes. Inspected {len(hosts)} labeled hostnames."
+        )
         return
     sample_access = (merged / "access-self-hosted.tf").read_text()
     sample_dns = (merged / "dns-ebi.tf").read_text()
