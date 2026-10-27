@@ -1,14 +1,16 @@
 """Offline tests for explicit, narrowly scoped Cloudflare writes."""
 
+# pylint: disable=too-many-public-methods
+
 import copy
 import unittest
 from unittest.mock import patch
 
 from cloudflare_guarded import (
     UnsafePlan,
-    check_unattended_plan,
     apply_actions,
     check_plan,
+    check_unattended_plan,
     fingerprint,
     preflight_compatibility,
 )
@@ -313,12 +315,14 @@ class GuardedTests(unittest.TestCase):
     def test_existing_policy_update_refuses_live_drift(self):
         """Stale policy lists cannot authorize writes."""
         client = FakeWriter()
-        client.apps = [{
-            "id": "d" * 32,
-            "domain": "grafana.ebi.nu",
-            "type": "self_hosted",
-            "policies": policy_links([POLICY]),
-        }]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": "grafana.ebi.nu",
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
         change = {
             "kind": "update_access_policies",
             "hostname": "grafana.ebi.nu",
