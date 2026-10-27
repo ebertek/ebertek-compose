@@ -65,9 +65,7 @@ def check_plan(report, maximum=10):
     if len(actions) > maximum:
         raise UnsafePlan(f"Plan has {len(actions)} operations (maximum {maximum})")
     if any(action.get("kind") not in SUPPORTED for action in actions):
-        raise UnsafePlan(
-            "The plan contains unsupported operations"
-        )
+        raise UnsafePlan("The plan contains unsupported operations")
     entries = [(a["kind"], a["hostname"]) for a in actions]
     if len(entries) != len(set(entries)):
         raise UnsafePlan("The plan contains duplicate operations")
@@ -237,14 +235,11 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
             verify_access(client, context["account"], hostname, action["policies"])
 
         elif kind == "update_access_policies":
-            app = verify_access(
-                client, context["account"], hostname, action["before"]
-            )
+            app = verify_access(client, context["account"], hostname, action["before"])
             if app.get("id") != action["app_id"]:
                 raise UnsafePlan(f"{hostname}: Access application ID changed")
             live_policy_ids = {
-                policy.get("id")
-                for policy in client.list_policies(context["account"])
+                policy.get("id") for policy in client.list_policies(context["account"])
             }
             if not set(action["policies"]).issubset(live_policy_ids):
                 raise UnsafePlan(f"{hostname}: reusable policy is not available")
@@ -256,9 +251,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 raise UnsafePlan(
                     f"{hostname}: unsupported Access application configuration"
                 ) from error
-            verify_access(
-                client, context["account"], hostname, action["policies"]
-            )
+            verify_access(client, context["account"], hostname, action["policies"])
 
         elif kind == "add_tunnel_ingress":
             verify_access(client, context["account"], hostname, action["policies"])
