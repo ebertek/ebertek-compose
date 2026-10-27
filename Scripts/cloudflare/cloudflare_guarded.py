@@ -118,7 +118,6 @@ def checked_template(config):
     return source
 
 
-
 def preflight_compatibility(client, context):
     """Validate live API resource shapes before enabling a new host.
 
