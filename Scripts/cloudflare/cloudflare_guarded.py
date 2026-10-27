@@ -20,12 +20,14 @@ from cloudflare_write_api import policy_links, validate_tunnel_config
 
 SUPPORTED = {
     "create_access_app",
+    "update_access_policies",
     "add_tunnel_ingress",
     "create_dns_cname",
     "update_docker_dns_a",
 }
 ORDER = {
     "create_access_app": 0,
+    "update_access_policies": 0,
     "add_tunnel_ingress": 1,
     "create_dns_cname": 2,
     "update_docker_dns_a": 3,
@@ -64,8 +66,7 @@ def check_plan(report, maximum=10):
         raise UnsafePlan(f"Plan has {len(actions)} operations (maximum {maximum})")
     if any(action.get("kind") not in SUPPORTED for action in actions):
         raise UnsafePlan(
-            "The plan contains unsupported operations; "
-            "existing Access policy changes require separate validation"
+            "The plan contains unsupported operations"
         )
     entries = [(a["kind"], a["hostname"]) for a in actions]
     if len(entries) != len(set(entries)):
@@ -218,6 +219,30 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 raise UnsafePlan(f"{hostname}: reusable policy was removed")
             client.create_access_app(context["account"], hostname, action["policies"])
             verify_access(client, context["account"], hostname, action["policies"])
+
+        elif kind == "update_access_policies":
+            app = verify_access(
+                client, context["account"], hostname, action["before"]
+            )
+            if app.get("id") != action["app_id"]:
+                raise UnsafePlan(f"{hostname}: Access application ID changed")
+            live_policy_ids = {
+                policy.get("id")
+                for policy in client.list_policies(context["account"])
+            }
+            if not set(action["policies"]).issubset(live_policy_ids):
+                raise UnsafePlan(f"{hostname}: reusable policy is not available")
+            try:
+                client.update_access_policies(
+                    context["account"], action["app_id"], app, action["policies"]
+                )
+            except (TypeError, ValueError) as error:
+                raise UnsafePlan(
+                    f"{hostname}: unsupported Access application configuration"
+                ) from error
+            verify_access(
+                client, context["account"], hostname, action["policies"]
+            )
 
         elif kind == "add_tunnel_ingress":
             verify_access(client, context["account"], hostname, action["policies"])
