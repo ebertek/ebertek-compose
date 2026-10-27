@@ -15,10 +15,10 @@ def ordered_policy_ids(app):
     precedence = []
     for policy in raw:
         if not isinstance(policy, dict):
-            raise ValueError("Unexpected Access policy representation")
+            raise TypeError("Unexpected Access policy representation")
         identifier = policy.get("id")
         rank = policy.get("precedence")
-        if not isinstance(identifier, str) or type(rank) is not int:
+        if not isinstance(identifier, str) or (not isinstance(rank, int) or isinstance(rank, bool)):
             raise ValueError("Access policy lacks ID or integer precedence")
         precedence.append((rank, identifier))
     precedence.sort()
@@ -55,7 +55,7 @@ def validate_ingress(ingress):
     return hosts
 
 
-def compare_live(
+def compare_live(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches,too-many-statements
     desired,
     apps,
     dns_ebi,
@@ -89,7 +89,7 @@ def compare_live(
             else:
                 try:
                     actual = ordered_policy_ids(app)
-                except ValueError as error:
+                except (TypeError, ValueError) as error:
                     blocked.append({"hostname": hostname, "reason": str(error)})
                 else:
                     if actual != wanted:
