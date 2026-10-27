@@ -310,7 +310,9 @@ class GuardedTests(unittest.TestCase):
         """Refuse DELETE and all unsupported HTTP method names."""
         client = CloudflareWriter("test-token")
         with self.assertRaises(ValueError):
-            client._write("DELETE", "/accounts/a", {})  # pylint: disable=protected-access
+            client._write(
+                "DELETE", "/accounts/a", {}
+            )  # pylint: disable=protected-access
 
     def test_policy_links_are_ordered_and_unique(self):
         """Reusable policy references maintain explicit precedence."""
