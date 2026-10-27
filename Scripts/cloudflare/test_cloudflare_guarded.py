@@ -309,10 +309,9 @@ class GuardedTests(unittest.TestCase):
     def test_write_api_disallows_unknown_method(self):
         """Refuse DELETE and all unsupported HTTP method names."""
         client = CloudflareWriter("test-token")
+        writer = getattr(client, "_write")
         with self.assertRaises(ValueError):
-            client._write(
-                "DELETE", "/accounts/a", {}
-            )  # pylint: disable=protected-access
+            writer("DELETE", "/accounts/a", {})
 
     def test_policy_links_are_ordered_and_unique(self):
         """Reusable policy references maintain explicit precedence."""
