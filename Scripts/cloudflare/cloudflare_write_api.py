@@ -5,6 +5,7 @@ is exposed. Every write is made through an explicitly scoped method.
 """
 
 import json
+from ipaddress import ip_address
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -15,6 +16,7 @@ from cloudflare_api import (
     checked_tunnel_id,
 )
 from cloudflare_desired import HOST, UUID
+from cloudflare_live_diff import DOCKER_NETWORK
 
 
 def policy_links(policies):
@@ -109,12 +111,6 @@ class CloudflareWriter(CloudflareClient):
 
     def patch_docker_a(self, zone, record_id, address):
         """Change an existing Docker A record's content without touching its flags."""
-        from ipaddress import ip_address  # pylint: disable=import-outside-toplevel
-
-        from cloudflare_live_diff import (
-            DOCKER_NETWORK,
-        )  # pylint: disable=import-outside-toplevel
-
         if ip_address(address) not in DOCKER_NETWORK:
             raise ValueError("Refusing a DNS update outside the Docker subnet")
         return self._write(
