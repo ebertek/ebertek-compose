@@ -12,9 +12,7 @@ RESOURCE = re.compile(
 DOMAIN = re.compile(r'(?m)^  domain\s*=\s*"([^"\n]+)"\s*$')
 TYPE = re.compile(r'(?m)^  type\s*=\s*"([^"\n]+)"\s*$')
 POLICIES = re.compile(r"(?m)^  policies[ \t]*=[ \t]*\[")
-ENTRY = re.compile(
-    r'\{\s*id\s*=\s*"([^"]+)"\s*,\s*precedence\s*=\s*(\d+)\s*\}\s*,?'
-)
+ENTRY = re.compile(r'\{\s*id\s*=\s*"([^"]+)"\s*,\s*precedence\s*=\s*(\d+)\s*\}\s*,?')
 
 
 def balanced_end(text, opening, left, right):
@@ -98,11 +96,14 @@ def sync_access_policies(text, desired):  # pylint: disable=too-many-locals
             f'{{ id = "{identifier}", precedence = {index} }}'
             for index, identifier in enumerate(wanted, start=1)
         ]
-        new_list = "[\n" + "\n".join(
-            f"{indent}  {line}{',' if index < len(lines) - 1 else ''}"
-            for index, line in enumerate(lines)
-        ) + f"\n{indent}]"
-        replacements.append((opening, closing, new_list))
+        new_list = (
+            "[\n"
+            + "\n".join(
+                f"{indent}  {line}{',' if index < len(lines) - 1 else ''}"
+                for index, line in enumerate(lines)
+            )
+            + f"\n{indent}]"
+        )
         changed.append(hostname)
     for opening, closing, replacement in reversed(replacements):
         text = text[:opening] + replacement + text[closing:]
