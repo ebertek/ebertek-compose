@@ -5,7 +5,7 @@ import re
 
 HOST = re.compile(r"^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\.ebi\.nu$")
 RULE = re.compile(r"^traefik\.http\.routers\.[^.]+\.rule$")
-HOST_RULE = re.compile(r"Host\(\s*`([^`]+)`\s*\)")
+HOST_RULE = re.compile(r'Host\(\s*([\`"])([^\`"]+)\1\s*\)')
 UUID = re.compile(r"^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$")
 
 
@@ -67,16 +67,22 @@ def discover(containers, known_policies):  # pylint: disable=too-many-branches
         labels = container.get("Config", {}).get("Labels") or {}
         if str(labels.get("traefik.enable", "")).lower() != "true":
             continue
+        name = container.get("Name", "").lstrip("/")
         names = set()
         for key, rule in labels.items():
             if RULE.fullmatch(key):
-                names.update(HOST_RULE.findall(str(rule)))
+                expression = str(rule)
+                matched = list(HOST_RULE.finditer(expression))
+                names.update(match.group(2) for match in matched)
+                if ".ebi.nu" in expression.lower() and (
+                    not matched or expression.count("Host(") != len(matched)
+                ):
+                    errors.append(f"{name}: malformed Traefik Host() rule in {key}")
         if not names:
             continue
         ebi = {v.lower() for v in names if v.lower().endswith(".ebi.nu")}
         if not ebi:
             continue
-        name = container.get("Name", "").lstrip("/")
         raw = labels.get("cf.access.policies")
         if labels.get("cf.access") != "true" or not raw:
             errors.append(f"{name}: missing cf.access=true or cf.access.policies")
