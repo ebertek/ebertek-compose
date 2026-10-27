@@ -51,6 +51,45 @@ class OnboardingTests(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_malformed_ebi_host_rule_is_not_silently_ignored(self):
+        """An unquoted Host rule must block onboarding rather than disappear."""
+        containers = self.labels()
+        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
+            "Host(example.ebi.nu)"
+        )
+        hosts, errors = onboarding.discover(
+            containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
+        )
+        self.assertEqual(hosts, {})
+        self.assertEqual(len(errors), 1)
+        self.assertIn("malformed Traefik Host()", errors[0])
+
+    def test_double_quoted_host_rule_is_valid(self):
+        """Traefik also accepts double-quoted Host arguments."""
+        containers = self.labels()
+        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
+            'Host("example.ebi.nu")'
+        )
+        hosts, errors = onboarding.discover(
+            containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
+        )
+        self.assertEqual(
+            hosts, {"example.ebi.nu": ["16079c5e-e6e7-469e-8df1-8a7e326d11d5"]}
+        )
+        self.assertEqual(errors, [])
+
+    def test_mixed_valid_and_malformed_ebi_host_rules_fail_closed(self):
+        """Partially parsed multi-host rules must not permit writes."""
+        containers = self.labels()
+        containers[0]["Config"]["Labels"]["traefik.http.routers.example.rule"] = (
+            "Host(`example.ebi.nu`) || Host(unpackerr.ebi.nu)"
+        )
+        _, errors = onboarding.discover(
+            containers, {"16079c5e-e6e7-469e-8df1-8a7e326d11d5"}
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("malformed Traefik Host()", errors[0])
+
     def test_unknown_policy_rejected(self):
         """Reject Access policy IDs that are not known."""
         _, errors = onboarding.discover(self.labels(), set())
