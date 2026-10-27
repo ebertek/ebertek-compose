@@ -59,7 +59,6 @@ def compose_inventory(root):  # pylint: disable=too-many-locals,too-many-branche
     return containers
 
 
-
 def router_hosts(labels, name):
     """Extract quoted Traefik Host rules and report unsupported ebi.nu syntax."""
     hosts = set()
