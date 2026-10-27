@@ -6,6 +6,9 @@ Read-only by default. --write-source writes ONLY ebertek-compose source and
 Existing resources are untouched. Deployment/apply is a separate gated step.
 """
 
+# Reused HCL parsing is intentional; preserve established kebab-case CLI name.
+# pylint: disable=invalid-name,duplicate-code
+
 import argparse
 import difflib
 import hashlib
@@ -25,13 +28,15 @@ RESOURCE = re.compile(
 
 
 def inventory():
+    """Inspect running Docker containers and return their metadata."""
     ids = subprocess.check_output(["docker", "ps", "-q"], text=True).split()
     if not ids:
         return []
     return json.loads(subprocess.check_output(["docker", "inspect", *ids], text=True))
 
 
-def discover(containers, known_policies):
+def discover(containers, known_policies):  # pylint: disable=too-many-branches
+    """Find valid hostname-to-policy declarations on Traefik containers."""
     result = {}
     errors = []
     for container in containers:
@@ -76,6 +81,7 @@ def discover(containers, known_policies):
 
 
 def existing_hosts(root, kind):
+    """Collect already declared access applications or DNS hostnames."""
     text = "\n".join(f.read_text() for f in root.glob("*.tf"))
     if kind == "access":
         return set(re.findall(r'(?m)^\s*domain\s*=\s*"([^"\n]+\.ebi\.nu)"', text))
@@ -85,7 +91,8 @@ def existing_hosts(root, kind):
 
 
 def singleton_regex(text, pattern, description):
-    matches = re.findall(pattern, text, re.M)
+    """Require exactly one unique Terraform setting matching a pattern."""
+    matches = re.findall(pattern, text, re.MULTILINE)
     unique = set(matches)
     if len(unique) != 1:
         raise ValueError(f"Expected one {description}, found {len(unique)}")
@@ -93,6 +100,7 @@ def singleton_regex(text, pattern, description):
 
 
 def access_block(host, ids, account):
+    """Build a Terraform Access application with ordered policies."""
     slug = HOST.fullmatch(host).group(1)
     ident = "auto_" + hashlib.sha256(host.encode()).hexdigest()[:16]
     policies = "\n".join(
@@ -117,6 +125,7 @@ def access_block(host, ids, account):
 
 
 def dns_block(host, zone, tunnel):
+    """Build a proxied DNS CNAME pointing to the existing tunnel."""
     ident = "auto_" + hashlib.sha256(host.encode()).hexdigest()[:16]
     return f"""resource "cloudflare_dns_record" "{ident}" {{
   zone_id = "{zone}"
@@ -130,6 +139,7 @@ def dns_block(host, zone, tunnel):
 
 
 def ingress_block(host):
+    """Build a verified-TLS ingress entry for the hostname."""
     return f"""      {{
         hostname = "{host}"
         service  = "https://traefik.ygg.nu:443"
@@ -142,6 +152,7 @@ def ingress_block(host):
 
 
 def insert_ingress(text, hosts):
+    """Insert new ingress entries before the terminal 404 fallback."""
     # Require one explicit fallback as the last tunnel route; insert immediately before it.
     anchor = re.compile(
         r'(?m)^\s*\{\s*\n\s*service\s*=\s*"http_status:404"\s*\n\s*\},?'
@@ -164,10 +175,12 @@ def insert_ingress(text, hosts):
 
 
 def render(before, addition):
+    """Append generated resources without rewriting the existing HCL."""
     return before.rstrip() + "\n\n" + addition if addition else before
 
 
-def main():
+def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    """Generate and optionally write source-only Cloudflare Terraform changes."""
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--write-source", action="store_true")
     args = p.parse_args()
@@ -273,7 +286,8 @@ def main():
     )
     if not args.write_source:
         print(
-            "DRY RUN; add --write-source to update SOURCE files only. No commits or Terraform apply."
+            "DRY RUN; add --write-source to update SOURCE files only. "
+            "No commits or Terraform apply."
         )
         return
     for path in writes:
@@ -291,7 +305,8 @@ def main():
     for path, (_, after) in writes.items():
         path.write_text(after)
     print(
-        "Wrote source files. Validate/commit both source repos, merge GitOps, then run reviewed Terraform plan/apply."
+        "Wrote source files. Validate/commit both source repos, merge GitOps, "
+        "then run reviewed Terraform plan/apply."
     )
 
 
