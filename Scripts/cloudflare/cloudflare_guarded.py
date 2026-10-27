@@ -77,14 +77,17 @@ def check_plan(report, maximum=10):
             try:
                 policy_links(entry["policies"])
             except (KeyError, TypeError, ValueError) as error:
-                raise UnsafePlan("Missing or invalid approved Access policy links") from error
+                raise UnsafePlan(
+                    "Missing or invalid approved Access policy links"
+                ) from error
     return sorted(actions, key=lambda a: (ORDER[a["kind"]], a["hostname"]))
 
 
 def verify_access(client, account, hostname, wanted):
     """Require exactly one live self-hosted application with these policies."""
     matches = [
-        app for app in client.list_applications(account)
+        app
+        for app in client.list_applications(account)
         if app.get("domain") == hostname
     ]
     if len(matches) != 1 or not matches[0].get("id"):
@@ -132,9 +135,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
     # Preflight all Tunnel shapes before any write. This avoids creating
     # orphan Access apps if a Tunnel replacement would be unsafe.
     if any(action["kind"] == "add_tunnel_ingress" for action in actions):
-        tunnel_data = client.tunnel_configuration(
-            context["account"], context["tunnel"]
-        )
+        tunnel_data = client.tunnel_configuration(context["account"], context["tunnel"])
         checked_template(tunnel_data["config"])
 
     done = []
@@ -148,21 +149,16 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
             ):
                 raise UnsafePlan(f"{hostname}: Access application appeared")
             live_policy_ids = {
-                value.get("id")
-                for value in client.list_policies(context["account"])
+                value.get("id") for value in client.list_policies(context["account"])
             }
             if not set(action["policies"]).issubset(live_policy_ids):
                 raise UnsafePlan(f"{hostname}: reusable policy was removed")
-            client.create_access_app(
-                context["account"], hostname, action["policies"]
-            )
+            client.create_access_app(context["account"], hostname, action["policies"])
             verify_access(client, context["account"], hostname, action["policies"])
 
         elif kind == "add_tunnel_ingress":
             verify_access(client, context["account"], hostname, action["policies"])
-            remote = client.tunnel_configuration(
-                context["account"], context["tunnel"]
-            )
+            remote = client.tunnel_configuration(context["account"], context["tunnel"])
             before = remote["config"]
             template = checked_template(before)
             if hostname in validate_ingress(before["ingress"]):
@@ -186,11 +182,10 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 for value in client.list_dns(context["ebi"])
             ):
                 raise UnsafePlan(f"{hostname}: a DNS record appeared")
-            client.create_dns_cname(
-                context["ebi"], hostname, action["content"]
-            )
+            client.create_dns_cname(context["ebi"], hostname, action["content"])
             records = [
-                value for value in client.list_dns(context["ebi"])
+                value
+                for value in client.list_dns(context["ebi"])
                 if value.get("name", "").lower() == hostname
             ]
             if (
@@ -222,9 +217,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
             client.patch_docker_a(
                 context["ygg"], action["record_id"], action["content"]
             )
-            updated = client.get_dns_record(
-                context["ygg"], action["record_id"]
-            )
+            updated = client.get_dns_record(context["ygg"], action["record_id"])
             if updated.get("content") != action["content"]:
                 raise UnsafePlan(f"{hostname}: Docker DNS verification failed")
         done.append({"kind": kind, "hostname": hostname})
