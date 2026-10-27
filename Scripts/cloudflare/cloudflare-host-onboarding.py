@@ -27,7 +27,7 @@ RESOURCE = re.compile(
 )
 
 
-def compose_inventory(root):
+def compose_inventory(root):  # pylint: disable=too-many-locals,too-many-branches
     """Inspect source Compose services without requiring running containers."""
     try:
         from ruamel.yaml import YAML  # pylint: disable=import-outside-toplevel
@@ -43,15 +43,15 @@ def compose_inventory(root):
     for path in paths:
         document = parser.load(path.read_text())
         if not isinstance(document, dict):
-            raise ValueError(f"Invalid Compose document: {path}")
+            raise TypeError(f"Invalid Compose document: {path}")
         services = document.get("services")
         if services is None:
             continue
         if not isinstance(services, dict):
-            raise ValueError(f"Invalid Compose services mapping: {path}")
+            raise TypeError(f"Invalid Compose services mapping: {path}")
         for service, config in services.items():
             if not isinstance(config, dict):
-                raise ValueError(f"Invalid Compose service {service}: {path}")
+                raise TypeError(f"Invalid Compose service {service}: {path}")
             raw_labels = config.get("labels") or {}
             if isinstance(raw_labels, dict):
                 labels = {str(key): str(value) for key, value in raw_labels.items()}
@@ -59,13 +59,15 @@ def compose_inventory(root):
                 labels = {}
                 for label in raw_labels:
                     if not isinstance(label, str) or "=" not in label:
-                        raise ValueError(f"Malformed Compose label in {path}: {service}")
+                        raise ValueError(
+                            f"Malformed Compose label in {path}: {service}"
+                        )
                     key, value = label.split("=", 1)
                     if key in labels:
                         raise ValueError(f"Duplicate Compose label {key} in {path}")
                     labels[key] = value
             else:
-                raise ValueError(f"Invalid Compose labels for {service}: {path}")
+                raise TypeError(f"Invalid Compose labels for {service}: {path}")
             containers.append(
                 {
                     "Name": f"{path.relative_to(root)}/{service}",
@@ -359,6 +361,6 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
 if __name__ == "__main__":
     try:
         main()
-    except (ValueError, OSError, subprocess.CalledProcessError) as exc:
+    except (ValueError, TypeError, OSError, subprocess.CalledProcessError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
