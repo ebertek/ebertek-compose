@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Read-only live Cloudflare audit against merged Compose and Docker inventory.
 
 Run from Pleiades with CLOUDFLARE_API_TOKEN exported. This command performs
@@ -68,7 +67,7 @@ def hydrate_apps(client, account_id, apps):
     return result
 
 
-def run_audit(client, root, settings, skip_docker=False):
+def run_audit(client, root, settings, skip_docker=False):  # pylint: disable=too-many-locals
     """Query Cloudflare, validate reusable policies, and return pure drift."""
     account = checked_id(settings["account_id"], "account ID")
     ebi = settings.get("ebi_zone_id") or client.zone_id(settings["ebi_zone"], account)
@@ -145,7 +144,7 @@ def main():
         raise ValueError(f"Merged GitOps checkout does not exist: {root}")
     settings = json.loads(args.settings.read_text())
     if not isinstance(settings, dict):
-        raise ValueError("Cloudflare settings must be a JSON object")
+        raise TypeError("Cloudflare settings must be a JSON object")
     for setting, name in (
         ("account_id", "CLOUDFLARE_ACCOUNT_ID"),
         ("tunnel_id", "CLOUDFLARE_TUNNEL_ID"),
@@ -176,6 +175,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except (
         CloudflareError,
+        TypeError,
         ValueError,
         KeyError,
         OSError,
