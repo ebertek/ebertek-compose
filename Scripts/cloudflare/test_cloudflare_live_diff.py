@@ -52,8 +52,10 @@ class LiveDiffTests(unittest.TestCase):
         """Recognize consistent Access, DNS and Tunnel resources."""
         report = compare_live(
             {"grafana.ebi.nu": [ONE, TWO]},
-            [application()], [dns()],
-            routes("grafana.ebi.nu"), TUNNEL,
+            [application()],
+            [dns()],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
         self.assertEqual(report["actions"], [])
         self.assertEqual(report["blocked"], [])
@@ -62,8 +64,11 @@ class LiveDiffTests(unittest.TestCase):
     def test_new_host_creates_three_proposals(self):
         """Propose Access, DNS and ingress without removing existing hosts."""
         report = compare_live(
-            {"new.ebi.nu": [ONE]}, [application()], [dns()],
-            routes("grafana.ebi.nu"), TUNNEL,
+            {"new.ebi.nu": [ONE]},
+            [application()],
+            [dns()],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
         self.assertEqual(
             {action["kind"] for action in report["actions"]},
@@ -74,12 +79,13 @@ class LiveDiffTests(unittest.TestCase):
     def test_existing_policy_change_is_detected(self):
         """Policy order follows Compose rather than the existing Cloudflare app."""
         report = compare_live(
-            {"grafana.ebi.nu": [TWO, ONE]}, [application()], [dns()],
-            routes("grafana.ebi.nu"), TUNNEL,
+            {"grafana.ebi.nu": [TWO, ONE]},
+            [application()],
+            [dns()],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
-        self.assertEqual(
-            report["proposed_by_kind"], {"update_access_policies": 1}
-        )
+        self.assertEqual(report["proposed_by_kind"], {"update_access_policies": 1})
         self.assertEqual(report["actions"][0]["before"], [ONE, TWO])
 
     def test_existing_dns_conflict_blocks(self):
@@ -87,8 +93,10 @@ class LiveDiffTests(unittest.TestCase):
         conflicting = {**dns(), "type": "A", "content": "10.4.20.1"}
         report = compare_live(
             {"grafana.ebi.nu": [ONE, TWO]},
-            [application()], [conflicting],
-            routes("grafana.ebi.nu"), TUNNEL,
+            [application()],
+            [conflicting],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
         self.assertEqual(report["counts"]["blocked"], 1)
         self.assertEqual(report["actions"], [])
@@ -97,8 +105,10 @@ class LiveDiffTests(unittest.TestCase):
         """Never guess which Access application belongs to a hostname."""
         report = compare_live(
             {"grafana.ebi.nu": [ONE, TWO]},
-            [application(), application()], [dns()],
-            routes("grafana.ebi.nu"), TUNNEL,
+            [application(), application()],
+            [dns()],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
         self.assertEqual(report["counts"]["blocked"], 1)
 
@@ -106,8 +116,11 @@ class LiveDiffTests(unittest.TestCase):
         """Don't treat unknown live policy assignments as matches."""
         app = {**application(), "policies": []}
         report = compare_live(
-            {"grafana.ebi.nu": [ONE, TWO]}, [app], [dns()],
-            routes("grafana.ebi.nu"), TUNNEL,
+            {"grafana.ebi.nu": [ONE, TWO]},
+            [app],
+            [dns()],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
         )
         self.assertEqual(report["counts"]["blocked"], 1)
 
@@ -116,8 +129,9 @@ class LiveDiffTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_ingress(routes("grafana.ebi.nu", "grafana.ebi.nu"))
         with self.assertRaises(ValueError):
-            validate_ingress([{"hostname": "grafana.ebi.nu",
-                               "service": "http_status:404"}])
+            validate_ingress(
+                [{"hostname": "grafana.ebi.nu", "service": "http_status:404"}]
+            )
 
     def test_policy_precedence_validation(self):
         """Reject duplicate or nonconsecutive precedence."""
@@ -129,20 +143,28 @@ class LiveDiffTests(unittest.TestCase):
     def test_docker_ipv4_updates_only_existing_docker_a(self):
         """Reconcile unique Docker addresses without touching devices."""
         local = {
-            "name": "grafana.ygg.nu", "type": "A",
-            "id": "record-one", "content": "10.4.21.5",
+            "name": "grafana.ygg.nu",
+            "type": "A",
+            "id": "record-one",
+            "content": "10.4.21.5",
         }
         report = compare_live(
-            {}, [], [], routes("grafana.ebi.nu"), TUNNEL,
+            {},
+            [],
+            [],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
             docker_addresses={"grafana": "10.4.21.6"},
             dns_ygg=[local],
         )
-        self.assertEqual(
-            report["proposed_by_kind"], {"update_docker_dns_a": 1}
-        )
+        self.assertEqual(report["proposed_by_kind"], {"update_docker_dns_a": 1})
         changed = {**local, "content": "10.4.20.5"}
         report = compare_live(
-            {}, [], [], routes("grafana.ebi.nu"), TUNNEL,
+            {},
+            [],
+            [],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
             docker_addresses={"grafana": "10.4.21.6"},
             dns_ygg=[changed],
         )
@@ -152,7 +174,11 @@ class LiveDiffTests(unittest.TestCase):
     def test_nonexistent_docker_name_not_created(self):
         """Never invent device or Docker A records."""
         report = compare_live(
-            {}, [], [], routes("grafana.ebi.nu"), TUNNEL,
+            {},
+            [],
+            [],
+            routes("grafana.ebi.nu"),
+            TUNNEL,
             docker_addresses={"unlisted": "10.4.21.10"},
             dns_ygg=[],
         )
