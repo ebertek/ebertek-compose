@@ -118,6 +118,67 @@ def checked_template(config):
     return source
 
 
+
+def preflight_compatibility(client, context):
+    """Validate live API resource shapes before enabling a new host.
+
+    This checks the trusted route, existing Access template and CNAME using
+    GET requests only. It does not guarantee that a future POST/PUT succeeds.
+    """
+    account = context["account"]
+    remote = client.tunnel_configuration(account, context["tunnel"])
+    config = remote.get("config")
+    if not isinstance(config, dict):
+        raise UnsafePlan("Live Tunnel configuration is missing")
+    template = checked_template(config)
+    origin_request = template.get("originRequest") or {}
+    if not isinstance(origin_request, dict):
+        raise UnsafePlan("Komodo Tunnel origin request is not an object")
+
+    matches = [
+        item
+        for item in client.list_applications(account)
+        if item.get("domain") == TEMPLATE_HOST
+    ]
+    if len(matches) != 1 or not matches[0].get("id"):
+        raise UnsafePlan("Expected exactly one existing Komodo Access application")
+    app = client.get_application(account, matches[0]["id"])
+    if app.get("domain") != TEMPLATE_HOST or app.get("type") != "self_hosted":
+        raise UnsafePlan("Komodo Access application identity is unexpected")
+    try:
+        policies = ordered_policy_ids(app)
+    except (TypeError, ValueError) as error:
+        raise UnsafePlan("Komodo Access policy structure is unexpected") from error
+    destinations = app.get("destinations")
+    if destinations is not None and not isinstance(destinations, list):
+        raise UnsafePlan("Komodo Access destination structure is unexpected")
+
+    records = [
+        entry
+        for entry in client.list_dns(context["ebi"])
+        if entry.get("name", "").lower() == TEMPLATE_HOST
+    ]
+    expected_target = context["tunnel"].lower() + ".cfargotunnel.com"
+    if (
+        len(records) != 1
+        or records[0].get("type") != "CNAME"
+        or records[0].get("content", "").lower().rstrip(".") != expected_target
+        or records[0].get("proxied") is not True
+    ):
+        raise UnsafePlan("Komodo CNAME does not point to the expected Tunnel")
+
+    return {
+        "trusted_template": TEMPLATE_HOST,
+        "tunnel_routes": len(config["ingress"]),
+        "template_origin_options": len(origin_request),
+        "template_access_policies": len(policies),
+        "template_access_destinations": (
+            "present" if destinations is not None else "not returned"
+        ),
+        "template_cname_verified": True,
+    }
+
+
 def audit_tunnel_route(client, context, hostname):
     """Check a route was installed without changing other ingress entries."""
     remote = client.tunnel_configuration(context["account"], context["tunnel"])
