@@ -16,7 +16,7 @@ from cloudflare_live_diff import (
     ordered_policy_ids,
     validate_ingress,
 )
-from cloudflare_write_api import policy_links
+from cloudflare_write_api import policy_links, validate_tunnel_config
 
 SUPPORTED = {
     "create_access_app",
@@ -106,8 +106,10 @@ def verify_access(client, account, hostname, wanted):
 
 def checked_template(config):
     """Select an existing trusted Traefik route and reject unsafe variants."""
-    if set(config) - {"ingress", "originRequest"}:
-        raise UnsafePlan("Unknown Tunnel config keys; refusing full replacement")
+    try:
+        validate_tunnel_config(config)
+    except (TypeError, ValueError) as error:
+        raise UnsafePlan(str(error)) from error
     hosts = validate_ingress(config.get("ingress"))
     templates = hosts.get(TEMPLATE_HOST, [])
     if len(templates) != 1 or templates[0].get("service") != TRAEFIK_SERVICE:
