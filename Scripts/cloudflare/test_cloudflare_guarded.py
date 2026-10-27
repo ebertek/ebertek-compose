@@ -63,7 +63,7 @@ class FakeWriter:
                     "originRequest": {"http2Origin": True},
                 },
                 {"service": "http_status:404"},
-            ]
+            ],
         }
         self.private_record = {
             "id": "c" * 32,
@@ -199,9 +199,11 @@ class GuardedTests(unittest.TestCase):
         client = CloudflareWriter("test-token")
         config = copy.deepcopy(FakeWriter().configuration)
         config["warp-routing"] = "invalid"
-        with patch.object(client, "_write") as sender:
-            with self.assertRaises(TypeError):
-                client.put_tunnel_ingress(ACCOUNT, TUNNEL, config)
+        with (
+            patch.object(client, "_write") as sender,
+            self.assertRaises(TypeError),
+        ):
+            client.put_tunnel_ingress(ACCOUNT, TUNNEL, config)
         sender.assert_not_called()
 
     def test_preflight_refuses_incompatible_tunnel_template(self):
