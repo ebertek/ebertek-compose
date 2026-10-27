@@ -17,10 +17,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from cloudflare_desired import HOST, compose_inventory, discover
 from cloudflare_policy_sync import plan_access_policy_updates
 from cloudflare_source_plan import make_change, output_plan
-
-from cloudflare_desired import HOST, compose_inventory, discover
 
 RESOURCE = re.compile(
     r'(?m)^resource "cloudflare_(?:dns_record|zero_trust_access_application)"'
