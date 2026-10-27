@@ -102,5 +102,3 @@ def discover(containers, known_policies):  # pylint: disable=too-many-branches
             else:
                 result[hostname] = ids
     return result, errors
-
-
