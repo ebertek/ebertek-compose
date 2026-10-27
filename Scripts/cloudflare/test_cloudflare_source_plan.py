@@ -18,15 +18,11 @@ class SourcePlanTests(unittest.TestCase):
         self.assertEqual(
             source_repo("tunnel-config.tf"), "ebertek/ebertek-compose-secrets"
         )
-        self.assertEqual(
-            source_repo("dns-ygg.tf"), "ebertek/ebertek-compose-secrets"
-        )
+        self.assertEqual(source_repo("dns-ygg.tf"), "ebertek/ebertek-compose-secrets")
         self.assertEqual(
             source_repo("access-policies.tf"), "ebertek/ebertek-compose-secrets"
         )
-        self.assertEqual(
-            source_repo("access-auto.tf"), "ebertek/ebertek-compose"
-        )
+        self.assertEqual(source_repo("access-auto.tf"), "ebertek/ebertek-compose")
         with self.assertRaises(ValueError):
             source_repo("backend.tf")
 
