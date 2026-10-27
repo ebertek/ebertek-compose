@@ -26,15 +26,11 @@ CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 def docker_ipv4():
     """Read only unique container IPs on the managed Docker subnet."""
-    ids = subprocess.check_output(
-        ["docker", "ps", "-q"], text=True, timeout=30
-    ).split()
+    ids = subprocess.check_output(["docker", "ps", "-q"], text=True, timeout=30).split()
     if not ids:
         return {}
     containers = json.loads(
-        subprocess.check_output(
-            ["docker", "inspect", *ids], text=True, timeout=30
-        )
+        subprocess.check_output(["docker", "inspect", *ids], text=True, timeout=30)
     )
     result = {}
     for container in containers:
@@ -62,9 +58,7 @@ def hydrate_apps(client, account_id, apps):
     """Read individual apps if list responses omit their policy arrays."""
     result = []
     for app in apps:
-        if app.get("type") != "self_hosted" or isinstance(
-            app.get("policies"), list
-        ):
+        if app.get("type") != "self_hosted" or isinstance(app.get("policies"), list):
             result.append(app)
             continue
         identifier = app.get("id")
@@ -77,17 +71,10 @@ def hydrate_apps(client, account_id, apps):
 def run_audit(client, root, settings, skip_docker=False):
     """Query Cloudflare, validate reusable policies, and return pure drift."""
     account = checked_id(settings["account_id"], "account ID")
-    ebi = (
-        settings.get("ebi_zone_id")
-        or client.zone_id(settings["ebi_zone"], account)
-    )
-    ygg = (
-        settings.get("ygg_zone_id")
-        or client.zone_id(settings["ygg_zone"], account)
-    )
-    tunnel_id = (
-        settings.get("tunnel_id")
-        or client.tunnel_id(account, settings["tunnel_name"])
+    ebi = settings.get("ebi_zone_id") or client.zone_id(settings["ebi_zone"], account)
+    ygg = settings.get("ygg_zone_id") or client.zone_id(settings["ygg_zone"], account)
+    tunnel_id = settings.get("tunnel_id") or client.tunnel_id(
+        account, settings["tunnel_name"]
     )
     policies = client.list_policies(account)
     known = {
@@ -188,8 +175,12 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except (
-        CloudflareError, ValueError, KeyError, OSError,
-        subprocess.CalledProcessError, subprocess.TimeoutExpired,
+        CloudflareError,
+        ValueError,
+        KeyError,
+        OSError,
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
     ) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         sys.exit(2)
