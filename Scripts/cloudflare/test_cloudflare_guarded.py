@@ -36,7 +36,8 @@ def new_host_actions():
         },
         {"kind": "add_tunnel_ingress", "hostname": HOST, "policies": [POLICY]},
         {
-            "kind": "create_access_app", "hostname": HOST,
+            "kind": "create_access_app",
+            "hostname": HOST,
             "policies": [POLICY],
         },
     )
@@ -116,13 +117,15 @@ class FakeWriter:
     def create_dns_cname(self, zone, hostname, target):
         """Create a proxied CNAME only after route verification."""
         self.events.append("dns")
-        self.dns.append({
-            "id": "e" * 32,
-            "name": hostname,
-            "type": "CNAME",
-            "content": target,
-            "proxied": True,
-        })
+        self.dns.append(
+            {
+                "id": "e" * 32,
+                "name": hostname,
+                "type": "CNAME",
+                "content": target,
+                "proxied": True,
+            }
+        )
 
     def get_dns_record(self, zone, record_id):
         """Read a private-zone A record by its ID."""
@@ -148,10 +151,12 @@ class GuardedTests(unittest.TestCase):
     def test_unknown_policy_update_blocks_all_writes(self):
         """Never partially run a plan containing unsupported policy PUT."""
         actions = new_host_actions()["actions"]
-        actions.append({
-            "kind": "update_access_policies",
-            "hostname": "grafana.ebi.nu",
-        })
+        actions.append(
+            {
+                "kind": "update_access_policies",
+                "hostname": "grafana.ebi.nu",
+            }
+        )
         with self.assertRaises(UnsafePlan):
             apply_actions(FakeWriter(), report(*actions), CONTEXT)
 
@@ -177,28 +182,28 @@ class GuardedTests(unittest.TestCase):
         """Access creation and verification precede publication."""
         client = FakeWriter()
         done = apply_actions(client, new_host_actions(), CONTEXT)
-        self.assertEqual([entry["kind"] for entry in done], [
-            "create_access_app", "add_tunnel_ingress", "create_dns_cname"
-        ])
+        self.assertEqual(
+            [entry["kind"] for entry in done],
+            ["create_access_app", "add_tunnel_ingress", "create_dns_cname"],
+        )
         self.assertEqual(client.events, ["access", "tunnel", "dns"])
         ingress = client.configuration["ingress"]
         self.assertEqual(ingress[-1]["service"], "http_status:404")
         self.assertEqual(ingress[-2]["hostname"], HOST)
-        self.assertEqual(
-            ingress[-2]["originRequest"], {"http2Origin": True}
-        )
+        self.assertEqual(ingress[-2]["originRequest"], {"http2Origin": True})
         self.assertEqual(ingress[0]["hostname"], TEMPLATE)
-
 
     def test_resume_after_access_was_already_created(self):
         """Complete ingress and DNS safely after an interrupted first apply."""
         client = FakeWriter()
-        client.apps = [{
-            "id": "d" * 32,
-            "domain": HOST,
-            "type": "self_hosted",
-            "policies": policy_links([POLICY]),
-        }]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": HOST,
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
         changes = new_host_actions()["actions"][:2]
         done = apply_actions(client, report(*changes), CONTEXT)
         self.assertEqual(
@@ -210,12 +215,14 @@ class GuardedTests(unittest.TestCase):
     def test_publish_dns_if_access_and_tunnel_already_exist(self):
         """Never require recreation of an existing, correctly protected host."""
         client = FakeWriter()
-        client.apps = [{
-            "id": "d" * 32,
-            "domain": HOST,
-            "type": "self_hosted",
-            "policies": policy_links([POLICY]),
-        }]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": HOST,
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
         client.configuration["ingress"].insert(
             -1, {"hostname": HOST, "service": "https://traefik.ygg.nu:443"}
         )
@@ -227,12 +234,14 @@ class GuardedTests(unittest.TestCase):
     def test_conflicting_access_app_fails_without_writes(self):
         """Do not recreate an existing Access application."""
         client = FakeWriter()
-        client.apps = [{
-            "id": "d" * 32,
-            "domain": HOST,
-            "type": "self_hosted",
-            "policies": policy_links([POLICY]),
-        }]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": HOST,
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
         with self.assertRaises(UnsafePlan):
             apply_actions(client, new_host_actions(), CONTEXT)
         self.assertEqual(client.events, [])
@@ -248,21 +257,27 @@ class GuardedTests(unittest.TestCase):
     def test_docker_a_requires_live_container_match(self):
         """Do not update if the container changed address after approval."""
         client = FakeWriter()
-        actions = report({
-            "kind": "update_docker_dns_a",
-            "hostname": "grafana.ygg.nu",
-            "record_id": "c" * 32,
-            "before": "10.4.21.5",
-            "content": "10.4.21.6",
-        })
+        actions = report(
+            {
+                "kind": "update_docker_dns_a",
+                "hostname": "grafana.ygg.nu",
+                "record_id": "c" * 32,
+                "before": "10.4.21.5",
+                "content": "10.4.21.6",
+            }
+        )
         with self.assertRaises(UnsafePlan):
             apply_actions(
-                client, actions, CONTEXT,
+                client,
+                actions,
+                CONTEXT,
                 docker_addresses=lambda: {"grafana": "10.4.21.7"},
             )
         self.assertEqual(client.events, [])
         done = apply_actions(
-            client, actions, CONTEXT,
+            client,
+            actions,
+            CONTEXT,
             docker_addresses=lambda: {"grafana": "10.4.21.6"},
         )
         self.assertEqual(len(done), 1)
@@ -276,13 +291,15 @@ class GuardedTests(unittest.TestCase):
         with self.assertRaises(UnsafePlan):
             apply_actions(
                 client,
-                report({
-                    "kind": "update_docker_dns_a",
-                    "hostname": "grafana.ygg.nu",
-                    "record_id": "c" * 32,
-                    "before": "10.4.20.5",
-                    "content": "10.4.21.6",
-                }),
+                report(
+                    {
+                        "kind": "update_docker_dns_a",
+                        "hostname": "grafana.ygg.nu",
+                        "record_id": "c" * 32,
+                        "before": "10.4.20.5",
+                        "content": "10.4.21.6",
+                    }
+                ),
                 CONTEXT,
                 docker_addresses=lambda: {"grafana": "10.4.21.6"},
             )
