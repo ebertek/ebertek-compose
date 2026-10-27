@@ -54,6 +54,30 @@ jobs:
           npx --yes prettier@3.9.8 --write '**/*.{yml,yaml}'
           git diff
 
+  cloudflare-tests:
+    name: Cloudflare Python tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python test dependencies
+        run: python -m pip install "ruamel.yaml>=0.18,<0.20"
+
+      - name: Run Cloudflare unit tests
+        run: |
+          python -m unittest discover \
+            -s Scripts/cloudflare \
+            -p "test_cloudflare_*.py"
+
   compose-config:
     name: compose.yaml - docker compose config
     runs-on: ubuntu-latest
