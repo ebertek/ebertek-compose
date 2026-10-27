@@ -326,7 +326,7 @@ class GuardedTests(unittest.TestCase):
         """Preserve settings and replace only reusable policy references."""
         client = CloudflareWriter("test-token")
         app = {
-            "id": "d" * 32,
+            "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
             "name": "grafana",
             "domain": "grafana.ebi.nu",
             "type": "self_hosted",
@@ -335,7 +335,7 @@ class GuardedTests(unittest.TestCase):
             "policies": policy_links([POLICY]),
         }
         with patch.object(client, "_write", return_value={}) as writer:
-            client.update_access_policies(ACCOUNT, "d" * 32, app, [POLICY])
+            client.update_access_policies(ACCOUNT, "dddddddd-dddd-dddd-dddd-dddddddddddd", app, [POLICY])
         payload = writer.call_args.args[2]
         self.assertEqual(payload["session_duration"], "12h")
         self.assertTrue(payload["http_only_cookie"])
