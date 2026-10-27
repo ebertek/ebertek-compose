@@ -8,6 +8,7 @@ from cloudflare_guarded import (
     apply_actions,
     check_plan,
     fingerprint,
+    preflight_compatibility,
 )
 from cloudflare_write_api import CloudflareWriter, policy_links
 
@@ -142,6 +143,71 @@ class FakeWriter:
 
 class GuardedTests(unittest.TestCase):
     """Ensure Cloudflare mutations cannot bypass declared safety checks."""
+
+    def test_preflight_validates_live_template_without_writes(self):
+        """Verify existing Tunnel, Access and DNS without mutating anything."""
+        client = FakeWriter()
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": TEMPLATE,
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+                "destinations": [{"type": "public", "uri": TEMPLATE}],
+            }
+        ]
+        client.dns = [
+            {
+                "name": TEMPLATE,
+                "type": "CNAME",
+                "content": TUNNEL + ".cfargotunnel.com",
+                "proxied": True,
+            }
+        ]
+        result = preflight_compatibility(client, CONTEXT)
+        self.assertEqual(result["trusted_template"], TEMPLATE)
+        self.assertEqual(result["tunnel_routes"], 2)
+        self.assertEqual(result["template_access_policies"], 1)
+        self.assertTrue(result["template_cname_verified"])
+        self.assertEqual(client.events, [])
+
+    def test_preflight_refuses_incompatible_tunnel_template(self):
+        """Reject unexpected existing origin before any write."""
+        client = FakeWriter()
+        client.configuration["ingress"][0]["service"] = "http://unknown:9000"
+        with self.assertRaises(UnsafePlan):
+            preflight_compatibility(client, CONTEXT)
+        self.assertEqual(client.events, [])
+
+    def test_preflight_refuses_missing_access_application(self):
+        """Reject missing trusted Access reference application."""
+        client = FakeWriter()
+        with self.assertRaises(UnsafePlan):
+            preflight_compatibility(client, CONTEXT)
+        self.assertEqual(client.events, [])
+
+    def test_preflight_refuses_wrong_dns_target(self):
+        """Do not trust an Access-protected hostname with conflicting DNS."""
+        client = FakeWriter()
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": TEMPLATE,
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
+        client.dns = [
+            {
+                "name": TEMPLATE,
+                "type": "CNAME",
+                "content": "other.cfargotunnel.com",
+                "proxied": True,
+            }
+        ]
+        with self.assertRaises(UnsafePlan):
+            preflight_compatibility(client, CONTEXT)
+        self.assertEqual(client.events, [])
 
     def test_empty_report_requires_no_action(self):
         """An already synchronized account produces an empty execution list."""

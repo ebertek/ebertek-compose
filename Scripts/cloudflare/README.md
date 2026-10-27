@@ -38,6 +38,28 @@ current implementation only calls Cloudflare's GET endpoints. Terraform-based
 commands and their state are retained temporarily for rollback but should not
 run automatic changes during the transition.
 
+## Validate live onboarding compatibility before creating any service
+
+Once the read-only audit reports no drift, run a separate read-only preflight:
+
+```bash
+cd ~/ygg-compose
+~/cloudflare/.venv/bin/python \
+  Scripts/cloudflare/cloudflare-manage.py --preflight
+```
+
+This fetches the actual Komodo Access application, the existing `ebi.nu`
+Tunnel CNAME, and the complete remotely managed Tunnel configuration. It
+requires the trusted `komodo.ebi.nu` ingress route to use the expected
+Traefik service, checks that the 404 fallback and Access policies are
+well-formed, and verifies that the CNAME points to the selected Tunnel.
+
+This preflight uses **GET requests only** and reports counts and structural
+checks, not credentials, origin settings or full API responses. It can reveal
+live configuration differences that fake API tests cannot. A successful
+preflight does not prove that a future Cloudflare POST or PUT will succeed;
+the first real change should still be explicitly reviewed.
+
 ## Guarded direct API writes (manual approval only)
 
 The live audit remains GET-only. The separate `cloudflare-manage.py` command

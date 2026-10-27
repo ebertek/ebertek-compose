@@ -17,7 +17,13 @@ import sys
 from pathlib import Path
 
 from cloudflare_api import CloudflareError, checked_id, checked_tunnel_id
-from cloudflare_guarded import UnsafePlan, apply_actions, check_plan, fingerprint
+from cloudflare_guarded import (
+    UnsafePlan,
+    apply_actions,
+    check_plan,
+    fingerprint,
+    preflight_compatibility,
+)
 from cloudflare_write_api import CloudflareWriter
 
 SPEC = importlib.util.spec_from_file_location(
@@ -59,7 +65,7 @@ def plan(client, root, settings, limit):
     return report, context, actions, fingerprint(report, context)
 
 
-def main():  # pylint: disable=too-many-locals
+def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     """Preview operations or execute exactly one revalidated approval."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.home() / "ygg-compose")
@@ -67,6 +73,11 @@ def main():  # pylint: disable=too-many-locals
         "--settings",
         type=Path,
         default=Path(__file__).with_name("cloudflare-settings.json"),
+    )
+    parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help="GET-only validation of live Access, Tunnel and DNS templates",
     )
     parser.add_argument(
         "--apply",
@@ -80,6 +91,8 @@ def main():  # pylint: disable=too-many-locals
         help="Hard limit for a single approved reconciliation (default 10)",
     )
     args = parser.parse_args()
+    if args.preflight and args.apply is not None:
+        raise ValueError("--preflight and --apply are mutually exclusive")
     if not 1 <= args.max_operations <= 10:
         raise ValueError("Maximum operations must be between 1 and 10")
     root = args.root.expanduser().resolve()
@@ -99,7 +112,17 @@ def main():  # pylint: disable=too-many-locals
     client = CloudflareWriter(os.environ.get("CLOUDFLARE_API_TOKEN"))
 
     if args.apply is None:
-        report, _, actions, token = plan(client, root, settings, args.max_operations)
+        report, context, actions, token = plan(
+            client, root, settings, args.max_operations
+        )
+        if args.preflight:
+            details = preflight_compatibility(client, context)
+            print("Cloudflare onboarding preflight — GET ONLY")
+            for key, value in sorted(details.items()):
+                print(f"{key}: {value}")
+            print(f"Pending operations: {len(actions)}")
+            print("No changes made.")
+            return 0
         print("Cloudflare API reconciler — PLAN ONLY")
         print(f"Desired hostnames: {report['counts']['desired_hosts']}")
         for action in actions:
