@@ -11,12 +11,12 @@ import ipaddress
 import json
 
 from cloudflare_desired import HOST
-from cloudflare_write_api import policy_links
 from cloudflare_live_diff import (
     DOCKER_NETWORK,
     ordered_policy_ids,
     validate_ingress,
 )
+from cloudflare_write_api import policy_links
 
 SUPPORTED = {
     "create_access_app",
@@ -125,6 +125,7 @@ def audit_tunnel_route(client, context, hostname):
     return bool(validate_ingress(config["ingress"]).get(hostname))
 
 
+# pylint: disable=too-many-locals,too-many-branches,too-many-statements
 def apply_actions(client, report, context, docker_addresses=None, maximum=10):
     """Apply only approved, narrowly scoped changes after live rechecks.
 
@@ -205,6 +206,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 raise UnsafePlan(f"{hostname}: running Docker address changed")
             record = client.get_dns_record(context["ygg"], action["record_id"])
             old = record.get("content")
+            # pylint: disable=too-many-boolean-expressions
             if (
                 record.get("name") != hostname
                 or record.get("type") != "A"
@@ -214,6 +216,7 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
                 or ipaddress.ip_address(action["content"]) not in DOCKER_NETWORK
             ):
                 raise UnsafePlan(f"{hostname}: Docker DNS record changed")
+            # pylint: enable=too-many-boolean-expressions
             client.patch_docker_a(
                 context["ygg"], action["record_id"], action["content"]
             )
