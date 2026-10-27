@@ -1,5 +1,7 @@
 """Offline tests for explicit, narrowly scoped Cloudflare writes."""
 
+# pylint: disable=too-many-public-methods
+
 import copy
 import unittest
 from unittest.mock import patch
@@ -8,6 +10,7 @@ from cloudflare_guarded import (
     UnsafePlan,
     apply_actions,
     check_plan,
+    check_unattended_plan,
     fingerprint,
     preflight_compatibility,
 )
@@ -100,6 +103,17 @@ class FakeWriter:
         }
         self.apps.append(item)
         return copy.deepcopy(item)
+
+    def update_access_policies(self, account, app_id, application, policies):
+        """Simulate an Access application update without changing other fields."""
+        assert account == ACCOUNT
+        assert app_id == application["id"]
+        self.events.append("access_policy_update")
+        for item in self.apps:
+            if item["id"] == app_id:
+                item["policies"] = policy_links(policies)
+                return
+        raise AssertionError("Access app missing")
 
     def tunnel_configuration(self, account, tunnel):
         """Return the current complete remotely managed Tunnel config."""
@@ -244,23 +258,117 @@ class GuardedTests(unittest.TestCase):
             preflight_compatibility(client, CONTEXT)
         self.assertEqual(client.events, [])
 
+    def test_unattended_rejects_existing_policy_changes(self):
+        """Existing Access applications require a reviewed fingerprint."""
+        plan = report(
+            {
+                "kind": "update_access_policies",
+                "hostname": "grafana.ebi.nu",
+                "app_id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+                "before": [POLICY],
+                "policies": [POLICY],
+            }
+        )
+        with self.assertRaises(UnsafePlan):
+            check_unattended_plan(plan)
+
+    def test_unattended_accepts_bounded_new_host(self):
+        """A new service's three staged operations are allowed after opt-in."""
+        approved = check_unattended_plan(new_host_actions())
+        self.assertEqual(len(approved), 3)
+        with self.assertRaises(UnsafePlan):
+            check_unattended_plan(report(*(new_host_actions()["actions"] * 2)))
+
     def test_empty_report_requires_no_action(self):
         """An already synchronized account produces an empty execution list."""
         client = FakeWriter()
         self.assertEqual(apply_actions(client, report(), CONTEXT), [])
         self.assertEqual(client.events, [])
 
-    def test_unknown_policy_update_blocks_all_writes(self):
-        """Never partially run a plan containing unsupported policy PUT."""
-        actions = new_host_actions()["actions"]
-        actions.append(
+    def test_existing_policy_update_preserves_application(self):
+        """Update only ordered reusable policy links after a live recheck."""
+        client = FakeWriter()
+        client.policies.append({"id": "22222222-2222-2222-2222-222222222222"})
+        client.apps = [
             {
-                "kind": "update_access_policies",
-                "hostname": "grafana.ebi.nu",
+                "id": "d" * 32,
+                "name": "grafana",
+                "domain": "grafana.ebi.nu",
+                "type": "self_hosted",
+                "session_duration": "12h",
+                "policies": policy_links([POLICY]),
             }
-        )
+        ]
+        change = {
+            "kind": "update_access_policies",
+            "hostname": "grafana.ebi.nu",
+            "app_id": "d" * 32,
+            "before": [POLICY],
+            "policies": [POLICY, "22222222-2222-2222-2222-222222222222"],
+        }
+        done = apply_actions(client, report(change), CONTEXT)
+        self.assertEqual(len(done), 1)
+        self.assertEqual(client.events, ["access_policy_update"])
+        self.assertEqual(client.apps[0]["session_duration"], "12h")
+        self.assertEqual(len(client.apps[0]["policies"]), 2)
+
+    def test_existing_policy_update_refuses_live_drift(self):
+        """Stale policy lists cannot authorize writes."""
+        client = FakeWriter()
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": "grafana.ebi.nu",
+                "type": "self_hosted",
+                "policies": policy_links([POLICY]),
+            }
+        ]
+        change = {
+            "kind": "update_access_policies",
+            "hostname": "grafana.ebi.nu",
+            "app_id": "d" * 32,
+            "before": [],
+            "policies": [POLICY],
+        }
         with self.assertRaises(UnsafePlan):
-            apply_actions(FakeWriter(), report(*actions), CONTEXT)
+            apply_actions(client, report(change), CONTEXT)
+        self.assertEqual(client.events, [])
+
+    def test_policy_put_rejects_unknown_fields(self):
+        """Unknown settings must not be silently discarded by the PUT writer."""
+        client = CloudflareWriter("test-token")
+        app = {
+            "id": "d" * 32,
+            "name": "grafana",
+            "domain": "grafana.ebi.nu",
+            "type": "self_hosted",
+            "unknown_future_setting": True,
+        }
+        with patch.object(client, "_write") as writer, self.assertRaises(ValueError):
+            client.update_access_policies(ACCOUNT, "d" * 32, app, [POLICY])
+        writer.assert_not_called()
+
+    def test_policy_put_retains_supported_settings(self):
+        """Preserve settings and replace only reusable policy references."""
+        client = CloudflareWriter("test-token")
+        app = {
+            "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+            "name": "grafana",
+            "domain": "grafana.ebi.nu",
+            "type": "self_hosted",
+            "session_duration": "12h",
+            "http_only_cookie": True,
+            "policies": policy_links([POLICY]),
+        }
+        with patch.object(client, "_write", return_value={}) as writer:
+            client.update_access_policies(
+                ACCOUNT, "dddddddd-dddd-dddd-dddd-dddddddddddd", app, [POLICY]
+            )
+        payload = writer.call_args.args[2]
+        self.assertEqual(payload["session_duration"], "12h")
+        self.assertTrue(payload["http_only_cookie"])
+        self.assertEqual(payload["policies"], policy_links([POLICY]))
+        self.assertNotIn("id", payload)
 
     def test_blocked_and_duplicate_actions_refused(self):
         """Reject blocked or duplicate mutations before contacting Cloudflare."""

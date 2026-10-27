@@ -96,6 +96,66 @@ class CloudflareWriter(CloudflareClient):
         }
         return self._write("POST", f"/accounts/{checked_id(account)}/access/apps", body)
 
+    def update_access_policies(self, account, app_id, application, policies):
+        """PUT a self-hosted app while preserving validated configurable settings."""
+        if not isinstance(application, dict):
+            raise TypeError("Access application must be an object")
+        fields = {
+            "name",
+            "domain",
+            "type",
+            "session_duration",
+            "destinations",
+            "allowed_idps",
+            "app_launcher_visible",
+            "auto_redirect_to_identity",
+            "custom_deny_message",
+            "custom_deny_url",
+            "enable_binding_cookie",
+            "http_only_cookie",
+            "same_site_cookie",
+            "logo_url",
+            "skip_interstitial",
+            "service_auth_401_redirect",
+            "path_cookie_attribute",
+            "cors_headers",
+            "options_preflight_bypass",
+            "read_service_tokens_from_header",
+            "tags",
+        }
+        readonly = {
+            "id",
+            "account_id",
+            "created_at",
+            "updated_at",
+            "aud",
+            "domain",
+            "type",
+            "policies",
+        }
+        unknown = set(application) - fields - readonly
+        if unknown:
+            raise ValueError(
+                "Unsupported Access application fields: " + ", ".join(sorted(unknown))
+            )
+        if application.get("type") != "self_hosted" or not HOST.fullmatch(
+            application.get("domain", "")
+        ):
+            raise ValueError("Access application is not a managed self-hosted hostname")
+        if application.get("id") != app_id:
+            raise ValueError("Access application ID changed")
+        required = {"name", "domain", "type"}
+        if not required.issubset(application):
+            raise ValueError("Missing required Access application fields")
+        body = {key: application[key] for key in fields if key in application}
+        body["policies"] = policy_links(policies)
+        # Keep the original domain and type, without permitting caller overrides.
+        return self._write(
+            "PUT",
+            f"/accounts/{checked_id(account)}/access/apps/{checked_tunnel_id(app_id)}",
+            body,
+        )
+
     def put_tunnel_ingress(self, account, tunnel, config):
         """Replace a validated complete Tunnel config; never omit existing routes."""
         validate_tunnel_config(config)
