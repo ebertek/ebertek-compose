@@ -7,8 +7,8 @@ python="/home/docker/cloudflare/.venv/bin/python"
 credentials="${root}/terraform/cloudflare/cloudflare.env"
 
 if [[ ! -x "${python}" || ! -r "${credentials}" ]]; then
-  echo "ERROR: Missing Cloudflare Python environment or credentials" >&2
-  exit 1
+	echo "ERROR: Missing Cloudflare Python environment or credentials" >&2
+	exit 1
 fi
 
 # Keep the existing GitOps checkout read-only.
@@ -19,14 +19,14 @@ source "${credentials}"
 set +a
 
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
-  echo "ERROR: CLOUDFLARE_API_TOKEN is not configured" >&2
-  exit 1
+	echo "ERROR: CLOUDFLARE_API_TOKEN is not configured" >&2
+	exit 1
 fi
 
 # Unattended writes require a separate, owner-only opt-in outside GitOps.
 # Existing policy updates always remain manual.
 if [[ -f "/home/docker/cloudflare/enable-auto" ]]; then
-  exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
+	exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
 fi
 
 exec "${python}" Scripts/cloudflare/cloudflare-live.py
