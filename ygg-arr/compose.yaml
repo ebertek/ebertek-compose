@@ -459,6 +459,14 @@ services:
       timeout: 5s
     hostname: unpackerr
     image: "docker.io/golift/unpackerr:v1.0.0"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.unpackerr.entrypoints: "websecure"
+      traefik.http.routers.unpackerr.rule: "Host(unpackerr.ebi.nu)"
+      traefik.http.routers.unpackerr.tls: "true"
+      traefik.http.services.unpackerr.loadbalancer.server.port: "5656"
+      cf.access: "true"
+      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
     mac_address: "0e:be:00:da:00:38"
     networks:
       macvlan1:
