@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate Terraform for NEW applications declared in source Compose files.
+"""Plan Cloudflare hostname and Access changes from the merged GitOps checkout.
 
-Read-only by default. --write-source writes ONLY ebertek-compose source and
- ebertek-compose-secrets source; never the merged ygg-compose or Cloudflare API.
-Existing resources are untouched. Deployment/apply is a separate gated step.
+The controller reads only ygg-compose and never edits that checkout.
+An optional JSON plan routes proposed updates to their original GitHub repos.
+Applying changes to GitHub or Cloudflare belongs to a separate gated runner.
 """
 
 # Reused HCL parsing is intentional; preserve established kebab-case CLI name.
@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 from cloudflare_policy_sync import plan_access_policy_updates
+from cloudflare_source_plan import make_change, output_plan
 
 HOST = re.compile(r"^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\.ebi\.nu$")
 RULE = re.compile(r"^traefik\.http\.routers\.[^.]+\.rule$")
@@ -220,150 +221,132 @@ def insert_ingress(text, hosts):
 
 def render(before, addition):
     """Append generated resources without rewriting the existing HCL."""
-    return before.rstrip() + "\n\n" + addition if addition else before
+    if not addition:
+        return before
+    return before.rstrip() + "\n\n" + addition if before.strip() else addition
 
 
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    """Generate and optionally write source-only Cloudflare Terraform changes."""
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--write-source", action="store_true")
-    p.add_argument(
-        "--compose-root",
-        type=Path,
-        default=Path.home() / "ebertek-compose",
-        help="Source repository to read Compose labels from (not deployed checkout)",
+    """Inspect the merged checkout and optionally save a source-update plan."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root", type=Path, default=Path.home() / "ygg-compose",
+        help="Merged GitOps checkout containing Compose and Terraform files",
     )
-    args = p.parse_args()
-    home = Path.home()
-    public = home / "ebertek-compose/terraform/cloudflare"
-    private = home / "ebertek-compose-secrets/terraform/cloudflare"
-    merged = home / "ygg-compose/terraform/cloudflare"
-    if not all(v.is_dir() for v in (public, private, merged)):
-        raise ValueError("Missing public/private/merged Cloudflare Terraform directory")
+    parser.add_argument(
+        "--output-plan", type=Path,
+        help="Write a source-repository plan outside the merged checkout",
+    )
+    args = parser.parse_args()
+    root = args.root.expanduser().resolve()
+    merged = root / "terraform/cloudflare"
+    if not merged.is_dir():
+        raise ValueError(f"Missing merged Cloudflare configuration: {merged}")
+
     policy_data = (merged / "access-policies.tf").read_text()
-    policies = set(re.findall(r'(?m)^\s*id\s*=\s*"([0-9a-f-]{36})"', policy_data))
-    # Imported reusable policy resources may have IDs only in state. Also permit IDs
-    # that are ALREADY used by imported Access applications (verified baseline).
-    for file in merged.glob("access-*.tf"):
-        if file.name != "access-policies.tf":
-            policies.update(
+    known = set(re.findall(r'(?m)^\s*id\s*=\s*"([0-9a-f-]{36})"', policy_data))
+    # Existing assignments are valid policy identifiers, even when imported
+    # reusable policy definitions don't expose their IDs in Terraform HCL.
+    for path in merged.glob("access-*.tf"):
+        if path.name != "access-policies.tf":
+            known.update(
                 re.findall(
                     r'\{\s*id\s*=\s*"([0-9a-f-]{36})"\s*,\s*precedence',
-                    file.read_text(),
+                    path.read_text(),
                 )
             )
-    hosts, errors = discover(compose_inventory(args.compose_root), policies)
+    hosts, errors = discover(compose_inventory(root), known)
     if errors:
         raise ValueError(
-            "Label validation failed; nothing written:\n" + "\n".join(errors)
+            "Label validation failed; no changes proposed:\n" + "\n".join(errors)
         )
+
     access_present = existing_hosts(merged, "access")
     dns_present = existing_hosts(merged, "dns")
-    tunnel_text = (private / "tunnel-config.tf").read_text()
-    existing_ingress = set(
+    tunnel_path = merged / "tunnel-config.tf"
+    tunnel_text = tunnel_path.read_text()
+    ingress_present = set(
         re.findall(r'(?m)^\s*hostname\s*=\s*"([^"\n]+)"', tunnel_text)
     )
     new = sorted(
-        host
-        for host in hosts
+        host for host in hosts
         if host not in access_present
         or host not in dns_present
-        or host not in existing_ingress
+        or host not in ingress_present
     )
-    policy_writes, changed_policies = plan_access_policy_updates(public, merged, hosts)
+    policy_writes, changed_policies = plan_access_policy_updates(merged, hosts)
     if not new and not policy_writes:
         print(
             f"No new hostnames or policy changes. Inspected {len(hosts)} labeled hostnames."
         )
         return
-    sample_access = (merged / "access-self-hosted.tf").read_text()
-    sample_dns = (merged / "dns-ebi.tf").read_text()
-    account = singleton_regex(
-        sample_access, r'^\s*account_id\s*=\s*"([0-9a-f]{32})"', "Access account_id"
-    )
-    zone = singleton_regex(
-        sample_dns, r'^\s*zone_id\s*=\s*"([0-9a-f]{32})"', "ebi.nu zone_id"
-    )
-    tunnel = singleton_regex(
-        sample_dns,
-        r'^\s*content\s*=\s*"([0-9a-f-]{36}\.cfargotunnel\.com)"',
-        "tunnel CNAME target",
-    )
-    # Each source should match the currently deployed equivalent before editing.
+
     writes = dict(policy_writes)
-    access_source = public / "access-auto.tf"
-    dns_source = public / "dns-ebi-auto.tf"
-    for path, filename, kind, factory in (
-        (
-            access_source,
-            "access-auto.tf",
-            "access",
-            lambda h: access_block(h, hosts[h], account),
-        ),
-        (dns_source, "dns-ebi-auto.tf", "dns", lambda h: dns_block(h, zone, tunnel)),
-    ):
-        before = path.read_text() if path.exists() else ""
-        current = writes[path][1] if path in writes else before
-        deployed = merged / filename
-        if deployed.exists() and deployed.read_text() != before:
-            raise ValueError(f"GitOps deployed/source mismatch for {filename}")
-        additions = "\n".join(
-            factory(h)
-            for h in new
-            if h not in (access_present if kind == "access" else dns_present)
+    if new:
+        sample_access = (merged / "access-self-hosted.tf").read_text()
+        sample_dns = (merged / "dns-ebi.tf").read_text()
+        account = singleton_regex(
+            sample_access,
+            r'^\s*account_id\s*=\s*"([0-9a-f]{32})"',
+            "Access account_id",
         )
-        after = render(current, additions)
-        if after != before:
-            writes[path] = (before, after)
-    source_tunnel = tunnel_text
-    deployed_tunnel = (merged / "tunnel-config.tf").read_text()
-    if source_tunnel != deployed_tunnel:
-        raise ValueError("GitOps deployed/source mismatch for tunnel-config.tf")
-    next_tunnel = insert_ingress(
-        source_tunnel, [h for h in new if h not in existing_ingress]
-    )
-    if next_tunnel != source_tunnel:
-        writes[private / "tunnel-config.tf"] = (source_tunnel, next_tunnel)
-    for path, (before, after) in writes.items():
-        print(
-            "".join(
-                difflib.unified_diff(
-                    before.splitlines(True),
-                    after.splitlines(True),
-                    fromfile=str(path),
-                    tofile=str(path) + " (proposed)",
+        zone = singleton_regex(
+            sample_dns, r'^\s*zone_id\s*=\s*"([0-9a-f]{32})"',
+            "ebi.nu zone_id",
+        )
+        tunnel = singleton_regex(
+            sample_dns,
+            r'^\s*content\s*=\s*"([0-9a-f-]{36}\.cfargotunnel\.com)"',
+            "tunnel CNAME target",
+        )
+        for filename, present, factory in (
+            ("access-auto.tf", access_present,
+             lambda host: access_block(host, hosts[host], account)),
+            ("dns-ebi-auto.tf", dns_present,
+             lambda host: dns_block(host, zone, tunnel)),
+        ):
+            path = merged / filename
+            before = path.read_text() if path.is_file() else None
+            current = before or ""
+            additions = "\n".join(
+                factory(host) for host in new if host not in present
+            )
+            after = render(current, additions)
+            if after != current:
+                writes[path] = (before, after)
+
+        updated_tunnel = insert_ingress(
+            tunnel_text, [host for host in new if host not in ingress_present]
+        )
+        if updated_tunnel != tunnel_text:
+            writes[tunnel_path] = (tunnel_text, updated_tunnel)
+
+    proposals = []
+    for path, (before, after) in sorted(writes.items()):
+        plan = make_change(path.name, before, after)
+        proposals.append(plan)
+        print(f"Proposed: {plan['repository']} / {plan['path']}")
+        if plan["repository"] == "ebertek/ebertek-compose":
+            print(
+                "".join(
+                    difflib.unified_diff(
+                        (before or "").splitlines(True),
+                        after.splitlines(True),
+                        fromfile=f"deployed/{path.name}",
+                        tofile=f"proposed/{path.name}",
+                    )
                 )
             )
-        )
     print(
         f"New/incomplete hostnames: {len(new)}; "
         f"existing policy updates: {len(changed_policies)}; "
-        f"files to change: {len(writes)}"
+        f"source files to update: {len(proposals)}"
     )
-    if not args.write_source:
-        print(
-            "DRY RUN; add --write-source to update SOURCE files only. "
-            "No commits or Terraform apply."
-        )
-        return
-    for path in writes:
-        repo = (
-            public.parent.parent
-            if path.is_relative_to(public)
-            else private.parent.parent
-        )
-        status = subprocess.check_output(
-            ["git", "-C", str(repo), "status", "--porcelain", "--", str(path)],
-            text=True,
-        )
-        if status.strip():
-            raise ValueError(f"Source path already dirty: {path}")
-    for path, (_, after) in writes.items():
-        path.write_text(after)
-    print(
-        "Wrote source files. Validate/commit both source repos, merge GitOps, "
-        "then run reviewed Terraform plan/apply."
-    )
+    if args.output_plan:
+        saved = output_plan(args.output_plan, root, proposals)
+        print(f"Source plan saved: {saved}")
+    else:
+        print("DRY RUN. No files, Git repositories, or Cloudflare resources changed.")
 
 
 if __name__ == "__main__":
