@@ -81,7 +81,7 @@ class CloudflareWriter(CloudflareClient):
     def put_tunnel_ingress(self, account, tunnel, config):
         """Replace a validated complete Tunnel config; never omit existing routes."""
         if not isinstance(config, dict) or not isinstance(config.get("ingress"), list):
-            raise ValueError("Tunnel configuration must have ingress entries")
+            raise TypeError("Tunnel configuration must have ingress entries")
         if set(config) - {"ingress", "originRequest"}:
             raise ValueError("Unexpected Tunnel config keys; refusing replacement")
         return self._write(
