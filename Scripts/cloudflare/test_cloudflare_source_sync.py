@@ -37,6 +37,7 @@ resource "cloudflare_dns_record" "pleiades_secondary" {
 
 class SourceSyncTests(unittest.TestCase):
     """Verify DNS source changes are safe, unambiguous and idempotent."""
+
     def test_existing_single_a_changes_without_resource_rename(self):
         """Preserve the imported Terraform resource identifier on an IP change."""
         updated, changes = sync.update_existing(EXAMPLE, {"grafana": "10.4.21.99"})
