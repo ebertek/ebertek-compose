@@ -8,7 +8,6 @@ import hashlib
 import json
 import os
 import tempfile
-from pathlib import Path
 
 PUBLIC_REPO = "ebertek/ebertek-compose"
 PRIVATE_REPO = "ebertek/ebertek-compose-secrets"
