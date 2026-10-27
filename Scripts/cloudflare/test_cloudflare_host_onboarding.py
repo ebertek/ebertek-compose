@@ -16,6 +16,7 @@ spec.loader.exec_module(onboarding)
 
 class OnboardingTests(unittest.TestCase):
     """Verify new hostname policy checks and ingress insertion order."""
+
     def labels(
         self, policies='["16079c5e-e6e7-469e-8df1-8a7e326d11d5"]', enabled="true"
     ):
