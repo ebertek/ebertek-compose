@@ -12,7 +12,7 @@ from pathlib import Path
 
 PUBLIC_REPO = "ebertek/ebertek-compose"
 PRIVATE_REPO = "ebertek/ebertek-compose-secrets"
-PRIVATE_FILES = {"dns-ygg.tf", "tunnel-config.tf"}
+PRIVATE_FILES = {"access-policies.tf", "dns-ygg.tf", "tunnel-config.tf"}
 
 
 def source_repo(filename):
