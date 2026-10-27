@@ -230,11 +230,14 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     """Inspect the merged checkout and optionally save a source-update plan."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--root", type=Path, default=Path.home() / "ygg-compose",
+        "--root",
+        type=Path,
+        default=Path.home() / "ygg-compose",
         help="Merged GitOps checkout containing Compose and Terraform files",
     )
     parser.add_argument(
-        "--output-plan", type=Path,
+        "--output-plan",
+        type=Path,
         help="Write a source-repository plan outside the merged checkout",
     )
     args = parser.parse_args()
@@ -269,7 +272,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         re.findall(r'(?m)^\s*hostname\s*=\s*"([^"\n]+)"', tunnel_text)
     )
     new = sorted(
-        host for host in hosts
+        host
+        for host in hosts
         if host not in access_present
         or host not in dns_present
         or host not in ingress_present
@@ -291,7 +295,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             "Access account_id",
         )
         zone = singleton_regex(
-            sample_dns, r'^\s*zone_id\s*=\s*"([0-9a-f]{32})"',
+            sample_dns,
+            r'^\s*zone_id\s*=\s*"([0-9a-f]{32})"',
             "ebi.nu zone_id",
         )
         tunnel = singleton_regex(
@@ -300,17 +305,21 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             "tunnel CNAME target",
         )
         for filename, present, factory in (
-            ("access-auto.tf", access_present,
-             lambda host: access_block(host, hosts[host], account)),
-            ("dns-ebi-auto.tf", dns_present,
-             lambda host: dns_block(host, zone, tunnel)),
+            (
+                "access-auto.tf",
+                access_present,
+                lambda host: access_block(host, hosts[host], account),
+            ),
+            (
+                "dns-ebi-auto.tf",
+                dns_present,
+                lambda host: dns_block(host, zone, tunnel),
+            ),
         ):
             path = merged / filename
             before = path.read_text() if path.is_file() else None
             current = before or ""
-            additions = "\n".join(
-                factory(host) for host in new if host not in present
-            )
+            additions = "\n".join(factory(host) for host in new if host not in present)
             after = render(current, additions)
             if after != current:
                 writes[path] = (before, after)
