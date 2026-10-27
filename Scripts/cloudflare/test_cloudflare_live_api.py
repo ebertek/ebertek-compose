@@ -1,5 +1,7 @@
 """Offline Cloudflare client and merged-runtime audit integration tests."""
 
+# pylint: disable=duplicate-code
+
 import importlib.util
 import io
 import json
