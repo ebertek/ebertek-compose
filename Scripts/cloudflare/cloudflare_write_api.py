@@ -101,17 +101,37 @@ class CloudflareWriter(CloudflareClient):
         if not isinstance(application, dict):
             raise TypeError("Access application must be an object")
         fields = {
-            "name", "domain", "type", "session_duration", "destinations",
-            "allowed_idps", "app_launcher_visible",
-            "auto_redirect_to_identity", "custom_deny_message", "custom_deny_url",
-            "enable_binding_cookie", "http_only_cookie", "same_site_cookie",
-            "logo_url", "skip_interstitial", "service_auth_401_redirect",
-            "path_cookie_attribute", "cors_headers", "options_preflight_bypass",
-            "read_service_tokens_from_header", "tags",
+            "name",
+            "domain",
+            "type",
+            "session_duration",
+            "destinations",
+            "allowed_idps",
+            "app_launcher_visible",
+            "auto_redirect_to_identity",
+            "custom_deny_message",
+            "custom_deny_url",
+            "enable_binding_cookie",
+            "http_only_cookie",
+            "same_site_cookie",
+            "logo_url",
+            "skip_interstitial",
+            "service_auth_401_redirect",
+            "path_cookie_attribute",
+            "cors_headers",
+            "options_preflight_bypass",
+            "read_service_tokens_from_header",
+            "tags",
         }
         readonly = {
-            "id", "account_id", "created_at", "updated_at", "aud",
-            "domain", "type", "policies",
+            "id",
+            "account_id",
+            "created_at",
+            "updated_at",
+            "aud",
+            "domain",
+            "type",
+            "policies",
         }
         unknown = set(application) - fields - readonly
         if unknown:
