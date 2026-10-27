@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Terraform for NEW cf.access-labeled Traefik applications.
+"""Generate Terraform for NEW applications declared in source Compose files.
 
 Read-only by default. --write-source writes ONLY ebertek-compose source and
  ebertek-compose-secrets source; never the merged ygg-compose or Cloudflare API.
@@ -27,16 +27,58 @@ RESOURCE = re.compile(
 )
 
 
-def inventory():
-    """Inspect running Docker containers and return their metadata."""
-    ids = subprocess.check_output(["docker", "ps", "-q"], text=True).split()
-    if not ids:
-        return []
-    return json.loads(subprocess.check_output(["docker", "inspect", *ids], text=True))
+def compose_inventory(root):  # pylint: disable=too-many-locals,too-many-branches
+    """Inspect source Compose services without requiring running containers."""
+    try:
+        from ruamel.yaml import YAML  # pylint: disable=import-outside-toplevel
+    except ImportError as exc:
+        raise RuntimeError("Install ruamel.yaml to read Compose source") from exc
+
+    paths = sorted(set(root.rglob("compose.yaml")) | set(root.rglob("compose.yml")))
+    if not paths:
+        raise ValueError(f"No Compose files found under {root}")
+
+    parser = YAML(typ="safe")
+    containers = []
+    for path in paths:
+        document = parser.load(path.read_text())
+        if not isinstance(document, dict):
+            raise TypeError(f"Invalid Compose document: {path}")
+        services = document.get("services")
+        if services is None:
+            continue
+        if not isinstance(services, dict):
+            raise TypeError(f"Invalid Compose services mapping: {path}")
+        for service, config in services.items():
+            if not isinstance(config, dict):
+                raise TypeError(f"Invalid Compose service {service}: {path}")
+            raw_labels = config.get("labels") or {}
+            if isinstance(raw_labels, dict):
+                labels = {str(key): str(value) for key, value in raw_labels.items()}
+            elif isinstance(raw_labels, list):
+                labels = {}
+                for label in raw_labels:
+                    if not isinstance(label, str) or "=" not in label:
+                        raise ValueError(
+                            f"Malformed Compose label in {path}: {service}"
+                        )
+                    key, value = label.split("=", 1)
+                    if key in labels:
+                        raise ValueError(f"Duplicate Compose label {key} in {path}")
+                    labels[key] = value
+            else:
+                raise TypeError(f"Invalid Compose labels for {service}: {path}")
+            containers.append(
+                {
+                    "Name": f"{path.relative_to(root)}/{service}",
+                    "Config": {"Labels": labels},
+                }
+            )
+    return containers
 
 
 def discover(containers, known_policies):  # pylint: disable=too-many-branches
-    """Find valid hostname-to-policy declarations on Traefik containers."""
+    """Validate policy declarations for Traefik-enabled Compose services."""
     result = {}
     errors = []
     for container in containers:
@@ -183,6 +225,12 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     """Generate and optionally write source-only Cloudflare Terraform changes."""
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--write-source", action="store_true")
+    p.add_argument(
+        "--compose-root",
+        type=Path,
+        default=Path.home() / "ebertek-compose",
+        help="Source repository to read Compose labels from (not deployed checkout)",
+    )
     args = p.parse_args()
     home = Path.home()
     public = home / "ebertek-compose/terraform/cloudflare"
@@ -202,7 +250,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
                     file.read_text(),
                 )
             )
-    hosts, errors = discover(inventory(), policies)
+    hosts, errors = discover(compose_inventory(args.compose_root), policies)
     if errors:
         raise ValueError(
             "Label validation failed; nothing written:\n" + "\n".join(errors)
@@ -313,6 +361,6 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
 if __name__ == "__main__":
     try:
         main()
-    except (ValueError, OSError, subprocess.CalledProcessError) as exc:
+    except (ValueError, TypeError, OSError, subprocess.CalledProcessError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
