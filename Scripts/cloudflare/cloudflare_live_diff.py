@@ -55,8 +55,15 @@ def validate_ingress(ingress):
     return hosts
 
 
-def compare_live(desired, apps, dns_ebi, tunnel_ingress, tunnel_id,
-                 docker_addresses=None, dns_ygg=None):
+def compare_live(
+    desired,
+    apps,
+    dns_ebi,
+    tunnel_ingress,
+    tunnel_id,
+    docker_addresses=None,
+    dns_ygg=None,
+):
     """Compare Compose with live Cloudflare and propose non-destructive actions."""
     actions = []
     blocked = []
@@ -70,14 +77,15 @@ def compare_live(desired, apps, dns_ebi, tunnel_ingress, tunnel_id,
         if len(matches) > 1:
             blocked.append({"hostname": hostname, "reason": "multiple Access apps"})
         elif not matches:
-            actions.append({"kind": "create_access_app", "hostname": hostname,
-                            "policies": wanted})
+            actions.append(
+                {"kind": "create_access_app", "hostname": hostname, "policies": wanted}
+            )
         else:
             app = matches[0]
             if app.get("type") != "self_hosted":
-                blocked.append({
-                    "hostname": hostname, "reason": "Access app is not self_hosted"
-                })
+                blocked.append(
+                    {"hostname": hostname, "reason": "Access app is not self_hosted"}
+                )
             else:
                 try:
                     actual = ordered_policy_ids(app)
@@ -85,28 +93,37 @@ def compare_live(desired, apps, dns_ebi, tunnel_ingress, tunnel_id,
                     blocked.append({"hostname": hostname, "reason": str(error)})
                 else:
                     if actual != wanted:
-                        actions.append({
-                            "kind": "update_access_policies", "hostname": hostname,
-                            "app_id": app.get("id"), "before": actual,
-                            "policies": wanted,
-                        })
+                        actions.append(
+                            {
+                                "kind": "update_access_policies",
+                                "hostname": hostname,
+                                "app_id": app.get("id"),
+                                "before": actual,
+                                "policies": wanted,
+                            }
+                        )
 
         records = dns_index.get(hostname, [])
         if not records:
-            actions.append({
-                "kind": "create_dns_cname", "hostname": hostname,
-                "content": target,
-            })
+            actions.append(
+                {
+                    "kind": "create_dns_cname",
+                    "hostname": hostname,
+                    "content": target,
+                }
+            )
         elif (
             len(records) != 1
             or records[0].get("type") != "CNAME"
             or records[0].get("content", "").lower().rstrip(".") != target
             or records[0].get("proxied") is not True
         ):
-            blocked.append({
-                "hostname": hostname,
-                "reason": "existing DNS records conflict with tunnel CNAME",
-            })
+            blocked.append(
+                {
+                    "hostname": hostname,
+                    "reason": "existing DNS records conflict with tunnel CNAME",
+                }
+            )
 
         if hostname not in tunnel_hosts:
             actions.append({"kind": "add_tunnel_ingress", "hostname": hostname})
@@ -116,15 +133,16 @@ def compare_live(desired, apps, dns_ebi, tunnel_ingress, tunnel_id,
         for container, address in sorted(docker_addresses.items()):
             hostname = container + ".ygg.nu"
             matched = [
-                record for record in private_index.get(hostname, [])
+                record
+                for record in private_index.get(hostname, [])
                 if record.get("type") == "A"
             ]
             if not matched:
                 continue  # No automatic creation for unknown local hostnames.
             if len(matched) != 1:
-                blocked.append({
-                    "hostname": hostname, "reason": "ambiguous Docker A records"
-                })
+                blocked.append(
+                    {"hostname": hostname, "reason": "ambiguous Docker A records"}
+                )
                 continue
             old = matched[0].get("content")
             if old == address:
@@ -133,20 +151,24 @@ def compare_live(desired, apps, dns_ebi, tunnel_ingress, tunnel_id,
                 old_ip = ipaddress.ip_address(old)
                 new_ip = ipaddress.ip_address(address)
             except ValueError:
-                blocked.append({
-                    "hostname": hostname, "reason": "invalid Docker IPv4 value"
-                })
+                blocked.append(
+                    {"hostname": hostname, "reason": "invalid Docker IPv4 value"}
+                )
                 continue
             if old_ip not in DOCKER_NETWORK or new_ip not in DOCKER_NETWORK:
-                blocked.append({
-                    "hostname": hostname, "reason": "non-Docker address is protected"
-                })
+                blocked.append(
+                    {"hostname": hostname, "reason": "non-Docker address is protected"}
+                )
                 continue
-            actions.append({
-                "kind": "update_docker_dns_a", "hostname": hostname,
-                "record_id": matched[0].get("id"), "before": old,
-                "content": address,
-            })
+            actions.append(
+                {
+                    "kind": "update_docker_dns_a",
+                    "hostname": hostname,
+                    "record_id": matched[0].get("id"),
+                    "before": old,
+                    "content": address,
+                }
+            )
 
     by_kind = Counter(item["kind"] for item in actions)
     return {
