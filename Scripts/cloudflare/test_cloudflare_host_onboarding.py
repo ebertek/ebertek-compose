@@ -143,7 +143,6 @@ class OnboardingTests(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("missing cf.access", errors[0])
 
-
     def test_merged_runtime_produces_public_and_private_source_plan(self):
         """Plan a new hostname from merged-only files without modifying them."""
         policy = "16079c5e-e6e7-469e-8df1-8a7e326d11d5"
@@ -162,18 +161,16 @@ class OnboardingTests(unittest.TestCase):
                 '      cf.access: "true"\n'
                 f"      cf.access.policies: '[\"{policy}\"]'\n"
             )
-            (tf / "access-policies.tf").write_text(
-                f'  id = "{policy}"\n'
-            )
+            (tf / "access-policies.tf").write_text(f'  id = "{policy}"\n')
             (tf / "access-self-hosted.tf").write_text(
                 'resource "cloudflare_zero_trust_access_application" "existing" {\n'
                 '  account_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"\n'
                 '  domain = "existing.ebi.nu"\n'
                 '  type = "self_hosted"\n'
-                '  policies = [\n'
+                "  policies = [\n"
                 f'    {{ id = "{policy}", precedence = 1 }}\n'
-                '  ]\n'
-                '}\n'
+                "  ]\n"
+                "}\n"
             )
             (tf / "dns-ebi.tf").write_text(
                 'resource "cloudflare_dns_record" "existing" {\n'
@@ -181,7 +178,7 @@ class OnboardingTests(unittest.TestCase):
                 '  name = "existing.ebi.nu"\n'
                 '  content = "52acd579-76f3-4b52-bec4-8c505258a7b1.cfargotunnel.com"\n'
                 '  type = "CNAME"\n'
-                '}\n'
+                "}\n"
             )
             tunnel = (
                 "ingress = [\n"
@@ -199,8 +196,13 @@ class OnboardingTests(unittest.TestCase):
             with patch.object(
                 sys,
                 "argv",
-                ["cloudflare-host-onboarding.py", "--root", str(root),
-                 "--output-plan", str(output)],
+                [
+                    "cloudflare-host-onboarding.py",
+                    "--root",
+                    str(root),
+                    "--output-plan",
+                    str(output),
+                ],
             ), redirect_stdout(io.StringIO()):
                 onboarding.main()
             proposals = json.loads(output.read_text())["files"]
@@ -214,8 +216,7 @@ class OnboardingTests(unittest.TestCase):
                 },
             )
             tunnel_plan = next(
-                item for item in proposals
-                if item["path"].endswith("tunnel-config.tf")
+                item for item in proposals if item["path"].endswith("tunnel-config.tf")
             )
             self.assertEqual(
                 tunnel_plan["repository"],
