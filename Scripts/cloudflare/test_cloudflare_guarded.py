@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from cloudflare_guarded import (
     UnsafePlan,
+    check_unattended_plan,
     apply_actions,
     check_plan,
     fingerprint,
@@ -254,6 +255,27 @@ class GuardedTests(unittest.TestCase):
         with self.assertRaises(UnsafePlan):
             preflight_compatibility(client, CONTEXT)
         self.assertEqual(client.events, [])
+
+    def test_unattended_rejects_existing_policy_changes(self):
+        """Existing Access applications require a reviewed fingerprint."""
+        plan = report({
+            "kind": "update_access_policies",
+            "hostname": "grafana.ebi.nu",
+            "app_id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+            "before": [POLICY],
+            "policies": [POLICY],
+        })
+        with self.assertRaises(UnsafePlan):
+            check_unattended_plan(plan)
+
+    def test_unattended_accepts_bounded_new_host(self):
+        """A new service's three staged operations are allowed after opt-in."""
+        approved = check_unattended_plan(new_host_actions())
+        self.assertEqual(len(approved), 3)
+        with self.assertRaises(UnsafePlan):
+            check_unattended_plan(
+                report(*(new_host_actions()["actions"] * 2))
+            )
 
     def test_empty_report_requires_no_action(self):
         """An already synchronized account produces an empty execution list."""
