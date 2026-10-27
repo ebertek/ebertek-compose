@@ -59,7 +59,7 @@ Cloudflare scripts with the `docker` user's virtual environment and checkout.
   version semantics. Verify healthcheck commands exist in the target image,
   especially for Alpine/minimal/distroless images.
 - For services exposed through Traefik, check the actual router
-  `Host(`hostname`)` expression, entrypoint, TLS, middleware, and service
+  `Host(\`hostname\`)` expression, entrypoint, TLS, middleware, and service
   port. Traefik accepts quoted `Host()` arguments; malformed rules must
   raise validation errors, not silently vanish from Cloudflare discovery.
 - Public `*.ebi.nu` hostnames normally require `cf.access: "true"` and
