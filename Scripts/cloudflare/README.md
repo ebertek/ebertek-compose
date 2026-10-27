@@ -124,4 +124,19 @@ changes Cloudflare nor modifies the GitOps checkout.
 
 The action depends on /home/docker/cloudflare/.venv. When Terraform is
 retired, migrate credentials to a dedicated runtime secret outside the
-GitOps checkout. Automatic mutation is intentionally not enabled.
+GitOps checkout. Unattended mutation is **off by default**. To opt in deliberately,
+the docker user can create an owner-only file outside the GitOps checkout:
+
+```bash
+install -d -m 700 /home/docker/cloudflare
+printf 'enabled\\n' > /home/docker/cloudflare/enable-auto
+chmod 600 /home/docker/cloudflare/enable-auto
+```
+
+Only a maximum of three changes in one run are eligible, and existing
+Access policy updates remain manual. Remove that file to switch the scheduled
+action back to read-only audit. The marker must be owned by the executing user
+and inaccessible to other users. With the marker present, the scheduled
+Komodo action performs bounded reconciliation every six hours. Audit the
+resulting changes and do not enable automatic changes until validating the
+deployed runtime credentials and Komodo action behavior.
