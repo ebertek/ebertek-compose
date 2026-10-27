@@ -32,8 +32,9 @@ def new_host_actions():
             "kind": "create_dns_cname",
             "hostname": HOST,
             "content": TUNNEL + ".cfargotunnel.com",
+            "policies": [POLICY],
         },
-        {"kind": "add_tunnel_ingress", "hostname": HOST},
+        {"kind": "add_tunnel_ingress", "hostname": HOST, "policies": [POLICY]},
         {
             "kind": "create_access_app", "hostname": HOST,
             "policies": [POLICY],
@@ -187,6 +188,41 @@ class GuardedTests(unittest.TestCase):
             ingress[-2]["originRequest"], {"http2Origin": True}
         )
         self.assertEqual(ingress[0]["hostname"], TEMPLATE)
+
+
+    def test_resume_after_access_was_already_created(self):
+        """Complete ingress and DNS safely after an interrupted first apply."""
+        client = FakeWriter()
+        client.apps = [{
+            "id": "d" * 32,
+            "domain": HOST,
+            "type": "self_hosted",
+            "policies": policy_links([POLICY]),
+        }]
+        changes = new_host_actions()["actions"][:2]
+        done = apply_actions(client, report(*changes), CONTEXT)
+        self.assertEqual(
+            [value["kind"] for value in done],
+            ["add_tunnel_ingress", "create_dns_cname"],
+        )
+        self.assertEqual(client.events, ["tunnel", "dns"])
+
+    def test_publish_dns_if_access_and_tunnel_already_exist(self):
+        """Never require recreation of an existing, correctly protected host."""
+        client = FakeWriter()
+        client.apps = [{
+            "id": "d" * 32,
+            "domain": HOST,
+            "type": "self_hosted",
+            "policies": policy_links([POLICY]),
+        }]
+        client.configuration["ingress"].insert(
+            -1, {"hostname": HOST, "service": "https://traefik.ygg.nu:443"}
+        )
+        change = new_host_actions()["actions"][0]
+        done = apply_actions(client, report(change), CONTEXT)
+        self.assertEqual(done[0]["kind"], "create_dns_cname")
+        self.assertEqual(client.events, ["dns"])
 
     def test_conflicting_access_app_fails_without_writes(self):
         """Do not recreate an existing Access application."""
