@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# Invoked explicitly with bash by Komodo; no executable bit required.
 # Read-only Cloudflare audit for Pleiades/Komodo.
 set -Eeuo pipefail
 
