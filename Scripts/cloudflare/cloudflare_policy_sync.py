@@ -111,22 +111,21 @@ def sync_access_policies(text, desired):  # pylint: disable=too-many-locals
     return text, changed, found
 
 
-def plan_access_policy_updates(public, deployed, desired):
-    """Plan updates to public Terraform source after a deployed/source match."""
+def plan_access_policy_updates(merged, desired):
+    """Plan policy updates using only the read-only merged Terraform checkout."""
     writes = {}
     changed = []
     found = set()
-    for path in sorted(public.glob("access-*.tf")):
+    for path in sorted(merged.glob("access-*.tf")):
+        # Reusable policy resources live in the private repository, not here.
+        if path.name == "access-policies.tf":
+            continue
         before = path.read_text()
         after, modified, matched = sync_access_policies(before, desired)
         if found.intersection(matched):
             raise ValueError("Duplicate Access hostname across Terraform files")
         found.update(matched)
-        if before == after:
-            continue
-        existing = deployed / path.name
-        if not existing.is_file() or existing.read_text() != before:
-            raise ValueError(f"GitOps deployed/source mismatch for {path.name}")
-        writes[path] = (before, after)
-        changed.extend(modified)
+        if before != after:
+            writes[path] = (before, after)
+            changed.extend(modified)
     return writes, changed

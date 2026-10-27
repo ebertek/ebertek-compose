@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Safely propose/update existing Docker IPv4 A records in Cloudflare Terraform source.
+"""Propose private ygg.nu DNS source changes from the merged GitOps checkout.
 
-No Cloudflare API calls, git commits, or Terraform apply actions are performed.
-Only a Git source repository's dns-ygg.tf may be written; deployed ygg-compose is read-only.
+Read-only by default. An optional source plan targets the private GitHub repo;
+this script never edits ygg-compose, Terraform state, or Cloudflare resources.
 """
 
 # Preserve established kebab-case CLI entry point filename.
@@ -10,16 +10,15 @@ Only a Git source repository's dns-ygg.tf may be written; deployed ygg-compose i
 
 import argparse
 import difflib
-import fcntl
 import hashlib
 import ipaddress
 import json
-import os
 import re
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
+
+from cloudflare_source_plan import make_change, output_plan
 
 A_RESOURCE = re.compile(r'(?m)^resource\s+"cloudflare_dns_record"\s+"([^"\n]+)"\s*\{')
 FIELD = re.compile(r'(?m)^(\s*)(name|type|content|zone_id)\s*=\s*"([^"\n]*)"\s*$')
@@ -171,112 +170,59 @@ def add_static(text, hostname, ip):
     return text.rstrip("\n") + "\n" + block
 
 
-def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    """Preview or explicitly write Terraform source DNS updates."""
+def main():
+    """Audit merged DNS A records and optionally export a GitHub source plan."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--source",
+        "--root",
         type=Path,
-        help="Source dns-ygg.tf (autodetected in public/private repos)",
+        default=Path.home() / "ygg-compose",
+        help="Merged GitOps checkout containing the private DNS source",
     )
     parser.add_argument(
-        "--deployed",
+        "--output-plan",
         type=Path,
-        default=Path.home() / "ygg-compose/terraform/cloudflare/dns-ygg.tf",
-    )
-    parser.add_argument(
-        "--write-source",
-        action="store_true",
-        help="Explicitly write ONLY the source file",
+        help="Save a source-update plan outside the merged Git checkout",
     )
     parser.add_argument(
         "--add-static",
         nargs=2,
         metavar=("NAME.YGG.NU", "PRIVATE_IPV4"),
-        help="Explicitly add a static LAN device A record (not Docker subnet)",
+        help="Explicitly propose a static LAN device record (not Docker subnet)",
     )
     args = parser.parse_args()
-    candidates = [
-        Path.home() / name / "terraform/cloudflare/dns-ygg.tf"
-        for name in ("ebertek-compose", "ebertek-compose-secrets")
-    ]
-    sources = [p for p in candidates if p.is_file()]
-    if args.source:
-        source = args.source.expanduser().resolve()
-    elif len(sources) == 1:
-        source = sources[0].resolve()
+    root = args.root.expanduser().resolve()
+    source = root / "terraform/cloudflare/dns-ygg.tf"
+    if not source.is_file():
+        raise ValueError(f"Missing merged Cloudflare DNS configuration: {source}")
+    before = source.read_text()
+    if args.add_static:
+        after = add_static(before, *args.add_static)
+        changes = [("static", *args.add_static)]
     else:
-        raise ValueError(
-            f"Expected exactly one source dns-ygg.tf, found {len(sources)}; use --source"
-        )
-    deployed = args.deployed.expanduser().resolve()
-    if source == deployed or "ygg-compose" in source.parts:
-        raise ValueError("Refusing to modify the merged ygg-compose checkout")
-    if source.name != "dns-ygg.tf" or not source.is_file() or not deployed.is_file():
-        raise ValueError("Source/deployed dns-ygg.tf files must exist")
-    repo = subprocess.check_output(
-        ["git", "-C", str(source.parent), "rev-parse", "--show-toplevel"], text=True
-    ).strip()
-    allowed = {
-        (Path.home() / item).resolve()
-        for item in ("ebertek-compose", "ebertek-compose-secrets")
-    }
-    if Path(repo).resolve() not in allowed:
-        raise ValueError(
-            "Source must belong to ebertek-compose or ebertek-compose-secrets"
-        )
-    # Serialize local writers. A separate lock survives atomic replacement of the file.
-    lock = Path(repo) / ".git/cloudflare-source-sync.lock"
-    with lock.open("a+") as handle:
-        fcntl.flock(handle, fcntl.LOCK_EX)
-        before = source.read_text()
-        if deployed.read_text() != before:
-            raise ValueError("Source and deployed DNS files differ; sync GitOps first")
-        if subprocess.check_output(
-            ["git", "-C", repo, "status", "--porcelain", "--", str(source)], text=True
-        ).strip():
-            raise ValueError(
-                "Source dns-ygg.tf has uncommitted changes; refusing to modify"
-            )
-        if args.add_static:
-            after = add_static(before, *args.add_static)
-            changes = [("static", *args.add_static)]
-        else:
-            after, changes = update_existing(before, docker_ipv4())
-        if after == before:
-            print("No source changes required.")
-            return
-        diff = "".join(
+        after, changes = update_existing(before, docker_ipv4())
+    if after == before:
+        print("No DNS source changes required.")
+        return
+
+    print(
+        "".join(
             difflib.unified_diff(
                 before.splitlines(True),
                 after.splitlines(True),
-                fromfile="source/dns-ygg.tf",
+                fromfile="deployed/dns-ygg.tf",
                 tofile="proposed/dns-ygg.tf",
             )
         )
-        print(diff)
-        print(f"Proposed operations: {len(changes)}")
-        if not args.write_source:
-            print(
-                "DRY RUN. Add --write-source to modify the detected source repository only."
-            )
-            return
-        fd, tempname = tempfile.mkstemp(
-            dir=source.parent, prefix=".dns-ygg.", suffix=".tmp"
-        )
-        try:
-            with os.fdopen(fd, "w") as temp:
-                temp.write(after)
-                temp.flush()
-                os.fsync(temp.fileno())
-            os.chmod(tempname, source.stat().st_mode & 0o777)
-            os.replace(tempname, source)
-        finally:
-            if os.path.exists(tempname):
-                os.unlink(tempname)
-        print(
-            "Updated source only. Review git diff, commit/push, deploy merge, then plan/apply."
-        )
+    )
+    print(f"Proposed operations: {len(changes)}")
+    proposal = make_change("dns-ygg.tf", before, after)
+    print(f"Source target: {proposal['repository']} / {proposal['path']}")
+    if args.output_plan:
+        saved = output_plan(args.output_plan, root, [proposal])
+        print(f"Source plan saved: {saved}")
+    else:
+        print("DRY RUN. No files, Git repositories, or Cloudflare resources changed.")
 
 
 if __name__ == "__main__":

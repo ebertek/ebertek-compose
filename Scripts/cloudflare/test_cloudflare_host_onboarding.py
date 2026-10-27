@@ -1,10 +1,14 @@
 """Offline tests for cloudflare-host-onboarding.py."""
 
 import importlib.util
+import io
 import json
+import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
     "onboarding", Path(__file__).with_name("cloudflare-host-onboarding.py")
@@ -138,6 +142,90 @@ class OnboardingTests(unittest.TestCase):
             self.assertEqual(hosts, {})
             self.assertEqual(len(errors), 1)
             self.assertIn("missing cf.access", errors[0])
+
+    def test_merged_runtime_produces_public_and_private_source_plan(self):
+        """Plan a new hostname from merged-only files without modifying them."""
+        policy = "16079c5e-e6e7-469e-8df1-8a7e326d11d5"
+        tick = chr(96)
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "ygg-compose"
+            root.mkdir()
+            tf = root / "terraform/cloudflare"
+            tf.mkdir(parents=True)
+            (root / "compose.yaml").write_text(
+                "services:\n"
+                "  example:\n"
+                "    labels:\n"
+                '      traefik.enable: "true"\n'
+                f'      traefik.http.routers.example.rule: "Host({tick}new.ebi.nu{tick})"\n'
+                '      cf.access: "true"\n'
+                f"      cf.access.policies: '[\"{policy}\"]'\n"
+            )
+            (tf / "access-policies.tf").write_text(f'  id = "{policy}"\n')
+            (tf / "access-self-hosted.tf").write_text(
+                'resource "cloudflare_zero_trust_access_application" "existing" {\n'
+                '  account_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"\n'
+                '  domain = "existing.ebi.nu"\n'
+                '  type = "self_hosted"\n'
+                "  policies = [\n"
+                f'    {{ id = "{policy}", precedence = 1 }}\n'
+                "  ]\n"
+                "}\n"
+            )
+            (tf / "dns-ebi.tf").write_text(
+                'resource "cloudflare_dns_record" "existing" {\n'
+                '  zone_id = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"\n'
+                '  name = "existing.ebi.nu"\n'
+                '  content = "52acd579-76f3-4b52-bec4-8c505258a7b1.cfargotunnel.com"\n'
+                '  type = "CNAME"\n'
+                "}\n"
+            )
+            tunnel = (
+                "ingress = [\n"
+                "      {\n"
+                '        hostname = "existing.ebi.nu"\n'
+                '        service = "https://traefik.ygg.nu:443"\n'
+                "      },\n"
+                "      {\n"
+                '        service = "http_status:404"\n'
+                "      },\n"
+                "]\n"
+            )
+            (tf / "tunnel-config.tf").write_text(tunnel)
+            output = Path(directory) / "plans/cloudflare.json"
+            with patch.object(
+                sys,
+                "argv",
+                [
+                    "cloudflare-host-onboarding.py",
+                    "--root",
+                    str(root),
+                    "--output-plan",
+                    str(output),
+                ],
+            ), redirect_stdout(io.StringIO()):
+                onboarding.main()
+            proposals = json.loads(output.read_text())["files"]
+            self.assertEqual(len(proposals), 3)
+            self.assertEqual(
+                {entry["path"] for entry in proposals},
+                {
+                    "terraform/cloudflare/access-auto.tf",
+                    "terraform/cloudflare/dns-ebi-auto.tf",
+                    "terraform/cloudflare/tunnel-config.tf",
+                },
+            )
+            tunnel_plan = next(
+                item for item in proposals if item["path"].endswith("tunnel-config.tf")
+            )
+            self.assertEqual(
+                tunnel_plan["repository"],
+                "ebertek/ebertek-compose-secrets",
+            )
+            self.assertIn('hostname = "new.ebi.nu"', tunnel_plan["content"])
+            self.assertEqual((tf / "tunnel-config.tf").read_text(), tunnel)
+            self.assertFalse((tf / "access-auto.tf").exists())
+            self.assertFalse((tf / "dns-ebi-auto.tf").exists())
 
     def test_static_name_not_accepted(self):
         """Exclude internal ygg.nu names from public hostname onboarding."""

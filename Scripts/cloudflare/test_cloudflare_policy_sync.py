@@ -80,28 +80,40 @@ class PolicySyncTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             sync_access_policies(SAMPLE + SAMPLE, {"grafana.ebi.nu": [THREE]})
 
-    def test_planning_requires_matching_deployed_source(self):
-        """Write plans only for files matching the deployed GitOps copy."""
+    def test_planning_reads_merged_only(self):
+        """Derive source updates without requiring a source checkout."""
         with tempfile.TemporaryDirectory() as directory:
-            public = Path(directory) / "source"
-            merged = Path(directory) / "deployed"
-            public.mkdir()
-            merged.mkdir()
-            (public / "access-self-hosted.tf").write_text(SAMPLE)
-            with self.assertRaises(ValueError):
-                plan_access_policy_updates(public, merged, {"grafana.ebi.nu": [THREE]})
+            merged = Path(directory)
+            original = merged / "access-self-hosted.tf"
+            original.write_text(SAMPLE)
+            changes, hosts = plan_access_policy_updates(
+                merged, {"grafana.ebi.nu": [THREE]}
+            )
+            self.assertEqual(hosts, ["grafana.ebi.nu"])
+            self.assertEqual(changes[original][0], SAMPLE)
+            self.assertIn(THREE, changes[original][1])
+            self.assertEqual(original.read_text(), SAMPLE)
 
-    def test_planning_rejects_mismatched_deployed_source(self):
-        """Reject plans if merged Terraform differs from its source."""
+    def test_planning_refuses_duplicate_imported_applications(self):
+        """Duplicate domain ownership across merged TF files must fail."""
         with tempfile.TemporaryDirectory() as directory:
-            public = Path(directory) / "source"
-            merged = Path(directory) / "deployed"
-            public.mkdir()
-            merged.mkdir()
-            (public / "access-self-hosted.tf").write_text(SAMPLE)
-            (merged / "access-self-hosted.tf").write_text(SAMPLE + "\n# drift\n")
+            merged = Path(directory)
+            (merged / "access-self-hosted.tf").write_text(SAMPLE)
+            (merged / "access-picard.tf").write_text(SAMPLE)
             with self.assertRaises(ValueError):
-                plan_access_policy_updates(public, merged, {"grafana.ebi.nu": [THREE]})
+                plan_access_policy_updates(merged, {"grafana.ebi.nu": [THREE]})
+
+    def test_planning_excludes_private_reusable_policies(self):
+        """Reusable policy resources must never be rewritten as applications."""
+        with tempfile.TemporaryDirectory() as directory:
+            merged = Path(directory)
+            (merged / "access-policies.tf").write_text(
+                "# Reusable policy source belongs to the private repository\n"
+            )
+            changes, hosts = plan_access_policy_updates(
+                merged, {"grafana.ebi.nu": [THREE]}
+            )
+            self.assertEqual((changes, hosts), ({}, []))
 
 
 if __name__ == "__main__":
