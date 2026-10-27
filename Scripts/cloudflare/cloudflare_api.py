@@ -41,7 +41,9 @@ class CloudflareClient:
         if not token:
             raise ValueError("CLOUDFLARE_API_TOKEN is required")
         if base_url != BASE_URL and not base_url.startswith("http://127.0.0.1:"):
-            raise ValueError("Only the Cloudflare API or localhost test server is allowed")
+            raise ValueError(
+                "Only the Cloudflare API or localhost test server is allowed"
+            )
         self._token = token
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
@@ -67,11 +69,15 @@ class CloudflareClient:
         except (URLError, TimeoutError, ValueError) as error:
             raise CloudflareError(f"Cloudflare GET {path} failed") from error
         if not isinstance(payload, dict) or payload.get("success") is not True:
-            codes = [
-                str(entry["code"])
-                for entry in payload.get("errors", [])
-                if isinstance(entry, dict) and "code" in entry
-            ] if isinstance(payload, dict) else []
+            codes = (
+                [
+                    str(entry["code"])
+                    for entry in payload.get("errors", [])
+                    if isinstance(entry, dict) and "code" in entry
+                ]
+                if isinstance(payload, dict)
+                else []
+            )
             raise CloudflareError(
                 f"Cloudflare rejected GET {path} (codes: {','.join(codes)})"
             )
@@ -133,8 +139,7 @@ class CloudflareClient:
         matches = [
             item
             for item in zones
-            if item.get("name") == name
-            and item.get("account", {}).get("id") == account
+            if item.get("name") == name and item.get("account", {}).get("id") == account
         ]
         if len(matches) != 1:
             raise CloudflareError(f"Expected one {name} zone in the account")
