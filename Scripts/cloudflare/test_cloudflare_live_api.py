@@ -249,7 +249,7 @@ class LiveIntegrationTests(unittest.TestCase):
                 '      traefik.enable: "true"\n'
                 '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\n'
                 '      cf.access: "true"\n'
-                f"      cf.access.policies: '[\\\"{POLICY}\\\"]'\n"
+                f"      cf.access.policies: '[\"{POLICY}\"]'\n"
             )
             folder = root / "Scripts/cloudflare"
             folder.mkdir(parents=True)
