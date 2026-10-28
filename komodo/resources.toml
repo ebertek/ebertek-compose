@@ -250,7 +250,7 @@ executions = [
 
 [[action]]
 name = "Cloudflare audit"
-description = "Read-only reconciliation of Compose labels with Cloudflare DNS, Access and Tunnel."
+description = "Cloudflare reconciliation: GET-only by default; guarded writes when the external enable-auto marker is present."
 [action.config]
 schedule_format = "Cron"
 schedule = "0 0 */6 * * *"
