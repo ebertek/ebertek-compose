@@ -117,7 +117,9 @@ The supported API writes are:
 - New ingress routes cloned from the existing Komodo Traefik route, while
   retaining the complete existing Tunnel configuration and terminal 404.
 - New proxied `ebi.nu` CNAMEs, **only after Access and Tunnel verification**.
-- Updates to existing Docker-subnet `ygg.nu` A records, but not static devices.
+- Updates to existing Docker-subnet `ygg.nu` A records.
+- Creates and IP-only updates of **active, private-inventory** static `ygg.nu`
+  A records. Existing record flags, TTLs and comments are preserved on updates.
 
 Existing Access policy changes use validated full-application PUT requests.
 Unknown live application settings are rejected, not discarded. Deletes and
@@ -135,7 +137,7 @@ Tunnel and DNS permissions. Keep it out of source files and logs. Historical
 Terraform source remains recoverable from Git history; preserve any previous
 sensitive Terraform state or exports in a protected backup outside Git.
 
-## Static non-Docker DNS inventory (read-only)
+## Static non-Docker DNS inventory (guarded synchronization)
 
 The Cloudflare audit can also verify explicitly declared, non-Docker
 `*.ygg.nu` IPv4 records. The inventory belongs in the **private**
@@ -199,20 +201,37 @@ With the file present, each audit compares inventory entries with the
 existing Cloudflare `ygg.nu` DNS snapshot. It reports missing entries,
 stale IPv4 addresses, duplicate A/CNAME conflicts, and improperly proxied
 A records. Extra AAAA records and hostnames not in the inventory are
-preserved. **This phase makes no static DNS changes, creates no records,
-and never deletes anything.** An entry with drift causes the read-only
-CLI to exit nonzero, but unattended reconciliation only logs static drift;
-it can still safely reconcile independent Docker, Access, and Tunnel changes.
+preserved. The **GET-only** `cloudflare-live.py` audit makes no changes and
+exits nonzero when static drift exists.
+
+With `static_dns_required: true` and `static_dns_sync: true` in the public
+Cloudflare settings, the existing guarded `cloudflare-manage.py --auto`
+runner can create missing unproxied A records or update the IPv4 content of a
+single existing unproxied A record inside the `10.4.20.0/24` allocation
+region. It re-reads the live record immediately before each write and verifies
+the result. Updates change **content only**, preserving the record TTL,
+proxy flag, and Cloudflare comment. New records use automatic TTL and
+`proxied: false`. No deletions, DNS aliases, or changes to non-inventory
+hostnames are supported. Removing a device from the JSON does **not** delete
+its existing Cloudflare record.
+
+Existing CNAMEs, duplicate A records, proxied A records, and existing A
+records outside the static allocation region are **conflicts**: they are
+reported but never overwritten automatically. A conflict for one hostname
+does not block safe changes for other static hostnames. Both existing
+Docker/Access/Tunnel changes and static writes share the maximum **three
+unattended operations per run**; a larger proposed plan requires manual
+review or smaller batches, not silent unbounded writes.
 The separate `static-hosts-reserved.json` file (if maintained in the private
 source) is planning documentation, not an input to the live audit.
 
-The file is optional during the initial migration, so existing Komodo
-reconciliation keeps working before the private inventory is ready. After
-the complete inventory has been reviewed and merged, configure
-`"static_dns_required": true` in the public
-`Scripts/cloudflare/cloudflare-settings.json`, which makes a missing
-private file a hard error. Do not enable this flag before synchronizing
-the private source on Pleiades.
+The private active inventory is now deployed. The public settings explicitly
+require it (`"static_dns_required": true`) and enable guarded synchronization
+(`"static_dns_sync": true`). If the private file is missing or invalid, the
+controller fails before any writes. The Komodo **Cloudflare audit** action
+prints the static DNS counts and conflicts on every unattended run, even when
+no Cloudflare changes are proposed. Its existing six-hour schedule remains a
+safety net after successful GitOps pulls.
 
 To inspect the read-only result without invoking unattended writes:
 
