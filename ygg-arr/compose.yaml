@@ -466,7 +466,7 @@ services:
       traefik.http.routers.unpackerr.tls: "true"
       traefik.http.services.unpackerr.loadbalancer.server.port: "5656"
       cf.access: "true"
-      cf.access.policies: '["5-Keycloak","2-Home","Block"]'
+      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:38"
     networks:
       macvlan1:
