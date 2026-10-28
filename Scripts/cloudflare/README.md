@@ -155,7 +155,8 @@ device or a record to create:
     {
       "hostname": "example-device.ygg.nu",
       "ipv4": "10.4.20.10",
-      "mac": "02:00:00:00:00:10"
+      "mac": "02:00:00:00:00:10",
+      "description": "Example device model and notes"
     }
   ]
 }
@@ -169,8 +170,11 @@ so future segmentation remains possible. `mac` is optional and accepts colon
 or hyphen separators,
 and is **metadata only**: the reconciler never uploads it to Cloudflare,
 uses it to infer ownership, or prints it in audit reports. Multiple DNS
-hostnames may point to the same device address. Do not include Docker
-`10.4.21.0/24` addresses.
+hostnames may point to the same device address. Optional `description`
+accepts a device model and notes (up to 512 characters), is validated as
+private metadata, and is never included in DNS requests or audit output.
+Use a regular JSON string field rather than JSON comments, which are not
+supported. Do not include Docker `10.4.21.0/24` addresses.
 
 With the file present, each audit compares inventory entries with the
 existing Cloudflare `ygg.nu` DNS snapshot. It reports missing entries,
