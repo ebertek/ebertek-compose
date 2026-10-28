@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from cloudflare_static_dns import compare_static_dns, load_inventory
+from cloudflare_static_dns import compare_static_dns, load_inventory, plan_static_dns
 
 HOST = "device.ygg.nu"
 ADDRESS = "10.4.20.10"
@@ -222,6 +222,53 @@ class StaticDiffTests(unittest.TestCase):
                 report = compare_static_dns({HOST: ADDRESS}, records)
                 self.assertEqual(report["findings"][0]["status"], "conflict")
                 self.assertEqual(report["counts"]["drift"], 1)
+
+
+class StaticPlanningTests(unittest.TestCase):
+    """Only safely managed A records may become guarded write proposals."""
+
+    def test_create_missing_active_a_without_deleting_other_records(self):
+        """Unknown names and AAAA records are left untouched."""
+        wanted = {HOST: ADDRESS}
+        records = [
+            record(name=HOST, address="fd00::1", kind="AAAA"),
+            record(name="unmanaged.ygg.nu", address="10.4.20.15"),
+        ]
+        self.assertEqual(
+            plan_static_dns(wanted, records),
+            [{"kind": "create_static_dns_a", "hostname": HOST, "content": ADDRESS}],
+        )
+        self.assertEqual(plan_static_dns(None, records), [])
+
+    def test_update_only_unique_unproxied_static_a(self):
+        """A stale, identified A record becomes an IP-only update."""
+        existing = record(address="10.4.20.11")
+        existing["id"] = "c" * 32
+        self.assertEqual(
+            plan_static_dns({HOST: ADDRESS}, [existing]),
+            [
+                {
+                    "kind": "update_static_dns_a",
+                    "hostname": HOST,
+                    "record_id": "c" * 32,
+                    "before": "10.4.20.11",
+                    "content": ADDRESS,
+                }
+            ],
+        )
+        self.assertEqual(plan_static_dns({HOST: ADDRESS}, [record()]), [])
+
+    def test_conflicts_and_outside_subnet_never_generate_writes(self):
+        """Never overwrite a CNAME, proxied A, duplicate or Docker IP."""
+        for records in (
+            [record(address="10.4.20.11", proxied=True)],
+            [record(kind="CNAME", address="other.ygg.nu")],
+            [record(address="10.4.20.11"), record(address="10.4.20.12")],
+            [{**record(address="10.4.21.7"), "id": "c" * 32}],
+            [{**record(address="10.4.20.11"), "id": "not-a-cloudflare-id"}],
+        ):
+            with self.subTest(records=records):
+                self.assertEqual(plan_static_dns({HOST: ADDRESS}, records), [])
 
 
 if __name__ == "__main__":
