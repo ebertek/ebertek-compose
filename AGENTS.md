@@ -109,7 +109,9 @@ current implementation before modifying controller behavior.
   `static_dns_sync` must be explicitly enabled. Create missing unproxied A
   records and PATCH only IP content of uniquely identified, unproxied A
   records, after fresh live checks and read-back. Never overwrite CNAMEs,
-  duplicate records, proxied A records, or Docker-owned addresses.
+  undeclared extra/duplicate records, proxied A records, or Docker-owned
+  addresses. An explicitly declared `additional_ipv4` companion A is
+  protected and must retain its identity through primary changes.
   No automatic deletion of absent, reserved or retired devices; keep real
   MACs, serials, port observations and private topology out of this repo.
 - The legacy public Terraform HCL and Terraform-only helper scripts have been
