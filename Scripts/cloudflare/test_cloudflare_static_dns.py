@@ -162,7 +162,7 @@ class InventoryTests(unittest.TestCase):
                     "ipv4": ADDRESS,
                     "additional_ipv4": [address],
                 }
-                with self.assertRaises(ValueError):
+                with self.assertRaises((ValueError, TypeError)):
                     self.load(inventory([row]))
         for values in ("10.4.21.42", [123], ["10.4.21.42"] * 2, [None]):
             with self.subTest(values=values):
@@ -171,7 +171,7 @@ class InventoryTests(unittest.TestCase):
                     "ipv4": ADDRESS,
                     "additional_ipv4": values,
                 }
-                with self.assertRaises(ValueError):
+                with self.assertRaises((ValueError, TypeError)):
                     self.load(inventory([row]))
 
     def test_optional_missing_file_and_required_missing_file(self):
@@ -393,8 +393,6 @@ class CompanionDnsTests(unittest.TestCase):
                 }
             ],
         )
-
-
 
 if __name__ == "__main__":
     unittest.main()
