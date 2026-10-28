@@ -232,6 +232,7 @@ def audit_tunnel_route(client, context, hostname):
 
 
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 def apply_actions(
     client, report, context, docker_addresses=None, maximum=10, unattended=False
 ):
