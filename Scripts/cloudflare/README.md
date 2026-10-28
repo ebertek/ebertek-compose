@@ -162,8 +162,11 @@ device or a record to create:
 ```
 
 Each entry requires a unique, lowercase, single-label `*.ygg.nu` hostname
-and a canonical IPv4 address in `10.4.20.0/24` (excluding network and
-broadcast addresses). `mac` is optional, accepts colon or hyphen separators,
+and a canonical IPv4 address in the `10.4.20.0/24` **allocation region**.
+The LAN itself remains `10.4.20.0/23`; the inventory reserves every
+planned `/27` network and broadcast address (for example, `.64` and `.95`)
+so future segmentation remains possible. `mac` is optional and accepts colon
+or hyphen separators,
 and is **metadata only**: the reconciler never uploads it to Cloudflare,
 uses it to infer ownership, or prints it in audit reports. Multiple DNS
 hostnames may point to the same device address. Do not include Docker
@@ -175,8 +178,10 @@ stale IPv4 addresses, duplicate A/CNAME conflicts, and improperly proxied
 A records. Extra AAAA records and hostnames not in the inventory are
 preserved. **This phase makes no static DNS changes, creates no records,
 and never deletes anything.** An entry with drift causes the read-only
-CLI to exit nonzero; unattended reconciliation refuses writes until the
-static drift has been reviewed and resolved.
+CLI to exit nonzero, but unattended reconciliation only logs static drift;
+it can still safely reconcile independent Docker, Access, and Tunnel changes.
+The separate `static-hosts-reserved.json` file (if maintained in the private
+source) is planning documentation, not an input to the live audit.
 
 The file is optional during the initial migration, so existing Komodo
 reconciliation keeps working before the private inventory is ready. After
@@ -196,8 +201,9 @@ set +a
 ~/cloudflare/.venv/bin/python Scripts/cloudflare/cloudflare-live.py
 ```
 
-The static inventory covers **Cloudflare DNS expectations**, not DHCP
-reservations or device discovery. Network-device ownership and MAC/IP
+The active static inventory covers **Cloudflare DNS expectations**, not DHCP
+reservations or device discovery. The inventory intentionally omits disconnected
+interfaces and devices not yet purchased, to avoid false missing-DNS findings. Network-device ownership and MAC/IP
 assignment should be checked against the original device list before
 considering any automatic static DNS mutations in a later phase.
 
