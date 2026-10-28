@@ -88,9 +88,10 @@ current implementation before modifying controller behavior.
   GET-only audit; with the owner-only opt-in marker it invokes `--auto`.
   Check this mode before describing a run as read-only.
 - Unattended mutations are restricted to a small allowlist and at most three
-  operations per run. Existing Access policy updates are permitted in
-  unattended mode only with a verified allow policy, exactly one final deny
-  policy, an unchanged live application, and validated full-application PUT.
+  operations per run. New Access applications and existing policy updates
+  require at least one verified allow policy and exactly one final deny
+  policy. Updates additionally require an unchanged live application and
+  validated full-application PUT.
 - A new app must be verified protected by Access before its Tunnel route and
   public DNS are published. Preserve the complete existing Tunnel
   configuration (`ingress`, `originRequest`, and `warp-routing` where
@@ -102,11 +103,14 @@ current implementation before modifying controller behavior.
   validation before claiming this path safe for automation.
 - Never automatically delete Cloudflare resources merely because a container
   or Compose hostname is absent.
-- Older `terraform/cloudflare/` files and helper scripts are **migration/
-  recovery references**, not the authoritative controller for new services.
-  Do not run Terraform apply or enable simultaneous Terraform and API writers.
-  Preserve any existing external Terraform state and backup information
-  until a separate, approved retirement.
+- The legacy public Terraform HCL and Terraform-only helper scripts have been
+  retired from active source. Their prior contents remain in Git history.
+  Never run Terraform alongside the API writer; preserve sensitive offline
+  Terraform state and private recovery exports until separately reviewed.
+- The Komodo audit prefers owner-only `/home/docker/cloudflare/cloudflare.env`.
+  Until private deployment secrets are migrated, it may fall back to the
+  private `terraform/cloudflare/cloudflare.env` in the merged checkout.
+  Do not edit or delete private source through the public repository.
 - Runtime Python dependencies are declared in
   `Scripts/cloudflare/requirements.txt`; the virtual environment belongs
   outside the merged checkout, presently at
