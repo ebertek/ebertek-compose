@@ -66,6 +66,24 @@ def plan(client, root, settings, limit):
     return report, context, actions, fingerprint(report, context)
 
 
+def print_static_summary(report):
+    """Expose static drift even when the guarded auto plan is otherwise empty."""
+    if not report["static_dns"]["enabled"]:
+        print("Static DNS: inventory not configured")
+        return
+    counts = report["static_dns"]["counts"]
+    print(
+        "Static DNS: "
+        f"{counts['matched']}/{counts['hosts']} matching, "
+        f"{counts['missing']} missing, {counts['mismatch']} mismatched, "
+        f"{counts['conflict']} conflicting; "
+        f"{report['counts']['static_dns_actionable']} safe operations proposed"
+    )
+    for finding in report["static_dns"]["findings"]:
+        reason = f" ({finding['reason']})" if finding.get("reason") else ""
+        print(f"  ! STATIC {finding['status']}: {finding['hostname']}{reason}")
+
+
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     """Preview operations or execute exactly one revalidated approval."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -160,6 +178,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         report, context, actions, token = plan(
             client, root, settings, args.max_operations
         )
+        if args.auto:
+            print_static_summary(report)
         if not actions:
             if args.auto:
                 print("Cloudflare auto reconciliation: no changes required.")

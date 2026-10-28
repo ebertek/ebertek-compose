@@ -10,6 +10,7 @@ import re
 from collections import Counter
 from datetime import date
 
+from cloudflare_api import IDENTIFIER
 from cloudflare_live_diff import DOCKER_NETWORK, index_records
 
 STATIC_NETWORK = ipaddress.ip_network("10.4.20.0/24")
@@ -17,6 +18,7 @@ HOST = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.ygg\.nu$")
 MAC = re.compile(r"^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$")
 INVENTORY = "Scripts/cloudflare/static-hosts.json"
 MAX_HOSTS = 256
+MAX_ADDITIONAL = 4
 
 
 def validate_metadata(entry, hostname):
@@ -56,6 +58,33 @@ def validate_metadata(entry, hostname):
         raise ValueError(f"{hostname}: invalid optional open_ports")
 
 
+def validate_additional_ipv4(hostname, value):
+    """Accept only explicitly declared, non-boundary Docker-side A addresses.
+
+    Companion records are protected observations, not targets for writes.
+    """
+    if not isinstance(value, list) or len(value) > MAX_ADDITIONAL:
+        raise ValueError(f"{hostname}: invalid additional_ipv4 list")
+    addresses = []
+    for raw in value:
+        if not isinstance(raw, str):
+            raise TypeError(f"{hostname}: invalid additional_ipv4 address")
+        try:
+            address = ipaddress.IPv4Address(raw)
+        except ValueError as error:
+            raise ValueError(f"{hostname}: invalid additional_ipv4 address") from error
+        allocation = ipaddress.ip_network(f"{address}/27", strict=False)
+        if (
+            str(address) != raw
+            or address not in DOCKER_NETWORK
+            or address in {allocation.network_address, allocation.broadcast_address}
+            or raw in addresses
+        ):
+            raise ValueError(f"{hostname}: invalid additional_ipv4 address")
+        addresses.append(raw)
+    return addresses
+
+
 def validated_entry(entry, index):
     """Validate one inventory entry and return DNS-only data."""
     if not isinstance(entry, dict) or not {"hostname", "ipv4"} <= set(entry):
@@ -68,6 +97,7 @@ def validated_entry(entry, index):
         "serial_number",
         "purchase_date",
         "open_ports",
+        "additional_ipv4",
     }:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
     hostname = entry["hostname"]
@@ -93,15 +123,16 @@ def validated_entry(entry, index):
     if mac is not None and (not isinstance(mac, str) or not MAC.fullmatch(mac)):
         raise ValueError(f"{hostname}: invalid optional MAC address")
     validate_metadata(entry, hostname)
-    return hostname, value
+    additional = validate_additional_ipv4(hostname, entry.get("additional_ipv4", []))
+    return hostname, value, additional
 
 
-def load_inventory(path, required=False):
-    """Load a checked, nonempty static inventory, or None if not enabled."""
+def load_inventory_details(path, required=False):
+    """Return primary A targets and explicitly allowed companion addresses."""
     if not path.is_file():
         if required:
             raise ValueError(f"Required static DNS inventory is absent: {path}")
-        return None
+        return None, {}
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or set(data) != {"version", "hosts"}:
         raise ValueError("Static DNS inventory requires version and hosts")
@@ -115,16 +146,143 @@ def load_inventory(path, required=False):
     if not isinstance(entries, list) or not 1 <= len(entries) <= MAX_HOSTS:
         raise ValueError("Static DNS inventory must contain 1-256 host entries")
     wanted = {}
+    companions = {}
     for index, entry in enumerate(entries, 1):
-        hostname, value = validated_entry(entry, index)
+        hostname, value, additional = validated_entry(entry, index)
         if hostname in wanted:
             raise ValueError(f"Duplicate static DNS hostname: {hostname}")
         wanted[hostname] = value
+        if additional:
+            companions[hostname] = additional
+    return wanted, companions
+
+
+def load_inventory(path, required=False):
+    """Retain the original primary-only inventory interface for callers."""
+    wanted, _ = load_inventory_details(path, required=required)
     return wanted
 
 
-def compare_static_dns(wanted, records):
-    """Report static IPv4 drift without proposing any Cloudflare mutations."""
+def check_static_target(hostname, address):
+    """Validate an A record target against the private allocation policy."""
+    return validated_entry({"hostname": hostname, "ipv4": address}, "DNS write")
+
+
+def plan_static_dns(wanted, records, companions=None):
+    """Plan primary A writes only, retaining declared companion records.
+
+    Companion A records are never created, modified, or deleted.
+    """
+    if wanted is None:
+        return []
+    companions = companions or {}
+    index = index_records(records, "name")
+    actions = []
+    for finding in compare_static_dns(wanted, records, companions)["findings"]:
+        hostname = finding["hostname"]
+        allowed = companions.get(hostname, [])
+        preserved = {"additional_ipv4": allowed} if allowed else {}
+        if finding["status"] == "missing":
+            actions.append(
+                {
+                    "kind": "create_static_dns_a",
+                    "hostname": hostname,
+                    "content": wanted[hostname],
+                    **preserved,
+                }
+            )
+        elif finding["status"] == "mismatch":
+            matched = [
+                item
+                for item in index.get(hostname, [])
+                if item.get("type") == "A" and item.get("content") not in allowed
+            ]
+            if len(matched) != 1:
+                continue
+            record = matched[0]
+            previous = record.get("content")
+            record_id = record.get("id")
+            try:
+                existing = ipaddress.IPv4Address(previous)
+            except (ValueError, TypeError):
+                continue
+            if (
+                existing not in STATIC_NETWORK
+                or not isinstance(record_id, str)
+                or not IDENTIFIER.fullmatch(record_id)
+            ):
+                continue
+            actions.append(
+                {
+                    "kind": "update_static_dns_a",
+                    "hostname": hostname,
+                    "record_id": record_id,
+                    "before": previous,
+                    "content": wanted[hostname],
+                    **preserved,
+                }
+            )
+    return actions
+
+
+def classify_static_a(hostname, expected, matches, allowed):
+    """Separate a primary static A from an explicitly declared A companion."""
+    if not matches:
+        if allowed:
+            return {
+                "hostname": hostname,
+                "status": "conflict",
+                "reason": "declared companion A records are absent",
+            }
+        return {"hostname": hostname, "status": "missing", "expected": expected}
+
+    if any(record.get("type") != "A" for record in matches):
+        return {
+            "hostname": hostname,
+            "status": "conflict",
+            "reason": "ambiguous A/CNAME records",
+        }
+    if any(record.get("proxied") is not False for record in matches):
+        return {
+            "hostname": hostname,
+            "status": "conflict",
+            "reason": "A record is proxied",
+        }
+    extras = [r for r in matches if r.get("content") in allowed]
+    primary = [r for r in matches if r.get("content") not in allowed]
+    if len(extras) != len(allowed) or {r.get("content") for r in extras} != set(
+        allowed
+    ):
+        return {
+            "hostname": hostname,
+            "status": "conflict",
+            "reason": "declared companion A records differ",
+        }
+    return classify_primary_static_a(hostname, expected, primary)
+
+
+def classify_primary_static_a(hostname, expected, primary):
+    """Report primary-A drift after all companions have passed validation."""
+    if not primary:
+        return {"hostname": hostname, "status": "missing", "expected": expected}
+    if len(primary) != 1:
+        return {
+            "hostname": hostname,
+            "status": "conflict",
+            "reason": "ambiguous A/CNAME records",
+        }
+    if primary[0].get("content") != expected:
+        return {
+            "hostname": hostname,
+            "status": "mismatch",
+            "expected": expected,
+            "actual": primary[0].get("content"),
+        }
+    return None
+
+
+def compare_static_dns(wanted, records, companions=None):
+    """Compare primary and explicit companion A records without DNS mutation."""
     if wanted is None:
         return {
             "enabled": False,
@@ -132,6 +290,7 @@ def compare_static_dns(wanted, records):
             "findings": [],
         }
 
+    companions = companions or {}
     index = index_records(records, "name")
     findings = []
     matched = 0
@@ -141,41 +300,13 @@ def compare_static_dns(wanted, records):
             for record in index.get(hostname, [])
             if record.get("type") in {"A", "CNAME"}
         ]
-        a_records = [record for record in matches if record.get("type") == "A"]
-        if not matches:
-            findings.append(
-                {"hostname": hostname, "status": "missing", "expected": expected}
-            )
-            continue
-        if len(matches) != 1 or len(a_records) != 1:
-            findings.append(
-                {
-                    "hostname": hostname,
-                    "status": "conflict",
-                    "reason": "ambiguous A/CNAME records",
-                }
-            )
-            continue
-        record = a_records[0]
-        if record.get("proxied") is not False:
-            findings.append(
-                {
-                    "hostname": hostname,
-                    "status": "conflict",
-                    "reason": "static A is proxied",
-                }
-            )
-        elif record.get("content") != expected:
-            findings.append(
-                {
-                    "hostname": hostname,
-                    "status": "mismatch",
-                    "expected": expected,
-                    "actual": record.get("content"),
-                }
-            )
-        else:
+        finding = classify_static_a(
+            hostname, expected, matches, companions.get(hostname, [])
+        )
+        if finding is None:
             matched += 1
+        else:
+            findings.append(finding)
 
     status = Counter(finding["status"] for finding in findings)
     return {

@@ -10,11 +10,17 @@ import hashlib
 import ipaddress
 import json
 
+from cloudflare_api import checked_id
 from cloudflare_desired import HOST
 from cloudflare_live_diff import (
     DOCKER_NETWORK,
     ordered_policy_ids,
     validate_ingress,
+)
+from cloudflare_static_dns import (
+    STATIC_NETWORK,
+    check_static_target,
+    validate_additional_ipv4,
 )
 from cloudflare_write_api import policy_links, validate_tunnel_config
 
@@ -24,6 +30,8 @@ SUPPORTED = {
     "add_tunnel_ingress",
     "create_dns_cname",
     "update_docker_dns_a",
+    "create_static_dns_a",
+    "update_static_dns_a",
 }
 ORDER = {
     "create_access_app": 0,
@@ -31,6 +39,8 @@ ORDER = {
     "add_tunnel_ingress": 1,
     "create_dns_cname": 2,
     "update_docker_dns_a": 3,
+    "create_static_dns_a": 4,
+    "update_static_dns_a": 4,
 }
 TEMPLATE_HOST = "komodo.ebi.nu"
 TRAEFIK_SERVICE = "https://traefik.ygg.nu:443"
@@ -70,7 +80,19 @@ def check_plan(report, maximum=10):
     if len(entries) != len(set(entries)):
         raise UnsafePlan("The plan contains duplicate operations")
     for entry in actions:
-        if entry["kind"] != "update_docker_dns_a":
+        if entry["kind"] in {"create_static_dns_a", "update_static_dns_a"}:
+            try:
+                check_static_target(entry["hostname"], entry["content"])
+                validate_additional_ipv4(
+                    entry["hostname"], entry.get("additional_ipv4", [])
+                )
+                if entry["kind"] == "update_static_dns_a":
+                    checked_id(entry["record_id"], "static DNS record ID")
+                    if ipaddress.IPv4Address(entry["before"]) not in STATIC_NETWORK:
+                        raise ValueError("Previous address is not a static allocation")
+            except (KeyError, TypeError, ValueError) as error:
+                raise UnsafePlan("Invalid proposed static DNS operation") from error
+        elif entry["kind"] != "update_docker_dns_a":
             if not HOST.fullmatch(entry["hostname"]):
                 raise UnsafePlan("A proposed public hostname is not in ebi.nu")
             try:
@@ -88,6 +110,8 @@ AUTO_SUPPORTED = {
     "create_dns_cname",
     "update_docker_dns_a",
     "update_access_policies",
+    "create_static_dns_a",
+    "update_static_dns_a",
 }
 
 
@@ -231,6 +255,76 @@ def audit_tunnel_route(client, context, hostname):
     return bool(validate_ingress(config["ingress"]).get(hostname))
 
 
+def read_static_a_records(client, zone, hostname):
+    """Find only A/CNAME records that could obstruct an A write."""
+    return [
+        entry
+        for entry in client.list_dns(zone)
+        if isinstance(entry.get("name"), str)
+        and entry["name"].lower() == hostname
+        and entry.get("type") in {"A", "CNAME"}
+    ]
+
+
+def apply_static_a(client, zone, action):
+    """Write only the primary A while preserving declared companion records."""
+    hostname = action["hostname"]
+    wanted = action["content"]
+    check_static_target(hostname, wanted)
+    allowed = validate_additional_ipv4(hostname, action.get("additional_ipv4", []))
+    before = read_static_a_records(client, zone, hostname)
+    companions = [entry for entry in before if entry.get("content") in allowed]
+    primary = [entry for entry in before if entry.get("content") not in allowed]
+    if (
+        len(companions) != len(allowed)
+        or {entry.get("content") for entry in companions} != set(allowed)
+        or any(entry.get("type") != "A" for entry in before)
+        or any(entry.get("proxied") is not False for entry in before)
+    ):
+        raise UnsafePlan(f"{hostname}: companion A records changed")
+
+    if action["kind"] == "create_static_dns_a":
+        if primary:
+            raise UnsafePlan(f"{hostname}: a primary local A record appeared")
+        client.create_static_a(zone, hostname, wanted)
+    else:
+        if (
+            len(primary) != 1
+            or primary[0].get("id") != action["record_id"]
+            or primary[0].get("content") != action["before"]
+        ):
+            raise UnsafePlan(f"{hostname}: existing static A record changed")
+        current = client.get_dns_record(zone, action["record_id"])
+        if (
+            current.get("name") != hostname
+            or current.get("type") != "A"
+            or current.get("id") != action["record_id"]
+            or current.get("content") != action["before"]
+            or current.get("proxied") is not False
+        ):
+            raise UnsafePlan(f"{hostname}: static DNS record identity changed")
+        client.patch_static_a(zone, action["record_id"], hostname, wanted)
+
+    after = read_static_a_records(client, zone, hostname)
+    if (
+        len(after) != len(allowed) + 1
+        or any(entry.get("type") != "A" for entry in after)
+        or any(entry.get("proxied") is not False for entry in after)
+        or {entry.get("content") for entry in after} != {wanted, *allowed}
+    ):
+        raise UnsafePlan(f"{hostname}: static DNS verification failed")
+    for companion in companions:
+        same = [
+            entry for entry in after if entry.get("content") == companion["content"]
+        ]
+        if len(same) != 1 or same[0].get("id") != companion.get("id"):
+            raise UnsafePlan(f"{hostname}: companion A identity changed")
+    if action["kind"] == "update_static_dns_a":
+        primary_after = next(entry for entry in after if entry["content"] == wanted)
+        if primary_after.get("id") != action["record_id"]:
+            raise UnsafePlan(f"{hostname}: static DNS record ID changed")
+
+
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 # pylint: disable=too-many-arguments,too-many-positional-arguments
 def apply_actions(
@@ -338,6 +432,9 @@ def apply_actions(
                 or records[0].get("content", "").lower() != action["content"]
             ):
                 raise UnsafePlan(f"{hostname}: DNS CNAME verification failed")
+
+        elif kind in {"create_static_dns_a", "update_static_dns_a"}:
+            apply_static_a(client, context["ygg"], action)
 
         elif kind == "update_docker_dns_a":
             name = hostname.removesuffix(".ygg.nu")

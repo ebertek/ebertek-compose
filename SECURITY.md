@@ -105,11 +105,16 @@ The following boundaries must be preserved:
   unsafe changes are refused.
 - The automated reconciler is **not** an automatic deletion mechanism.
   Disappearance from Compose does not authorize deletion from Cloudflare.
-- The optional static non-Docker `ygg.nu` inventory is owned by the private
-  GitOps source and used for read-only DNS drift detection. MAC addresses
-  remain private, are never sent to Cloudflare, and do not authorize DNS
-  writes. Static drift is reported without authorizing static DNS changes
-  or blocking independent, already-guarded Docker/Access/Tunnel updates.
+- Static non-Docker `ygg.nu` A record writes require the explicitly enabled,
+  version-controlled private active-host inventory. The controller validates
+  the planned /27 address boundaries, refuses proxied/CNAME/undeclared-extra
+  conflicts, re-reads current record identity before writing, and verifies
+  results. Only explicitly declared `additional_ipv4` companion A records
+  may coexist with the primary; they are never written or removed. Updates modify only the IPv4 content; creation uses unproxied A
+  records. A blocked static hostname does not authorize overwriting it.
+  Unmanaged, reserved, and retired devices must never be changed or deleted
+  automatically. Keep MACs, serials, device descriptions, purchase dates and
+  port inventories private; no such metadata enters Cloudflare writes.
 - `Scripts/cloudflare/cloudflare-live.py` and
   `cloudflare-manage.py --preflight` are GET-only. The manual
   `cloudflare-manage.py --apply` path performs reviewed writes; the

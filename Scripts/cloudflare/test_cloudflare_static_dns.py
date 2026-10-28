@@ -1,11 +1,19 @@
 """Offline validation of private static DNS inventory and Cloudflare drift."""
 
+# Shared synthetic DNS fixtures intentionally resemble guarded writer tests.
+# pylint: disable=duplicate-code
+
 import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from cloudflare_static_dns import compare_static_dns, load_inventory
+from cloudflare_static_dns import (
+    compare_static_dns,
+    load_inventory,
+    load_inventory_details,
+    plan_static_dns,
+)
 
 HOST = "device.ygg.nu"
 ADDRESS = "10.4.20.10"
@@ -122,6 +130,53 @@ class InventoryTests(unittest.TestCase):
             {HOST: ADDRESS},
         )
 
+    def test_companion_a_is_validated_but_does_not_replace_primary(self):
+        """A second address is explicit DNS metadata, not a primary target."""
+        row = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "additional_ipv4": ["10.4.21.42"],
+        }
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "static-hosts.json"
+            path.write_text(json.dumps(inventory([row])))
+            self.assertEqual(load_inventory(path), {HOST: ADDRESS})
+            self.assertEqual(
+                load_inventory_details(path),
+                ({HOST: ADDRESS}, {HOST: ["10.4.21.42"]}),
+            )
+
+    def test_companion_a_rejects_bad_or_unreserved_addresses(self):
+        """Protect /27 borders, primary subnet and non-canonical IPs."""
+        invalid = (
+            "10.4.20.20",
+            "10.4.21.0",
+            "10.4.21.31",
+            "10.4.21.32",
+            "10.4.21.63",
+            "10.4.22.1",
+            "8.8.8.8",
+            "10.4.21.099",
+        )
+        for address in invalid:
+            with self.subTest(address=address):
+                row = {
+                    "hostname": HOST,
+                    "ipv4": ADDRESS,
+                    "additional_ipv4": [address],
+                }
+                with self.assertRaises((ValueError, TypeError)):
+                    self.load(inventory([row]))
+        for values in ("10.4.21.42", [123], ["10.4.21.42"] * 2, [None]):
+            with self.subTest(values=values):
+                row = {
+                    "hostname": HOST,
+                    "ipv4": ADDRESS,
+                    "additional_ipv4": values,
+                }
+                with self.assertRaises((ValueError, TypeError)):
+                    self.load(inventory([row]))
+
     def test_optional_missing_file_and_required_missing_file(self):
         """A phased rollout is optional until the private merge is ready."""
         with TemporaryDirectory() as temporary:
@@ -222,6 +277,125 @@ class StaticDiffTests(unittest.TestCase):
                 report = compare_static_dns({HOST: ADDRESS}, records)
                 self.assertEqual(report["findings"][0]["status"], "conflict")
                 self.assertEqual(report["counts"]["drift"], 1)
+
+
+class StaticPlanningTests(unittest.TestCase):
+    """Only safely managed A records may become guarded write proposals."""
+
+    def test_create_missing_active_a_without_deleting_other_records(self):
+        """Unknown names and AAAA records are left untouched."""
+        wanted = {HOST: ADDRESS}
+        records = [
+            record(name=HOST, address="fd00::1", kind="AAAA"),
+            record(name="unmanaged.ygg.nu", address="10.4.20.15"),
+        ]
+        self.assertEqual(
+            plan_static_dns(wanted, records),
+            [{"kind": "create_static_dns_a", "hostname": HOST, "content": ADDRESS}],
+        )
+        self.assertEqual(plan_static_dns(None, records), [])
+
+    def test_update_only_unique_unproxied_static_a(self):
+        """A stale, identified A record becomes an IP-only update."""
+        existing = record(address="10.4.20.11")
+        existing["id"] = "c" * 32
+        self.assertEqual(
+            plan_static_dns({HOST: ADDRESS}, [existing]),
+            [
+                {
+                    "kind": "update_static_dns_a",
+                    "hostname": HOST,
+                    "record_id": "c" * 32,
+                    "before": "10.4.20.11",
+                    "content": ADDRESS,
+                }
+            ],
+        )
+        self.assertEqual(plan_static_dns({HOST: ADDRESS}, [record()]), [])
+
+    def test_conflicts_and_outside_subnet_never_generate_writes(self):
+        """Never overwrite a CNAME, proxied A, duplicate or Docker IP."""
+        for records in (
+            [record(address="10.4.20.11", proxied=True)],
+            [record(kind="CNAME", address="other.ygg.nu")],
+            [record(address="10.4.20.11"), record(address="10.4.20.12")],
+            [{**record(address="10.4.21.7"), "id": "c" * 32}],
+            [{**record(address="10.4.20.11"), "id": "not-a-cloudflare-id"}],
+        ):
+            with self.subTest(records=records):
+                self.assertEqual(plan_static_dns({HOST: ADDRESS}, records), [])
+
+
+class CompanionDnsTests(unittest.TestCase):
+    """A declared second A record must remain present and untouched."""
+
+    def test_dual_a_is_healthy_only_when_declared(self):
+        """Matching primary and declared companion count as one matched host."""
+        records = [record(), record(address="10.4.21.42")]
+        wanted = {HOST: ADDRESS}
+        self.assertEqual(compare_static_dns(wanted, records)["counts"]["drift"], 1)
+        actual = compare_static_dns(wanted, records, {HOST: ["10.4.21.42"]})
+        self.assertEqual(actual["counts"]["matched"], 1)
+        self.assertEqual(actual["counts"]["drift"], 0)
+        self.assertEqual(plan_static_dns(wanted, records, {HOST: ["10.4.21.42"]}), [])
+
+    def test_extra_missing_or_unexpected_a_is_conflict(self):
+        """A declared companion cannot mask missing or additional records."""
+        wanted = {HOST: ADDRESS}
+        extras = {HOST: ["10.4.21.42"]}
+        for records in (
+            [record()],
+            [record(), record(address="10.4.21.2")],
+            [record(), record(address="10.4.21.42"), record(address="10.4.21.2")],
+            [record(), record(address="10.4.21.42", proxied=True)],
+            [record(), record(address="10.4.21.42", kind="CNAME")],
+        ):
+            with self.subTest(records=records):
+                result = compare_static_dns(wanted, records, extras)
+                self.assertEqual(result["findings"][0]["status"], "conflict")
+                self.assertEqual(plan_static_dns(wanted, records, extras), [])
+
+    def test_primary_missing_can_be_created_beside_companion(self):
+        """The companion stays protected when only the primary is missing."""
+        extras = {HOST: ["10.4.21.42"]}
+        records = [record(address="10.4.21.42")]
+        self.assertEqual(
+            compare_static_dns({HOST: ADDRESS}, records, extras)["findings"][0][
+                "status"
+            ],
+            "missing",
+        )
+        self.assertEqual(
+            plan_static_dns({HOST: ADDRESS}, records, extras),
+            [
+                {
+                    "kind": "create_static_dns_a",
+                    "hostname": HOST,
+                    "content": ADDRESS,
+                    "additional_ipv4": ["10.4.21.42"],
+                }
+            ],
+        )
+        self.assertEqual(plan_static_dns({HOST: ADDRESS}, [], extras), [])
+
+    def test_primary_ip_change_updates_only_primary(self):
+        """A declared companion does not block an ordinary primary IP change."""
+        original = {**record(address="10.4.20.12"), "id": "a" * 32}
+        second = {**record(address="10.4.21.42"), "id": "b" * 32}
+        extras = {HOST: ["10.4.21.42"]}
+        self.assertEqual(
+            plan_static_dns({HOST: ADDRESS}, [original, second], extras),
+            [
+                {
+                    "kind": "update_static_dns_a",
+                    "hostname": HOST,
+                    "record_id": "a" * 32,
+                    "before": "10.4.20.12",
+                    "content": ADDRESS,
+                    "additional_ipv4": ["10.4.21.42"],
+                }
+            ],
+        )
 
 
 if __name__ == "__main__":

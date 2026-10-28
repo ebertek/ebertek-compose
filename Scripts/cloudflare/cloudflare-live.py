@@ -19,7 +19,12 @@ from pathlib import Path
 from cloudflare_api import CloudflareClient, CloudflareError, checked_id
 from cloudflare_desired import compose_inventory, discover
 from cloudflare_live_diff import DOCKER_NETWORK, compare_live
-from cloudflare_static_dns import INVENTORY, compare_static_dns, load_inventory
+from cloudflare_static_dns import (
+    INVENTORY,
+    compare_static_dns,
+    load_inventory_details,
+    plan_static_dns,
+)
 
 CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
@@ -73,10 +78,10 @@ def run_audit(
 ):  # pylint: disable=too-many-locals
     """Query Cloudflare, validate reusable policies, and return pure drift."""
     # Optional during initial rollout; set static_dns_required after private sync.
-    static_hosts = (
-        None
+    static_hosts, static_companions = (
+        (None, {})
         if skip_docker
-        else load_inventory(
+        else load_inventory_details(
             root / INVENTORY, required=settings.get("static_dns_required", False)
         )
     )
@@ -125,16 +130,30 @@ def run_audit(
     )
     report["counts"]["live_reusable_policies"] = len(policies)
     report["counts"]["live_ygg_dns_records"] = len(internal_dns)
-    report["static_dns"] = compare_static_dns(static_hosts, internal_dns)
+    report["static_dns"] = compare_static_dns(
+        static_hosts, internal_dns, static_companions
+    )
     report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
     report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
+    # Only the explicit active inventory can authorize non-Docker A writes.
+    static_actions = (
+        plan_static_dns(static_hosts, internal_dns, static_companions)
+        if settings.get("static_dns_sync", False) and static_hosts is not None
+        else []
+    )
+    report["actions"].extend(static_actions)
+    report["counts"]["static_dns_actionable"] = len(static_actions)
+    report["counts"]["proposed_operations"] = len(report["actions"])
+    for action in static_actions:
+        kind = action["kind"]
+        report["proposed_by_kind"][kind] = report["proposed_by_kind"].get(kind, 0) + 1
     report["mode"] = "READ_ONLY_LIVE_API"
     report["notes"] = [
         "Cloudflare API GET requests only; no updates or deletions",
         "Terraform configuration and state are not consulted",
         "Unmanaged Cloudflare resources and stopped containers are preserved",
         "Policy changes are suggestions, not automatically applied",
-        "Static non-Docker DNS is audited only; no static DNS writes",
+        "Static non-Docker DNS is managed only when static_dns_sync is enabled",
     ]
     return report
 
