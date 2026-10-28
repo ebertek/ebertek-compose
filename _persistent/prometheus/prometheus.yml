@@ -61,5 +61,7 @@ scrape_configs:
       - targets: ["traefik.ygg.nu:8080"]
 
   - job_name: "unpackerr"
+    authorization:
+      credentials_file: /run/secrets/unpackerr-metrics-key
     static_configs:
       - targets: ["unpackerr.ygg.nu:5656"]
