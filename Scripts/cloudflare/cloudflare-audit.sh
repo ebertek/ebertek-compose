@@ -4,21 +4,9 @@ set -Eeuo pipefail
 
 root="/home/docker/ygg-compose"
 python="/home/docker/cloudflare/.venv/bin/python"
-# Keep the runtime token outside the read-only deployment checkout.
-# The legacy location remains a temporary compatibility fallback during migration.
-runtime_credentials="/home/docker/cloudflare/cloudflare.env"
-legacy_credentials="${root}/terraform/cloudflare/cloudflare.env"
-if [[ -f "${runtime_credentials}" ]]; then
-	credentials="${runtime_credentials}"
-	if [[ "$(stat -c %u "${credentials}")" != "$(id -u)" ||
-		"$(stat -c %a "${credentials}")" != "600" ]]; then
-		echo "ERROR: Runtime Cloudflare credentials must be owner-owned and mode 0600" >&2
-		exit 1
-	fi
-else
-	credentials="${legacy_credentials}"
-	echo "WARNING: Legacy Cloudflare credential path in use; migrate to /home/docker/cloudflare/cloudflare.env" >&2
-fi
+# Credentials are supplied only by the private GitOps source repository.
+# The merged checkout is read-only; never generate credentials here.
+credentials="${root}/Scripts/cloudflare/cloudflare.env"
 
 if [[ ! -x "${python}" || ! -r "${credentials}" ]]; then
 	echo "ERROR: Missing Cloudflare Python environment or credentials" >&2
@@ -31,6 +19,14 @@ set -a
 # shellcheck disable=SC1090
 source "${credentials}"
 set +a
+
+# Map the existing CF_* credential names to the controller's expected names.
+# The token is also accepted as CF_API_TOKEN for compatibility.
+export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-${CF_API_TOKEN:-}}"
+export CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID:-${CLOUDFLARE_ACCOUNT_ID:-}}"
+export CLOUDFLARE_TUNNEL_ID="${CF_TUNNEL_ID:-${CLOUDFLARE_TUNNEL_ID:-}}"
+export CLOUDFLARE_EBI_ZONE_ID="${CF_ZONE_EBI_NU:-${CLOUDFLARE_EBI_ZONE_ID:-}}"
+export CLOUDFLARE_YGG_ZONE_ID="${CF_ZONE_YGG_NU:-${CLOUDFLARE_YGG_ZONE_ID:-}}"
 
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
 	echo "ERROR: CLOUDFLARE_API_TOKEN is not configured" >&2
