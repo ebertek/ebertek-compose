@@ -189,7 +189,10 @@ def main():
         for blocked in report["blocked"]:
             print(f"  ! BLOCKED {blocked['hostname']}: {blocked['reason']}")
         if report["static_dns"]["enabled"]:
-            print("Static DNS:", json.dumps(report["static_dns"]["counts"], sort_keys=True))
+            print(
+                "Static DNS:",
+                json.dumps(report["static_dns"]["counts"], sort_keys=True),
+            )
             for finding in report["static_dns"]["findings"]:
                 print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
         else:
