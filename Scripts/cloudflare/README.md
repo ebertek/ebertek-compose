@@ -157,7 +157,7 @@ device or a record to create:
     {
       "hostname": "example-device.ygg.nu",
       "ipv4": "10.4.20.10",
-      "additional_ipv4": ["10.4.21.1"],
+      "additional_ipv4": ["10.4.21.42"],
       "mac": "02:00:00:00:00:10",
       "description": "Example device model and notes",
       "serial_number": "SAMPLE-123",
