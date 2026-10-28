@@ -258,19 +258,101 @@ class GuardedTests(unittest.TestCase):
             preflight_compatibility(client, CONTEXT)
         self.assertEqual(client.events, [])
 
-    def test_unattended_rejects_existing_policy_changes(self):
-        """Existing Access applications require a reviewed fingerprint."""
-        plan = report(
+    def test_unattended_access_update_with_allow_and_final_deny(self):
+        """A verified policy update can run automatically with safe decisions."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        client = FakeWriter()
+        client.policies = [
+            {"id": POLICY, "decision": "bypass"},
+            {"id": allow, "decision": "allow"},
+            {"id": deny, "decision": "deny"},
+        ]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "name": "grafana",
+                "domain": "grafana.ebi.nu",
+                "type": "self_hosted",
+                "session_duration": "12h",
+                "policies": policy_links([POLICY, allow, deny]),
+            }
+        ]
+        changed = report(
             {
                 "kind": "update_access_policies",
                 "hostname": "grafana.ebi.nu",
-                "app_id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
-                "before": [POLICY],
-                "policies": [POLICY],
+                "app_id": "d" * 32,
+                "before": [POLICY, allow, deny],
+                "policies": [allow, POLICY, deny],
+            }
+        )
+        self.assertEqual(
+            len(check_unattended_plan(changed, reusable=client.policies)), 1
+        )
+        result = apply_actions(client, changed, CONTEXT, unattended=True)
+        self.assertEqual(result[0]["kind"], "update_access_policies")
+        self.assertEqual(client.events, ["access_policy_update"])
+        self.assertEqual(client.apps[0]["session_duration"], "12h")
+        self.assertEqual(
+            [item["id"] for item in client.apps[0]["policies"]],
+            [allow, POLICY, deny],
+        )
+
+    def test_unattended_access_update_blocks_missing_allow_or_deny(self):
+        """Reject unsafe automatic policy changes before any API write."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        records = [
+            {"id": POLICY, "decision": "bypass"},
+            {"id": allow, "decision": "allow"},
+            {"id": deny, "decision": "deny"},
+        ]
+        for wanted in ([POLICY, deny], [allow], [deny, allow], [allow, deny, deny]):
+            with self.subTest(wanted=wanted), self.assertRaises(UnsafePlan):
+                check_unattended_plan(
+                    report(
+                        {
+                            "kind": "update_access_policies",
+                            "hostname": "grafana.ebi.nu",
+                            "app_id": "d" * 32,
+                            "before": [POLICY, allow, deny],
+                            "policies": wanted,
+                        }
+                    ),
+                    reusable=records,
+                )
+
+    def test_unattended_access_update_refuses_changed_policy_decision(self):
+        """Recheck reusable decisions immediately before updating the app."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        client = FakeWriter()
+        client.policies = [
+            {"id": POLICY, "decision": "bypass"},
+            {"id": allow, "decision": "bypass"},
+            {"id": deny, "decision": "deny"},
+        ]
+        client.apps = [
+            {
+                "id": "d" * 32,
+                "domain": "grafana.ebi.nu",
+                "type": "self_hosted",
+                "policies": policy_links([POLICY, allow, deny]),
+            }
+        ]
+        candidate = report(
+            {
+                "kind": "update_access_policies",
+                "hostname": "grafana.ebi.nu",
+                "app_id": "d" * 32,
+                "before": [POLICY, allow, deny],
+                "policies": [allow, POLICY, deny],
             }
         )
         with self.assertRaises(UnsafePlan):
-            check_unattended_plan(plan)
+            apply_actions(client, candidate, CONTEXT, unattended=True)
+        self.assertEqual(client.events, [])
 
     def test_unattended_accepts_bounded_new_host(self):
         """A new service's three staged operations are allowed after opt-in."""
