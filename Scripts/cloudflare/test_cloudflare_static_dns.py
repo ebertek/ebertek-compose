@@ -1,5 +1,8 @@
 """Offline validation of private static DNS inventory and Cloudflare drift."""
 
+# Shared synthetic DNS fixtures intentionally resemble guarded writer tests.
+# pylint: disable=duplicate-code
+
 import json
 import unittest
 from pathlib import Path
