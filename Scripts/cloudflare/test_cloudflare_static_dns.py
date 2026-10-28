@@ -52,7 +52,12 @@ class InventoryTests(unittest.TestCase):
     def test_description_is_preserved_in_source_but_not_audit_output(self):
         """Device model details remain private and do not change DNS semantics."""
         description = "Asus NUC 15 Pro (RNUC15CRKU500000I)"
-        row = {"hostname": HOST, "ipv4": ADDRESS, "mac": MAC, "description": description}
+        row = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "mac": MAC,
+            "description": description,
+        }
         expected = {HOST: ADDRESS}
         self.assertEqual(self.load(inventory([row])), expected)
         self.assertNotIn(description, str(expected))
