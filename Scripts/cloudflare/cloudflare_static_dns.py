@@ -68,7 +68,7 @@ def validate_additional_ipv4(hostname, value):
     addresses = []
     for raw in value:
         if not isinstance(raw, str):
-            raise ValueError(f"{hostname}: invalid additional_ipv4 address")
+            raise TypeError(f"{hostname}: invalid additional_ipv4 address")
         try:
             address = ipaddress.IPv4Address(raw)
         except ValueError as error:
@@ -250,12 +250,19 @@ def classify_static_a(hostname, expected, matches, allowed):
         }
     extras = [r for r in matches if r.get("content") in allowed]
     primary = [r for r in matches if r.get("content") not in allowed]
-    if len(extras) != len(allowed) or {r.get("content") for r in extras} != set(allowed):
+    if len(extras) != len(allowed) or {r.get("content") for r in extras} != set(
+        allowed
+    ):
         return {
             "hostname": hostname,
             "status": "conflict",
             "reason": "declared companion A records differ",
         }
+    return classify_primary_static_a(hostname, expected, primary)
+
+
+def classify_primary_static_a(hostname, expected, primary):
+    """Report primary-A drift after all companions have passed validation."""
     if not primary:
         return {"hostname": hostname, "status": "missing", "expected": expected}
     if len(primary) != 1:
