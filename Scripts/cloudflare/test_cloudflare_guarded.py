@@ -158,7 +158,9 @@ class FakeWriter:
         assert zone == ZONE
         if record_id == "c" * 32:
             return copy.deepcopy(self.private_record)
-        return copy.deepcopy(next(item for item in self.dns if item.get("id") == record_id))
+        return copy.deepcopy(
+            next(item for item in self.dns if item.get("id") == record_id)
+        )
 
     def create_static_a(self, zone, hostname, content):
         """Simulate an unproxied static record creation."""
@@ -852,9 +854,7 @@ class GuardedTests(unittest.TestCase):
         client = CloudflareWriter("test-token")
         with patch.object(client, "_write", return_value={}) as sender:
             client.create_static_a(ZONE, "example-device.ygg.nu", "10.4.20.11")
-            client.patch_static_a(
-                ZONE, "f" * 32, "example-device.ygg.nu", "10.4.20.12"
-            )
+            client.patch_static_a(ZONE, "f" * 32, "example-device.ygg.nu", "10.4.20.12")
         self.assertEqual(sender.call_count, 2)
         self.assertEqual(sender.call_args_list[0].args[0], "POST")
         self.assertEqual(
