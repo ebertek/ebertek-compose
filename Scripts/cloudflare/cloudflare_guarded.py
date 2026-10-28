@@ -10,7 +10,9 @@ import hashlib
 import ipaddress
 import json
 
+from cloudflare_api import checked_id
 from cloudflare_desired import HOST
+from cloudflare_static_dns import STATIC_NETWORK, check_static_target
 from cloudflare_live_diff import (
     DOCKER_NETWORK,
     ordered_policy_ids,
@@ -24,6 +26,8 @@ SUPPORTED = {
     "add_tunnel_ingress",
     "create_dns_cname",
     "update_docker_dns_a",
+    "create_static_dns_a",
+    "update_static_dns_a",
 }
 ORDER = {
     "create_access_app": 0,
@@ -31,6 +35,8 @@ ORDER = {
     "add_tunnel_ingress": 1,
     "create_dns_cname": 2,
     "update_docker_dns_a": 3,
+    "create_static_dns_a": 4,
+    "update_static_dns_a": 4,
 }
 TEMPLATE_HOST = "komodo.ebi.nu"
 TRAEFIK_SERVICE = "https://traefik.ygg.nu:443"
@@ -70,7 +76,16 @@ def check_plan(report, maximum=10):
     if len(entries) != len(set(entries)):
         raise UnsafePlan("The plan contains duplicate operations")
     for entry in actions:
-        if entry["kind"] != "update_docker_dns_a":
+        if entry["kind"] in {"create_static_dns_a", "update_static_dns_a"}:
+            try:
+                check_static_target(entry["hostname"], entry["content"])
+                if entry["kind"] == "update_static_dns_a":
+                    checked_id(entry["record_id"], "static DNS record ID")
+                    if ipaddress.IPv4Address(entry["before"]) not in STATIC_NETWORK:
+                        raise ValueError("Previous address is not a static allocation")
+            except (KeyError, TypeError, ValueError) as error:
+                raise UnsafePlan("Invalid proposed static DNS operation") from error
+        elif entry["kind"] != "update_docker_dns_a":
             if not HOST.fullmatch(entry["hostname"]):
                 raise UnsafePlan("A proposed public hostname is not in ebi.nu")
             try:
@@ -88,6 +103,8 @@ AUTO_SUPPORTED = {
     "create_dns_cname",
     "update_docker_dns_a",
     "update_access_policies",
+    "create_static_dns_a",
+    "update_static_dns_a",
 }
 
 
