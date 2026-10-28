@@ -43,18 +43,17 @@ def validate_metadata(entry, hostname):
             raise ValueError(f"{hostname}: invalid optional purchase_date") from error
 
     ports = entry.get("open_ports")
-    if ports is not None:
-        if (
-            not isinstance(ports, list)
-            or any(
-                not isinstance(port, int)
-                or isinstance(port, bool)
-                or not 1 <= port <= 65535
-                for port in ports
-            )
-            or len(set(ports)) != len(ports)
-        ):
-            raise ValueError(f"{hostname}: invalid optional open_ports")
+    if ports is not None and (
+        not isinstance(ports, list)
+        or any(
+            not isinstance(port, int)
+            or isinstance(port, bool)
+            or not 1 <= port <= 65535
+            for port in ports
+        )
+        or len(set(ports)) != len(ports)
+    ):
+        raise ValueError(f"{hostname}: invalid optional open_ports")
 
 
 def validated_entry(entry, index):
