@@ -16,9 +16,11 @@ def inventory(hosts=None):
     """Construct only synthetic private-device fixtures."""
     return {
         "version": 1,
-        "hosts": hosts if hosts is not None else [
-            {"hostname": HOST, "ipv4": ADDRESS, "mac": MAC}
-        ],
+        "hosts": (
+            hosts
+            if hosts is not None
+            else [{"hostname": HOST, "ipv4": ADDRESS, "mac": MAC}]
+        ),
     }
 
 
