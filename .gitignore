@@ -26,6 +26,9 @@
 **/*.tfplan.txt
 **/*.tf.bak
 
+# Private Cloudflare credentials (supplied only by the private source repo)
+**/cloudflare.env
+
 # Python cache
 **/__pycache__/
 **/*.pyc
