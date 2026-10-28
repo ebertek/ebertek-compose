@@ -238,5 +238,73 @@ class LiveIntegrationTests(unittest.TestCase):
                 live.run_audit(StaticCloudflare(), root, settings)
 
 
+    def test_static_sync_plans_safe_missing_host_but_not_conflict(self):
+        """A conflicting live host cannot prevent an unrelated safe creation."""
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "compose.yaml").write_text(
+                "services:\n"
+                "  example:\n"
+                "    labels:\n"
+                '      traefik.enable: "true"\n'
+                '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\n'
+                '      cf.access: "true"\n'
+                f"      cf.access.policies: '[\\\"{POLICY}\\\"]'\n"
+            )
+            folder = root / "Scripts/cloudflare"
+            folder.mkdir(parents=True)
+            (folder / "static-hosts.json").write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "hosts": [
+                            {"hostname": "device.ygg.nu", "ipv4": "10.4.20.10"},
+                            {"hostname": "pleiades.ygg.nu", "ipv4": "10.4.20.20"},
+                        ],
+                    }
+                )
+            )
+            settings = {
+                "account_id": ACCOUNT,
+                "ebi_zone": "ebi.nu",
+                "ygg_zone": "ygg.nu",
+                "tunnel_name": "pleiades",
+                "static_dns_required": True,
+                "static_dns_sync": True,
+            }
+
+            class ConflictedCloudflare(FakeCloudflare):
+                """The second requested static host has a proxied A record."""
+
+                def list_dns(self, zone):
+                    records = super().list_dns(zone)
+                    records.append(
+                        {
+                            "id": "f" * 32,
+                            "name": "pleiades.ygg.nu",
+                            "type": "A",
+                            "content": "10.4.20.20",
+                            "proxied": True,
+                        }
+                    )
+                    return records
+
+            with patch.object(live, "docker_ipv4", return_value={}):
+                report = live.run_audit(ConflictedCloudflare(), root, settings)
+            self.assertEqual(report["counts"]["static_dns_drift"], 2)
+            self.assertEqual(report["counts"]["static_dns_actionable"], 1)
+            self.assertEqual(report["counts"]["blocked"], 0)
+            self.assertEqual(
+                report["actions"],
+                [
+                    {
+                        "kind": "create_static_dns_a",
+                        "hostname": "device.ygg.nu",
+                        "content": "10.4.20.10",
+                    }
+                ],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
