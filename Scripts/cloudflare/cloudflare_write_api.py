@@ -214,10 +214,10 @@ class CloudflareWriter(CloudflareClient):
             },
         )
 
-    def patch_static_a(self, zone, record_id, address):
+    def patch_static_a(self, zone, record_id, hostname, address):
         """Change only an existing static A record's content; preserve settings."""
         # The caller independently verifies hostname, record ID and old address.
-        check_static_target("validation.ygg.nu", address)
+        check_static_target(hostname, address)
         return self._write(
             "PATCH",
             f"/zones/{checked_id(zone)}/dns_records/{checked_id(record_id)}",
