@@ -88,8 +88,9 @@ current implementation before modifying controller behavior.
   GET-only audit; with the owner-only opt-in marker it invokes `--auto`.
   Check this mode before describing a run as read-only.
 - Unattended mutations are restricted to a small allowlist and at most three
-  operations per run. **Existing Access application policy updates remain
-  manual-only**, even though a guarded PUT writer exists.
+  operations per run. Existing Access policy updates are permitted in
+  unattended mode only with a verified allow policy, exactly one final deny
+  policy, an unchanged live application, and validated full-application PUT.
 - A new app must be verified protected by Access before its Tunnel route and
   public DNS are published. Preserve the complete existing Tunnel
   configuration (`ingress`, `originRequest`, and `warp-routing` where
