@@ -286,7 +286,7 @@ def apply_static_a(client, zone, action):
             or current.get("proxied") is not False
         ):
             raise UnsafePlan(f"{hostname}: static DNS record identity changed")
-        client.patch_static_a(zone, action["record_id"], wanted)
+        client.patch_static_a(zone, action["record_id"], hostname, wanted)
 
     after = read_static_a_records(client, zone, hostname)
     if (
