@@ -105,6 +105,11 @@ The following boundaries must be preserved:
   unsafe changes are refused.
 - The automated reconciler is **not** an automatic deletion mechanism.
   Disappearance from Compose does not authorize deletion from Cloudflare.
+- The optional static non-Docker `ygg.nu` inventory is owned by the private
+  GitOps source and used for read-only DNS drift detection. MAC addresses
+  remain private, are never sent to Cloudflare, and do not authorize DNS
+  writes. Static drift must be reviewed before enabling any future static
+  DNS changes; unattended reconciliation fails closed on detected drift.
 - `Scripts/cloudflare/cloudflare-live.py` and
   `cloudflare-manage.py --preflight` are GET-only. The manual
   `cloudflare-manage.py --apply` path performs reviewed writes; the
