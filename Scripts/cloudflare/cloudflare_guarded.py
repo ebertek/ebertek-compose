@@ -295,12 +295,13 @@ def apply_static_a(client, zone, action):
         or after[0].get("type") != "A"
         or after[0].get("content") != wanted
         or after[0].get("proxied") is not False
-        or (
-            action["kind"] == "update_static_dns_a"
-            and after[0].get("id") != action["record_id"]
-        )
     ):
         raise UnsafePlan(f"{hostname}: static DNS verification failed")
+    if (
+        action["kind"] == "update_static_dns_a"
+        and after[0].get("id") != action["record_id"]
+    ):
+        raise UnsafePlan(f"{hostname}: static DNS record ID changed")
 
 
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
