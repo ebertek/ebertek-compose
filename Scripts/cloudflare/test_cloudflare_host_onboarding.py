@@ -51,6 +51,59 @@ class OnboardingTests(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_named_policies_resolve_to_existing_uuid(self):
+        """Names and legacy UUIDs resolve to the same canonical ordered IDs."""
+        identifier = "16079c5e-e6e7-469e-8df1-8a7e326d11d5"
+        policies = [{"id": identifier, "name": "1-Public bypass"}]
+        for declared in ('["1-Public bypass"]', f'["{identifier}"]'):
+            with self.subTest(declared=declared):
+                hosts, errors = onboarding.discover(self.labels(declared), policies)
+                self.assertEqual(hosts, {"example.ebi.nu": [identifier]})
+                self.assertFalse(errors)
+
+    def test_named_policies_keep_order(self):
+        """Resolve mixed labels without changing Access precedence."""
+        first = "16079c5e-e6e7-469e-8df1-8a7e326d11d5"
+        second = "792a444d-afde-4854-92d1-b0af5df74486"
+        policies = [
+            {"id": first, "name": "1-Public bypass"},
+            {"id": second, "name": "2-Home"},
+        ]
+        hosts, errors = onboarding.discover(
+            self.labels(json.dumps(["2-Home", first])), policies
+        )
+        self.assertEqual(hosts, {"example.ebi.nu": [second, first]})
+        self.assertEqual(errors, [])
+
+    def test_unknown_policy_name_is_rejected(self):
+        """Unknown names must fail closed, not create unprotected apps."""
+        hosts, errors = onboarding.discover(
+            self.labels('["Renamed policy"]'),
+            [{"id": "16079c5e-e6e7-469e-8df1-8a7e326d11d5", "name": "Known"}],
+        )
+        self.assertEqual(hosts, {})
+        self.assertIn("unknown or ambiguous policy name", errors[0])
+
+    def test_duplicate_policy_names_are_ambiguous(self):
+        """Cloudflare does not promise unique policy names."""
+        records = [
+            {"id": "16079c5e-e6e7-469e-8df1-8a7e326d11d5", "name": "Same"},
+            {"id": "792a444d-afde-4854-92d1-b0af5df74486", "name": "Same"},
+        ]
+        hosts, errors = onboarding.discover(self.labels('["Same"]'), records)
+        self.assertEqual(hosts, {})
+        self.assertIn("unknown or ambiguous policy name", errors[0])
+
+    def test_duplicate_policy_assignment_via_name_and_uuid(self):
+        """A mixed label cannot list the same reusable policy twice."""
+        identifier = "16079c5e-e6e7-469e-8df1-8a7e326d11d5"
+        declared = json.dumps(["Known", identifier])
+        hosts, errors = onboarding.discover(
+            self.labels(declared), [{"id": identifier, "name": "Known"}]
+        )
+        self.assertEqual(hosts, {})
+        self.assertIn("duplicate policy assignment", errors[0])
+
     def test_malformed_ebi_host_rule_is_not_silently_ignored(self):
         """An unquoted Host rule must block onboarding rather than disappear."""
         containers = self.labels()

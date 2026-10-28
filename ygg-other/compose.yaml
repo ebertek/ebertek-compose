@@ -99,7 +99,7 @@ services:
       traefik.http.routers.atuin.tls: "true"
       traefik.http.services.atuin.loadbalancer.server.port: "8888"
       cf.access: "true"
-      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","918b5d0c-bc97-43a0-bd75-a30ced36ee34","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
+      cf.access.policies: '["2-Home","3-Whitelist","4-hc.tnt.photo + head.ktk.bme.hu","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:84"
     networks:
       macvlan1:
@@ -149,7 +149,7 @@ services:
       traefik.http.routers.browser.tls: "true"
       traefik.http.services.browser.loadbalancer.server.port: "3000"
       cf.access: "true"
-      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
+      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:79"
     networks:
       macvlan1:
@@ -189,7 +189,7 @@ services:
       traefik.http.routers.dbeaver.tls: "true"
       traefik.http.services.dbeaver.loadbalancer.server.port: "8978"
       cf.access: "true"
-      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
+      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:43"
     networks:
       macvlan1:
@@ -232,7 +232,7 @@ services:
       traefik.http.routers.irc.tls: "true"
       traefik.http.services.irc.loadbalancer.server.port: "9000"
       cf.access: "true"
-      cf.access.policies: '["792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
+      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:45"
     networks:
       macvlan1:
@@ -371,7 +371,7 @@ services:
       traefik.http.routers.vw.tls: "true"
       traefik.http.services.vw.loadbalancer.server.port: "80"
       cf.access: "true"
-      cf.access.policies: '["16079c5e-e6e7-469e-8df1-8a7e326d11d5","792a444d-afde-4854-92d1-b0af5df74486","3f0ca63e-1ab7-4de5-be88-88fa928586c3","a08335e3-3d47-468d-8428-d4734ef4fb7a","ac74c778-98a0-431e-865d-3adef9e8487e"]'
+      cf.access.policies: '["1-Public bypass","2-Home","3-Whitelist","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:00:46"
     networks:
       macvlan1:

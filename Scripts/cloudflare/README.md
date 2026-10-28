@@ -38,6 +38,34 @@ current implementation only calls Cloudflare's GET endpoints. Terraform-based
 commands and their state are retained temporarily for rollback but should not
 run automatic changes during the transition.
 
+## Human-readable reusable Access policy labels
+
+Compose services can declare the **exact Cloudflare reusable policy names**
+in `cf.access.policies`, in the intended evaluation order:
+
+```yaml
+cf.access: "true"
+cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
+```
+
+The controller fetches the account's reusable Access policies on each audit,
+resolves names to their UUIDs, and continues using ordered UUIDs for drift
+comparison, approval fingerprints, and API writes. There is no extra mapping
+file or local policy cache. Existing UUID entries and mixed UUID/name labels
+are supported for migration.
+
+Policy names are matched **exactly** (including case and whitespace). A
+missing or ambiguous name, an unknown UUID, or duplicate resolved policy
+assignment aborts reconciliation before any writes. Renaming a policy in
+Cloudflare therefore requires updating its Compose label. Do not assume
+Cloudflare Access policy names are unique.
+
+After converting existing labels, run the read-only live audit and confirm
+that zero Access policy changes are proposed **before** enabling or allowing
+scheduled writes. The private deployment merge must synchronize these source
+changes before the new names are used. Existing policy PUTs remain
+manual-only, so name-to-ID mismatches must not be approved blindly.
+
 ## Validate live onboarding compatibility before creating any service
 
 Once the read-only audit reports no drift, run a separate read-only preflight:
