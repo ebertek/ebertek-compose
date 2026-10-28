@@ -135,15 +135,15 @@ class DualAWriteTests(unittest.TestCase):
         ):
             with self.subTest(invalid=invalid), self.assertRaises(UnsafePlan):
                 check_plan(
-                        report(
-                            {
-                                "kind": "create_static_dns_a",
-                                "hostname": "example-device.ygg.nu",
-                                "content": "10.4.20.12",
-                                "additional_ipv4": invalid,
-                            }
-                        )
+                    report(
+                        {
+                            "kind": "create_static_dns_a",
+                            "hostname": "example-device.ygg.nu",
+                            "content": "10.4.20.12",
+                            "additional_ipv4": invalid,
+                        }
                     )
+                )
 
 if __name__ == "__main__":
     unittest.main()
