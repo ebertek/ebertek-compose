@@ -17,7 +17,11 @@ from cloudflare_live_diff import (
     ordered_policy_ids,
     validate_ingress,
 )
-from cloudflare_static_dns import STATIC_NETWORK, check_static_target
+from cloudflare_static_dns import (
+    STATIC_NETWORK,
+    check_static_target,
+    validate_additional_ipv4,
+)
 from cloudflare_write_api import policy_links, validate_tunnel_config
 
 SUPPORTED = {
@@ -79,6 +83,9 @@ def check_plan(report, maximum=10):
         if entry["kind"] in {"create_static_dns_a", "update_static_dns_a"}:
             try:
                 check_static_target(entry["hostname"], entry["content"])
+                validate_additional_ipv4(
+                    entry["hostname"], entry.get("additional_ipv4", [])
+                )
                 if entry["kind"] == "update_static_dns_a":
                     checked_id(entry["record_id"], "static DNS record ID")
                     if ipaddress.IPv4Address(entry["before"]) not in STATIC_NETWORK:
@@ -260,22 +267,33 @@ def read_static_a_records(client, zone, hostname):
 
 
 def apply_static_a(client, zone, action):
-    """Write one static A record with live identity checks and read-back."""
+    """Write only the primary A while preserving declared companion records."""
     hostname = action["hostname"]
     wanted = action["content"]
     check_static_target(hostname, wanted)
+    allowed = validate_additional_ipv4(
+        hostname, action.get("additional_ipv4", [])
+    )
     before = read_static_a_records(client, zone, hostname)
+    companions = [entry for entry in before if entry.get("content") in allowed]
+    primary = [entry for entry in before if entry.get("content") not in allowed]
+    if (
+        len(companions) != len(allowed)
+        or {entry.get("content") for entry in companions} != set(allowed)
+        or any(entry.get("type") != "A" for entry in before)
+        or any(entry.get("proxied") is not False for entry in before)
+    ):
+        raise UnsafePlan(f"{hostname}: companion A records changed")
+
     if action["kind"] == "create_static_dns_a":
-        if before:
-            raise UnsafePlan(f"{hostname}: a local A/CNAME record appeared")
+        if primary:
+            raise UnsafePlan(f"{hostname}: a primary local A record appeared")
         client.create_static_a(zone, hostname, wanted)
     else:
         if (
-            len(before) != 1
-            or before[0].get("type") != "A"
-            or before[0].get("id") != action["record_id"]
-            or before[0].get("content") != action["before"]
-            or before[0].get("proxied") is not False
+            len(primary) != 1
+            or primary[0].get("id") != action["record_id"]
+            or primary[0].get("content") != action["before"]
         ):
             raise UnsafePlan(f"{hostname}: existing static A record changed")
         current = client.get_dns_record(zone, action["record_id"])
@@ -291,17 +309,24 @@ def apply_static_a(client, zone, action):
 
     after = read_static_a_records(client, zone, hostname)
     if (
-        len(after) != 1
-        or after[0].get("type") != "A"
-        or after[0].get("content") != wanted
-        or after[0].get("proxied") is not False
+        len(after) != len(allowed) + 1
+        or any(entry.get("type") != "A" for entry in after)
+        or any(entry.get("proxied") is not False for entry in after)
+        or {entry.get("content") for entry in after} != {wanted, *allowed}
     ):
         raise UnsafePlan(f"{hostname}: static DNS verification failed")
-    if (
-        action["kind"] == "update_static_dns_a"
-        and after[0].get("id") != action["record_id"]
-    ):
-        raise UnsafePlan(f"{hostname}: static DNS record ID changed")
+    for companion in companions:
+        same = [
+            entry
+            for entry in after
+            if entry.get("content") == companion["content"]
+        ]
+        if len(same) != 1 or same[0].get("id") != companion.get("id"):
+            raise UnsafePlan(f"{hostname}: companion A identity changed")
+    if action["kind"] == "update_static_dns_a":
+        primary_after = next(entry for entry in after if entry["content"] == wanted)
+        if primary_after.get("id") != action["record_id"]:
+            raise UnsafePlan(f"{hostname}: static DNS record ID changed")
 
 
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
