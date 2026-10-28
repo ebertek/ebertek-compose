@@ -135,6 +135,72 @@ Tunnel and DNS permissions. Keep it out of source files and logs. Historical
 Terraform source remains recoverable from Git history; preserve any previous
 sensitive Terraform state or exports in a protected backup outside Git.
 
+## Static non-Docker DNS inventory (read-only)
+
+The Cloudflare audit can also verify explicitly declared, non-Docker
+`*.ygg.nu` IPv4 records. The inventory belongs in the **private**
+`ebertek-compose-secrets` source repository, at
+`Scripts/cloudflare/static-hosts.json`. It is merged into
+`/home/docker/ygg-compose/Scripts/cloudflare/static-hosts.json` alongside
+the private `cloudflare.env`. Never put your real device inventory or
+MAC addresses in this public repository.
+
+The format is versioned JSON. This is an **illustrative** entry, not a real
+device or a record to create:
+
+```json
+{
+  "version": 1,
+  "hosts": [
+    {
+      "hostname": "example-device.ygg.nu",
+      "ipv4": "10.4.20.10",
+      "mac": "02:00:00:00:00:10"
+    }
+  ]
+}
+```
+
+Each entry requires a unique, lowercase, single-label `*.ygg.nu` hostname
+and a canonical IPv4 address in `10.4.20.0/24` (excluding network and
+broadcast addresses). `mac` is optional, accepts colon or hyphen separators,
+and is **metadata only**: the reconciler never uploads it to Cloudflare,
+uses it to infer ownership, or prints it in audit reports. Multiple DNS
+hostnames may point to the same device address. Do not include Docker
+`10.4.21.0/24` addresses.
+
+With the file present, each audit compares inventory entries with the
+existing Cloudflare `ygg.nu` DNS snapshot. It reports missing entries,
+stale IPv4 addresses, duplicate A/CNAME conflicts, and improperly proxied
+A records. Extra AAAA records and hostnames not in the inventory are
+preserved. **This phase makes no static DNS changes, creates no records,
+and never deletes anything.** An entry with drift causes the read-only
+CLI to exit nonzero; unattended reconciliation refuses writes until the
+static drift has been reviewed and resolved.
+
+The file is optional during the initial migration, so existing Komodo
+reconciliation keeps working before the private inventory is ready. After
+the complete inventory has been reviewed and merged, configure
+`"static_dns_required": true` in the public
+`Scripts/cloudflare/cloudflare-settings.json`, which makes a missing
+private file a hard error. Do not enable this flag before synchronizing
+the private source on Pleiades.
+
+To inspect the read-only result without invoking unattended writes:
+
+```bash
+cd ~/ygg-compose
+set -a
+source Scripts/cloudflare/cloudflare.env
+set +a
+~/cloudflare/.venv/bin/python Scripts/cloudflare/cloudflare-live.py
+```
+
+The static inventory covers **Cloudflare DNS expectations**, not DHCP
+reservations or device discovery. Network-device ownership and MAC/IP
+assignment should be checked against the original device list before
+considering any automatic static DNS mutations in a later phase.
+
 ## Existing Access policy changes
 
 The guarded writer supports changing the ordered reusable policies of an
