@@ -1,7 +1,7 @@
 """Read-only, private-inventory audit for non-Docker ygg.nu A records.
 
-MAC addresses are validated as optional inventory metadata. They are never
-sent to Cloudflare, included in audit output, or used to infer DNS ownership.
+MAC addresses and descriptions are optional, validated inventory metadata.
+Neither is sent to Cloudflare or included in audit output.
 """
 
 import ipaddress
@@ -22,7 +22,7 @@ def validated_entry(entry, index):
     """Validate one inventory entry and return DNS-only data."""
     if not isinstance(entry, dict) or not {"hostname", "ipv4"} <= set(entry):
         raise ValueError(f"Static DNS entry {index} requires hostname and ipv4")
-    if set(entry) - {"hostname", "ipv4", "mac"}:
+    if set(entry) - {"hostname", "ipv4", "mac", "description"}:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
     hostname = entry["hostname"]
     if not isinstance(hostname, str) or not HOST.fullmatch(hostname):
@@ -46,6 +46,14 @@ def validated_entry(entry, index):
     mac = entry.get("mac")
     if mac is not None and (not isinstance(mac, str) or not MAC.fullmatch(mac)):
         raise ValueError(f"{hostname}: invalid optional MAC address")
+    description = entry.get("description")
+    if description is not None and (
+        not isinstance(description, str)
+        or not description.strip()
+        or len(description) > 512
+        or any(ord(character) < 32 for character in description)
+    ):
+        raise ValueError(f"{hostname}: invalid optional description")
     return hostname, value
 
 
