@@ -29,7 +29,7 @@ def validated_entry(entry, index):
         raise ValueError(f"Static DNS entry {index} has invalid ygg.nu hostname")
     value = entry["ipv4"]
     if not isinstance(value, str):
-        raise ValueError(f"{hostname}: invalid IPv4 address")
+        raise TypeError(f"{hostname}: invalid IPv4 address")
     try:
         address = ipaddress.IPv4Address(value)
     except ValueError as error:
