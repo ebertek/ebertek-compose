@@ -133,9 +133,8 @@ class DualAWriteTests(unittest.TestCase):
             ["10.4.21.42", "10.4.21.42"],
             "10.4.21.42",
         ):
-            with self.subTest(invalid=invalid):
-                with self.assertRaises(UnsafePlan):
-                    check_plan(
+            with self.subTest(invalid=invalid), self.assertRaises(UnsafePlan):
+                check_plan(
                         report(
                             {
                                 "kind": "create_static_dns_a",
