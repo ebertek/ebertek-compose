@@ -12,12 +12,12 @@ import json
 
 from cloudflare_api import checked_id
 from cloudflare_desired import HOST
-from cloudflare_static_dns import STATIC_NETWORK, check_static_target
 from cloudflare_live_diff import (
     DOCKER_NETWORK,
     ordered_policy_ids,
     validate_ingress,
 )
+from cloudflare_static_dns import STATIC_NETWORK, check_static_target
 from cloudflare_write_api import policy_links, validate_tunnel_config
 
 SUPPORTED = {
