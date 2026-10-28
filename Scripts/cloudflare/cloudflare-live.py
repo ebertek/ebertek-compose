@@ -78,14 +78,9 @@ def run_audit(
         account, settings["tunnel_name"]
     )
     policies = client.list_policies(account)
-    known = {
-        item["id"]
-        for item in policies
-        if isinstance(item, dict) and isinstance(item.get("id"), str)
-    }
-    if not known:
+    if not policies:
         raise CloudflareError("No reusable Access policies returned")
-    desired, errors = discover(compose_inventory(root), known)
+    desired, errors = discover(compose_inventory(root), policies)
     if errors:
         raise ValueError(
             "Compose labels failed Access validation:\n" + "\n".join(errors)
