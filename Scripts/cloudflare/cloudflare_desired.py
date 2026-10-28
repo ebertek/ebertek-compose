@@ -78,8 +78,10 @@ def router_hosts(labels, name):
 
 def resolve_policies(values, inventory):
     """Resolve ordered policy names or UUIDs without guessing or ambiguity."""
-    if not isinstance(values, list) or not values or not all(
-        isinstance(value, str) and value for value in values
+    if (
+        not isinstance(values, list)
+        or not values
+        or not all(isinstance(value, str) and value for value in values)
     ):
         raise ValueError("expected nonempty JSON list of policy names or UUIDs")
 
