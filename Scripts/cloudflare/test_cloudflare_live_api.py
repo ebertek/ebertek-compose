@@ -177,13 +177,13 @@ class LiveIntegrationTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "compose.yaml").write_text(
-                "services:\\n"
-                "  example:\\n"
-                "    labels:\\n"
-                '      traefik.enable: "true"\\n'
-                '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\\n'
-                '      cf.access: "true"\\n'
-                f"      cf.access.policies: '[\\\"{POLICY}\\\"]'\\n"
+                "services:\n"
+                "  example:\n"
+                "    labels:\n"
+                '      traefik.enable: "true"\n'
+                '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\n'
+                '      cf.access: "true"\n'
+                f"      cf.access.policies: '[\"{POLICY}\"]'\n"
             )
             private = root / "Scripts/cloudflare"
             private.mkdir(parents=True)
