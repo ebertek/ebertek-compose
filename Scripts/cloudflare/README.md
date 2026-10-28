@@ -63,8 +63,9 @@ Cloudflare Access policy names are unique.
 After converting existing labels, run the read-only live audit and confirm
 that zero Access policy changes are proposed **before** enabling or allowing
 scheduled writes. The private deployment merge must synchronize these source
-changes before the new names are used. Existing policy PUTs remain
-manual-only, so name-to-ID mismatches must not be approved blindly.
+changes before the new names are used. Existing policy changes are eligible for unattended reconciliation only
+when the configured allow and final deny guards validate. Unexpected
+name-to-ID mismatches must be investigated, not approved blindly.
 
 ## Validate live onboarding compatibility before creating any service
 
@@ -88,7 +89,7 @@ live configuration differences that fake API tests cannot. A successful
 preflight does not prove that a future Cloudflare POST or PUT will succeed;
 the first real change should still be explicitly reviewed.
 
-## Guarded direct API writes (manual approval only)
+## Guarded direct API writes
 
 The live audit remains GET-only. The separate `cloudflare-manage.py` command
 first runs the same live audit, prints a plan, and outputs a fingerprint.
@@ -117,7 +118,10 @@ The supported writes in this first phase are:
 - New proxied `ebi.nu` CNAMEs, **only after Access and Tunnel verification**.
 - Updates to existing Docker-subnet `ygg.nu` A records, but not static devices.
 
-Existing Access policy changes use validated, full-application PUT requests. Unknown live application settings are rejected, not discarded. Deletes and Terraform writes are never supported. Scheduled Komodo work is audit-only; unattended mutation remains disabled.
+Existing Access policy changes use validated full-application PUT requests.
+Unknown live application settings are rejected, not discarded. Deletes and
+Terraform writes are never supported. Scheduled Komodo work is read-only
+unless its explicit external enable-auto marker is present.
 
 An interrupted apply is not rolled back: rerunning the live audit determines
 which operations remain. Every operation is checked against current live
@@ -138,17 +142,30 @@ verifies its ID, hostname, and old policy order, and refuses to write if the
 API returns an unrecognized setting. For supported settings it uses the
 full-application PUT and rechecks policies afterward.
 
-The update has offline test coverage, but it still needs a controlled live
-policy change before being considered safe for unattended execution.
-Manual fingerprint approval remains required.
+A controlled live update to Unpackerr succeeded, followed by zero-drift
+verification. With the external enable-auto marker present, updates to
+existing applications may now run unattended, subject to all of these gates:
+
+- At most three total approved operations per run, including policy updates.
+- Exact live identity, application ID, and previous policy order must match.
+- Every desired reusable policy must still exist and have a known decision.
+- The desired policy list must contain at least one `allow` policy and end
+  with exactly one `deny` policy. Removing either is refused automatically.
+- The full-application PUT rejects unrecognized app settings and re-reads
+  the application to verify the resulting order.
+
+Updates that fail these checks can still be reviewed with a manual approval
+fingerprint; the automatic controller does not bypass its safety checks.
+Any policy assignment change can affect access immediately. Review Compose
+changes carefully before merging; a green audit is not an authorization review.
 
 ## Komodo scheduled audit
 
 The "Cloudflare audit" Komodo action is scheduled every six hours. Its
 cloudflare-audit.sh entrypoint runs as docker on Pleiades, sources the
 existing private terraform/cloudflare/cloudflare.env in the deployed
-checkout, and runs cloudflare-live.py. It is **GET-only** and neither
-changes Cloudflare nor modifies the GitOps checkout.
+checkout, and runs cloudflare-live.py when the opt-in marker is absent.
+With the marker present it invokes cloudflare-manage.py --auto.
 
 The action depends on /home/docker/cloudflare/.venv. When Terraform is
 retired, migrate credentials to a dedicated runtime secret outside the
@@ -161,8 +178,8 @@ printf 'enabled\\n' > /home/docker/cloudflare/enable-auto
 chmod 600 /home/docker/cloudflare/enable-auto
 ```
 
-Only a maximum of three changes in one run are eligible, and existing
-Access policy updates remain manual. Remove that file to switch the scheduled
+Only a maximum of three changes in one run are eligible, including guarded
+existing Access policy updates. Remove that file to switch the scheduled
 action back to read-only audit. The marker must be owned by the executing user
 and inaccessible to other users. With the marker present, the scheduled
 Komodo action performs bounded reconciliation every six hours. Audit the
