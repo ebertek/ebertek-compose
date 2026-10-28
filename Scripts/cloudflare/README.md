@@ -212,7 +212,7 @@ remains outside the GitOps checkout:
 
 ```bash
 install -d -m 700 /home/docker/cloudflare
-printf 'enabled\\n' > /home/docker/cloudflare/enable-auto
+printf 'enabled\n' > /home/docker/cloudflare/enable-auto
 chmod 600 /home/docker/cloudflare/enable-auto
 ```
 
