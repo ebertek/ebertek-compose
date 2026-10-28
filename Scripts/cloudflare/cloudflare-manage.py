@@ -131,6 +131,15 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             return 0
         print("Cloudflare API reconciler — PLAN ONLY")
         print(f"Desired hostnames: {report['counts']['desired_hosts']}")
+        if report["static_dns"]["enabled"]:
+            counts = report["static_dns"]["counts"]
+            print(
+                "Static DNS (read-only): "
+                f"{counts['matched']}/{counts['hosts']} matching, "
+                f"{counts['drift']} with drift"
+            )
+            for finding in report["static_dns"]["findings"]:
+                print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
         for action in actions:
             print(f"  {action['kind']}: {action['hostname']}")
         if actions:

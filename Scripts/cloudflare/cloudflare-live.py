@@ -19,6 +19,7 @@ from pathlib import Path
 from cloudflare_api import CloudflareClient, CloudflareError, checked_id
 from cloudflare_desired import compose_inventory, discover
 from cloudflare_live_diff import DOCKER_NETWORK, compare_live
+from cloudflare_static_dns import INVENTORY, compare_static_dns, load_inventory
 
 CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
@@ -71,6 +72,14 @@ def run_audit(
     client, root, settings, skip_docker=False
 ):  # pylint: disable=too-many-locals
     """Query Cloudflare, validate reusable policies, and return pure drift."""
+    # Optional during initial rollout; set static_dns_required after private sync.
+    static_hosts = (
+        None
+        if skip_docker
+        else load_inventory(
+            root / INVENTORY, required=settings.get("static_dns_required", False)
+        )
+    )
     account = checked_id(settings["account_id"], "account ID")
     ebi = settings.get("ebi_zone_id") or client.zone_id(settings["ebi_zone"], account)
     ygg = settings.get("ygg_zone_id") or client.zone_id(settings["ygg_zone"], account)
@@ -93,23 +102,39 @@ def run_audit(
     internal_dns = [] if skip_docker else client.list_dns(ygg)
     config = client.tunnel_configuration(account, tunnel_id)
     routes = config["config"].get("ingress")
+    docker_addresses = None if skip_docker else docker_ipv4()
+    if static_hosts and docker_addresses:
+        collisions = sorted(
+            hostname
+            for hostname in static_hosts
+            if hostname.removesuffix(".ygg.nu") in docker_addresses
+        )
+        if collisions:
+            raise ValueError(
+                "Static DNS inventory overlaps running Docker containers: "
+                + ", ".join(collisions)
+            )
     report = compare_live(
         desired,
         apps,
         public_dns,
         routes,
         tunnel_id,
-        docker_addresses=None if skip_docker else docker_ipv4(),
+        docker_addresses=docker_addresses,
         dns_ygg=internal_dns,
     )
     report["counts"]["live_reusable_policies"] = len(policies)
     report["counts"]["live_ygg_dns_records"] = len(internal_dns)
+    report["static_dns"] = compare_static_dns(static_hosts, internal_dns)
+    report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
+    report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
     report["mode"] = "READ_ONLY_LIVE_API"
     report["notes"] = [
         "Cloudflare API GET requests only; no updates or deletions",
         "Terraform configuration and state are not consulted",
         "Unmanaged Cloudflare resources and stopped containers are preserved",
         "Policy changes are suggestions, not automatically applied",
+        "Static non-Docker DNS is audited only; no static DNS writes",
     ]
     return report
 
@@ -163,8 +188,17 @@ def main():
             print(f"  - {action['kind']}: {action['hostname']}")
         for blocked in report["blocked"]:
             print(f"  ! BLOCKED {blocked['hostname']}: {blocked['reason']}")
+        if report["static_dns"]["enabled"]:
+            print(
+                "Static DNS:",
+                json.dumps(report["static_dns"]["counts"], sort_keys=True),
+            )
+            for finding in report["static_dns"]["findings"]:
+                print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
+        else:
+            print("Static DNS: inventory not configured (audit disabled)")
         print("No changes made to Cloudflare, Terraform, or Git.")
-    return 2 if report["blocked"] else 0
+    return 2 if report["blocked"] or report["counts"]["static_dns_drift"] else 0
 
 
 if __name__ == "__main__":

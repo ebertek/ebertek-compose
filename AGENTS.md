@@ -103,6 +103,12 @@ current implementation before modifying controller behavior.
   validation before claiming this path safe for automation.
 - Never automatically delete Cloudflare resources merely because a container
   or Compose hostname is absent.
+- Static non-Docker `ygg.nu` A records are audited against the optional private
+  `Scripts/cloudflare/static-hosts.json` inventory (source owner:
+  `ebertek-compose-secrets`). They are **not** automatically created or
+  modified. Once the inventory is deployed, enable `static_dns_required` to
+  fail closed when the private file is absent. Never publish real device MACs
+  or private topology in this public repository.
 - The legacy public Terraform HCL and Terraform-only helper scripts have been
   retired from active source. Their prior contents remain in Git history.
   Never run Terraform alongside the API writer; preserve sensitive offline
