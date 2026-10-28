@@ -172,5 +172,70 @@ class LiveIntegrationTests(unittest.TestCase):
             self.assertEqual(report["mode"], "READ_ONLY_LIVE_API")
 
 
+    def test_static_inventory_uses_existing_ygg_zone_read(self):
+        """Integrate private JSON with the existing live DNS snapshot."""
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "compose.yaml").write_text(
+                "services:\\n"
+                "  example:\\n"
+                "    labels:\\n"
+                '      traefik.enable: "true"\\n'
+                '      traefik.http.routers.example.rule: "Host(`example.ebi.nu`)"\\n'
+                '      cf.access: "true"\\n'
+                f"      cf.access.policies: '[\\\"{POLICY}\\\"]'\\n"
+            )
+            private = root / "Scripts/cloudflare"
+            private.mkdir(parents=True)
+            (private / "static-hosts.json").write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "hosts": [
+                            {
+                                "hostname": "device.ygg.nu",
+                                "ipv4": "10.4.20.10",
+                                "mac": "aa:bb:cc:dd:ee:ff",
+                            }
+                        ],
+                    }
+                )
+            )
+            settings = {
+                "account_id": ACCOUNT,
+                "ebi_zone": "ebi.nu",
+                "ygg_zone": "ygg.nu",
+                "tunnel_name": "pleiades",
+                "static_dns_required": True,
+            }
+
+            class StaticCloudflare(FakeCloudflare):
+                """Add a single local A record to the fake full-zone response."""
+
+                def list_dns(self, zone):
+                    records = super().list_dns(zone)
+                    records.append(
+                        {
+                            "name": "device.ygg.nu",
+                            "type": "A",
+                            "content": "10.4.20.10",
+                            "proxied": False,
+                        }
+                    )
+                    return records
+
+            with patch.object(live, "docker_ipv4", return_value={}):
+                report = live.run_audit(StaticCloudflare(), root, settings)
+            self.assertEqual(report["static_dns"]["counts"]["matched"], 1)
+            self.assertEqual(report["counts"]["static_dns_drift"], 0)
+            self.assertEqual(report["actions"], [])
+
+            with (
+                patch.object(live, "docker_ipv4", return_value={"device": "10.4.21.20"}),
+                self.assertRaisesRegex(ValueError, "overlaps running Docker"),
+            ):
+                live.run_audit(StaticCloudflare(), root, settings)
+
+
 if __name__ == "__main__":
     unittest.main()
