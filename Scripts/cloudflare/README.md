@@ -24,10 +24,10 @@ cd ~/ygg-compose
 ~/cloudflare/.venv/bin/python -m unittest discover \
   -s Scripts/cloudflare -p 'test_cloudflare_*.py'
 
-# The following uses the existing deployment-side credentials.
+# The following reads credentials from the merged private GitOps source.
 # Never print, log, or commit their values.
 set -a
-source terraform/cloudflare/cloudflare.env
+source Scripts/cloudflare/cloudflare.env
 set +a
 
 ~/cloudflare/.venv/bin/python Scripts/cloudflare/cloudflare-live.py
@@ -164,7 +164,6 @@ fingerprint; the automatic controller does not bypass its safety checks.
 Any policy assignment change can affect access immediately. Review Compose
 changes carefully before merging; a green audit is not an authorization review.
 
-
 ## Terraform retirement (October 2026)
 
 The public repository no longer ships Terraform modules, a Terraform runner,
@@ -177,49 +176,48 @@ The legacy public HCL files can be retrieved from Git history at commit
 recovery investigation. This is not a substitute for a secured copy of the
 **private** Terraform state and the private repository's configuration.
 Neither sensitive state nor private secrets were exported or deleted by this
-change. The temporary fallback for the private credential file remains until
-its migration has been confirmed on Pleiades; it does not execute Terraform.
+change. The Cloudflare credential file remains in the merged GitOps checkout
+at `Scripts/cloudflare/cloudflare.env`, supplied by the private source repo.
 
 ## Komodo scheduled audit
 
-The "Cloudflare audit" Komodo action is scheduled every six hours. Its
-cloudflare-audit.sh entrypoint runs as docker on Pleiades, sources the
-owner-only `/home/docker/cloudflare/cloudflare.env` credential file (with a
-temporary fallback to the legacy merged-checkout path), and runs
-cloudflare-live.py when the opt-in marker is absent.
-With the marker present it invokes cloudflare-manage.py --auto.
+The "Cloudflare audit" Komodo action runs every six hours as the `docker`
+user on Pleiades. Its entrypoint, `Scripts/cloudflare/cloudflare-audit.sh`,
+reads `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env`. This
+file must be supplied by the **private** `ebertek-compose-secrets` repository
+at `Scripts/cloudflare/cloudflare.env`. Do not add credentials to the
+public `ebertek-compose` repository or commit changes directly to the
+merged `ygg-compose` checkout.
 
-The action depends on `/home/docker/cloudflare/.venv`. Before removing the
-legacy credential file from the private source repository, migrate it to the
-runtime location using the following commands **on Pleiades as root**:
+The existing environment variables are supported: `CF_API_TOKEN` (or
+`CLOUDFLARE_API_TOKEN`), `CF_ACCOUNT_ID`, `CF_TUNNEL_ID`,
+`CF_ZONE_EBI_NU`, and `CF_ZONE_YGG_NU`. The action exports the corresponding
+`CLOUDFLARE_*` names for the Python controller. `CF_ZONE_EBERTEK_COM` may
+remain in the private file but is not consumed by this reconciler.
+
+The credential file must be readable by `docker` and should not be
+accessible to unrelated users. Ensure its private-source deployment preserves
+appropriate permissions. The runner refuses to start if the file is missing
+or unreadable; it has no fallback to the old Terraform directory or an
+external copy. Validate that the file is present after the next GitOps merge:
 
 ```bash
-install -d -o docker -g docker -m 700 /home/docker/cloudflare
-install -o docker -g docker -m 600 \
-  /home/docker/ygg-compose/terraform/cloudflare/cloudflare.env \
-  /home/docker/cloudflare/cloudflare.env
-sudo -u docker test -r /home/docker/cloudflare/cloudflare.env
+sudo -u docker test -r /home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env
 ```
 
-Never print or commit the token. The action prefers the runtime file, verifies
-that it is owned by the executing user and mode `0600`, and warns when the
-legacy fallback is used. Remove the legacy private-repository credential file
-only after a successful Komodo run with the new path; avoid removing it from
-`ygg-compose` manually.
-
-Unattended mutation is **off by default**. To opt in deliberately, the docker
-user can create an owner-only file outside the GitOps checkout:
+The action uses `/home/docker/cloudflare/.venv` for its Python environment.
+Without the opt-in marker it executes the GET-only live audit; with the
+owner-only marker it executes `cloudflare-manage.py --auto`. The opt-in marker
+remains outside the GitOps checkout:
 
 ```bash
 install -d -m 700 /home/docker/cloudflare
-printf 'enabled\n' > /home/docker/cloudflare/enable-auto
+printf 'enabled\\n' > /home/docker/cloudflare/enable-auto
 chmod 600 /home/docker/cloudflare/enable-auto
 ```
 
-Only a maximum of three changes in one run are eligible, including guarded
-existing Access policy updates. Remove that file to switch the scheduled
-action back to read-only audit. The marker must be owned by the executing user
-and inaccessible to other users. With the marker present, the scheduled
-Komodo action performs bounded reconciliation every six hours. Audit the
-resulting changes and do not enable automatic changes until validating the
-deployed runtime credentials and Komodo action behavior.
+Only a maximum of three changes per run are eligible, including guarded
+Access application creation and existing policy updates. Removing the marker
+returns the scheduled action to GET-only mode. The marker must be owned by
+the executing user and inaccessible to other users. Review the next Komodo
+action output after synchronizing the private credential path.
