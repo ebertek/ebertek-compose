@@ -64,8 +64,8 @@ Cloudflare Access policy names are unique.
 After converting existing labels, run the read-only live audit and confirm
 that zero Access policy changes are proposed **before** enabling or allowing
 scheduled writes. The private deployment merge must synchronize these source
-changes before the new names are used. Existing policy changes are eligible for unattended reconciliation only
-when the configured allow and final deny guards validate. Unexpected
+changes before the new names are used. Existing policy updates and new Access application creation are eligible for
+unattended reconciliation only when the allow and final deny guards validate. Unexpected
 name-to-ID mismatches must be investigated, not approved blindly.
 
 ## Validate live onboarding compatibility before creating any service
@@ -144,9 +144,9 @@ API returns an unrecognized setting. For supported settings it uses the
 full-application PUT and rechecks policies afterward.
 
 A controlled live update to Unpackerr succeeded, followed by zero-drift
-verification. With the external enable-auto marker present, creation of new Access
-applications and updates to existing applications may run unattended, subject
-to all of these gates:
+verification. With the external enable-auto marker present, creation of new
+Access applications and updates to existing applications may run unattended,
+subject to all of these gates:
 
 - At most three total approved operations per run, including policy updates.
 - Updates require exact live identity, application ID, and previous policy
@@ -195,8 +195,8 @@ runtime location using the following commands **on Pleiades as root**:
 
 ```bash
 install -d -o docker -g docker -m 700 /home/docker/cloudflare
-install -o docker -g docker -m 600 \\
-  /home/docker/ygg-compose/terraform/cloudflare/cloudflare.env \\
+install -o docker -g docker -m 600 \
+  /home/docker/ygg-compose/terraform/cloudflare/cloudflare.env \
   /home/docker/cloudflare/cloudflare.env
 sudo -u docker test -r /home/docker/cloudflare/cloudflare.env
 ```
@@ -205,8 +205,10 @@ Never print or commit the token. The action prefers the runtime file, verifies
 that it is owned by the executing user and mode `0600`, and warns when the
 legacy fallback is used. Remove the legacy private-repository credential file
 only after a successful Komodo run with the new path; avoid removing it from
-`ygg-compose` manually. Unattended mutation is **off by default**. To opt in deliberately,
-the docker user can create an owner-only file outside the GitOps checkout:
+`ygg-compose` manually.
+
+Unattended mutation is **off by default**. To opt in deliberately, the docker
+user can create an owner-only file outside the GitOps checkout:
 
 ```bash
 install -d -m 700 /home/docker/cloudflare
