@@ -123,6 +123,64 @@ def load_inventory(path, required=False):
     return wanted
 
 
+def check_static_target(hostname, address):
+    """Validate an A record target against the private allocation policy."""
+    return validated_entry({"hostname": hostname, "ipv4": address}, "DNS write")
+
+
+def plan_static_dns(wanted, records):
+    """Propose create/update for unambiguous active static A records only.
+
+    Conflicts (including proxied A and CNAME) are never made writable.
+    Existing records pointing outside the static address region are protected.
+    """
+    if wanted is None:
+        return []
+    from cloudflare_api import IDENTIFIER  # pylint: disable=import-outside-toplevel
+
+    index = index_records(records, "name")
+    actions = []
+    for finding in compare_static_dns(wanted, records)["findings"]:
+        hostname = finding["hostname"]
+        if finding["status"] == "missing":
+            actions.append(
+                {
+                    "kind": "create_static_dns_a",
+                    "hostname": hostname,
+                    "content": wanted[hostname],
+                }
+            )
+        elif finding["status"] == "mismatch":
+            matched = [
+                item
+                for item in index.get(hostname, [])
+                if item.get("type") in {"A", "CNAME"}
+            ]
+            record = matched[0]
+            previous = record.get("content")
+            record_id = record.get("id")
+            try:
+                existing = ipaddress.IPv4Address(previous)
+            except (ValueError, TypeError):
+                continue
+            if (
+                existing not in STATIC_NETWORK
+                or not isinstance(record_id, str)
+                or not IDENTIFIER.fullmatch(record_id)
+            ):
+                continue
+            actions.append(
+                {
+                    "kind": "update_static_dns_a",
+                    "hostname": hostname,
+                    "record_id": record_id,
+                    "before": previous,
+                    "content": wanted[hostname],
+                }
+            )
+    return actions
+
+
 def compare_static_dns(wanted, records):
     """Report static IPv4 drift without proposing any Cloudflare mutations."""
     if wanted is None:
