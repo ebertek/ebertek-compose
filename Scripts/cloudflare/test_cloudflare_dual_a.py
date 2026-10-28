@@ -1,5 +1,8 @@
 """Offline guarded-write tests for explicitly declared companion A records."""
 
+# Shared synthetic DNS fixtures intentionally resemble guarded writer tests.
+# pylint: disable=duplicate-code
+
 import copy
 import unittest
 
