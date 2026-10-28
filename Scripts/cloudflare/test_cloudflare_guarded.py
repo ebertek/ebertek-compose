@@ -155,8 +155,33 @@ class FakeWriter:
 
     def get_dns_record(self, zone, record_id):
         """Read a private-zone A record by its ID."""
-        assert (zone, record_id) == (ZONE, "c" * 32)
-        return copy.deepcopy(self.private_record)
+        assert zone == ZONE
+        if record_id == "c" * 32:
+            return copy.deepcopy(self.private_record)
+        return copy.deepcopy(next(item for item in self.dns if item.get("id") == record_id))
+
+    def create_static_a(self, zone, hostname, content):
+        """Simulate an unproxied static record creation."""
+        assert zone == ZONE
+        self.events.append("static_create")
+        self.dns.append(
+            {
+                "id": "f" * 32,
+                "name": hostname,
+                "type": "A",
+                "content": content,
+                "proxied": False,
+                "ttl": 300,
+            }
+        )
+
+    def patch_static_a(self, zone, record_id, hostname, content):
+        """Change only the content of an existing static A record."""
+        assert zone == ZONE
+        self.events.append("static_update")
+        entry = next(item for item in self.dns if item.get("id") == record_id)
+        assert entry["name"] == hostname
+        entry["content"] = content
 
     def patch_docker_a(self, zone, record_id, content):
         """Change the existing record without altering other settings."""
@@ -723,6 +748,149 @@ class GuardedTests(unittest.TestCase):
                 docker_addresses=lambda: {"grafana": "10.4.21.6"},
             )
         self.assertEqual(client.events, [])
+
+    def test_static_create_uses_unproxied_a_and_readback(self):
+        """The guarded worker may create only a missing static A record."""
+        client = FakeWriter()
+        candidate = report(
+            {
+                "kind": "create_static_dns_a",
+                "hostname": "example-device.ygg.nu",
+                "content": "10.4.20.11",
+            }
+        )
+        done = apply_actions(client, candidate, CONTEXT, unattended=True)
+        self.assertEqual(done[0]["kind"], "create_static_dns_a")
+        self.assertEqual(client.events, ["static_create"])
+        self.assertEqual(client.dns[0]["content"], "10.4.20.11")
+        self.assertIs(client.dns[0]["proxied"], False)
+
+    def test_static_update_preserves_other_record_fields(self):
+        """An identified unproxied static A has only its IP patched."""
+        client = FakeWriter()
+        client.dns = [
+            {
+                "id": "f" * 32,
+                "name": "example-device.ygg.nu",
+                "type": "A",
+                "content": "10.4.20.11",
+                "proxied": False,
+                "ttl": 7200,
+                "comment": "Owned by private inventory",
+            }
+        ]
+        candidate = report(
+            {
+                "kind": "update_static_dns_a",
+                "hostname": "example-device.ygg.nu",
+                "record_id": "f" * 32,
+                "before": "10.4.20.11",
+                "content": "10.4.20.12",
+            }
+        )
+        done = apply_actions(client, candidate, CONTEXT, unattended=True)
+        self.assertEqual(done[0]["kind"], "update_static_dns_a")
+        self.assertEqual(client.events, ["static_update"])
+        self.assertEqual(client.dns[0]["ttl"], 7200)
+        self.assertEqual(client.dns[0]["comment"], "Owned by private inventory")
+
+    def test_static_writes_refuse_collisions_and_live_drift(self):
+        """No A/CNAME overwrite, duplicate takeover or stale-IP update."""
+        client = FakeWriter()
+        candidate = report(
+            {
+                "kind": "create_static_dns_a",
+                "hostname": "example-device.ygg.nu",
+                "content": "10.4.20.11",
+            }
+        )
+        for kind in ("CNAME", "A"):
+            client.dns = [
+                {
+                    "id": "f" * 32,
+                    "name": "example-device.ygg.nu",
+                    "type": kind,
+                    "content": "10.4.20.10",
+                    "proxied": False,
+                }
+            ]
+            with self.subTest(kind=kind), self.assertRaises(UnsafePlan):
+                apply_actions(client, candidate, CONTEXT, unattended=True)
+            self.assertEqual(client.events, [])
+
+        candidate["actions"][0].update(
+            {
+                "kind": "update_static_dns_a",
+                "record_id": "f" * 32,
+                "before": "10.4.20.9",
+                "content": "10.4.20.11",
+            }
+        )
+        with self.assertRaises(UnsafePlan):
+            apply_actions(client, candidate, CONTEXT, unattended=True)
+        self.assertEqual(client.events, [])
+
+    def test_static_writes_reject_wrong_zone_and_allocations(self):
+        """Only ygg.nu hostnames and the planned static /27 interiors are safe."""
+        invalid = (
+            ("other.ebi.nu", "10.4.20.11"),
+            ("example-device.ygg.nu", "10.4.20.31"),
+            ("example-device.ygg.nu", "10.4.21.11"),
+            ("example-device.ygg.nu", "8.8.8.8"),
+        )
+        for hostname, content in invalid:
+            with self.subTest(hostname=hostname, content=content):
+                candidate = report(
+                    {
+                        "kind": "create_static_dns_a",
+                        "hostname": hostname,
+                        "content": content,
+                    }
+                )
+                with self.assertRaises(UnsafePlan):
+                    check_plan(candidate)
+        client = CloudflareWriter("test-token")
+        with patch.object(client, "_write", return_value={}) as sender:
+            client.create_static_a(ZONE, "example-device.ygg.nu", "10.4.20.11")
+            client.patch_static_a(
+                ZONE, "f" * 32, "example-device.ygg.nu", "10.4.20.12"
+            )
+        self.assertEqual(sender.call_count, 2)
+        self.assertEqual(sender.call_args_list[0].args[0], "POST")
+        self.assertEqual(
+            sender.call_args_list[0].args[2],
+            {
+                "name": "example-device.ygg.nu",
+                "type": "A",
+                "content": "10.4.20.11",
+                "ttl": 1,
+                "proxied": False,
+            },
+        )
+        self.assertEqual(sender.call_args_list[1].args[0], "PATCH")
+        self.assertEqual(sender.call_args_list[1].args[2], {"content": "10.4.20.12"})
+
+    def test_static_unattended_limit_and_conflict_isolation(self):
+        """A conflicted static hostname doesn't block safe peers."""
+        client = FakeWriter()
+        safe = report(
+            {
+                "kind": "create_static_dns_a",
+                "hostname": "device-a.ygg.nu",
+                "content": "10.4.20.11",
+            },
+            {
+                "kind": "create_static_dns_a",
+                "hostname": "device-b.ygg.nu",
+                "content": "10.4.20.12",
+            },
+        )
+        safe["static_dns"] = {"findings": [{"hostname": "pleiades.ygg.nu"}]}
+        done = apply_actions(client, safe, CONTEXT, unattended=True)
+        self.assertEqual(len(done), 2)
+        self.assertEqual(client.events, ["static_create", "static_create"])
+        with self.assertRaises(UnsafePlan):
+            check_unattended_plan(report(*(safe["actions"] * 2)))
 
     def test_write_api_disallows_unknown_method(self):
         """Refuse DELETE and all unsupported HTTP method names."""
