@@ -49,6 +49,23 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(self.load(inventory()), {HOST: ADDRESS})
         self.assertNotIn(MAC, str(compare_static_dns({HOST: ADDRESS}, [])))
 
+    def test_description_is_preserved_in_source_but_not_audit_output(self):
+        """Device model details remain private and do not change DNS semantics."""
+        description = "Asus NUC 15 Pro (RNUC15CRKU500000I)"
+        row = {"hostname": HOST, "ipv4": ADDRESS, "mac": MAC, "description": description}
+        expected = {HOST: ADDRESS}
+        self.assertEqual(self.load(inventory([row])), expected)
+        self.assertNotIn(description, str(expected))
+        self.assertNotIn(description, str(compare_static_dns(expected, [])))
+
+    def test_invalid_optional_descriptions_are_rejected(self):
+        """Reject malformed metadata without disclosing it in errors."""
+        for description in ("", "  ", 23, "line\\nbreak", "x" * 513):
+            with self.subTest(description=type(description).__name__):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "description": description}
+                with self.assertRaisesRegex(ValueError, "invalid optional description"):
+                    self.load(inventory([row]))
+
     def test_optional_missing_file_and_required_missing_file(self):
         """A phased rollout is optional until the private merge is ready."""
         with TemporaryDirectory() as temporary:
