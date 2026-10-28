@@ -99,8 +99,9 @@ The following boundaries must be preserved:
   `warp-routing`), terminal fallback, and all unmanaged Cloudflare resources.
 - Unknown live API fields or conflicting DNS/Access records must block writes.
   Never silently discard application settings when updating policies.
-- Existing Access application policy updates require explicit manual
-  approval and a fresh-state check. Unattended reconciliation excludes them.
+- Existing Access policy updates require a fresh-state check and validated
+  full-application PUT. Unattended updates additionally require at least one
+  allow policy and exactly one final deny policy; unsafe changes are refused.
 - The automated reconciler is **not** an automatic deletion mechanism.
   Disappearance from Compose does not authorize deletion from Cloudflare.
 - `Scripts/cloudflare/cloudflare-live.py` and
