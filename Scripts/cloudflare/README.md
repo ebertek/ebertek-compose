@@ -34,9 +34,10 @@ set +a
 ```
 
 `cloudflare-live.py` requires `CLOUDFLARE_API_TOKEN` in the environment. Its
-current implementation only calls Cloudflare's GET endpoints. Terraform-based
-commands and their state are retained temporarily for rollback but should not
-run automatic changes during the transition.
+current implementation only calls Cloudflare's GET endpoints. The API
+controller is the only active Cloudflare writer; legacy Terraform tools and
+tracked configuration were retired. Preserve encrypted/offline Terraform state
+backups separately from this public repository.
 
 ## Human-readable reusable Access policy labels
 
@@ -110,7 +111,7 @@ The apply command takes an exclusive lock outside `ygg-compose`, fetches live
 Cloudflare configuration again, and rejects a changed plan. It applies only
 allowlisted operations and re-reads each changed resource afterward.
 
-The supported writes in this first phase are:
+The supported API writes are:
 
 - New self-hosted Access applications referencing existing reusable policies.
 - New ingress routes cloned from the existing Komodo Traefik route, while
@@ -130,9 +131,9 @@ an approved apply, particularly because updating a Tunnel configuration
 replaces its entire remotely managed configuration.
 
 The API token used for writes needs narrowly scoped Access application,
-Tunnel and DNS permissions. Keep it out of source files and logs. Retain
-your prior Terraform state and configuration as a migration reference until
-the API-only approach has been validated on actual changes.
+Tunnel and DNS permissions. Keep it out of source files and logs. Historical
+Terraform source remains recoverable from Git history; preserve any previous
+sensitive Terraform state or exports in a protected backup outside Git.
 
 ## Existing Access policy changes
 
@@ -143,33 +144,68 @@ API returns an unrecognized setting. For supported settings it uses the
 full-application PUT and rechecks policies afterward.
 
 A controlled live update to Unpackerr succeeded, followed by zero-drift
-verification. With the external enable-auto marker present, updates to
-existing applications may now run unattended, subject to all of these gates:
+verification. With the external enable-auto marker present, creation of new Access
+applications and updates to existing applications may run unattended, subject
+to all of these gates:
 
 - At most three total approved operations per run, including policy updates.
-- Exact live identity, application ID, and previous policy order must match.
+- Updates require exact live identity, application ID, and previous policy
+  order; creation requires the hostname not to exist already.
 - Every desired reusable policy must still exist and have a known decision.
 - The desired policy list must contain at least one `allow` policy and end
-  with exactly one `deny` policy. Removing either is refused automatically.
+  with exactly one `deny` policy for **both new and existing** Access apps.
+  New apps are refused if these requirements are not met.
 - The full-application PUT rejects unrecognized app settings and re-reads
-  the application to verify the resulting order.
+  the application to verify the resulting order. Newly created Access apps
+  have their policy decisions checked again immediately before POST.
 
 Updates that fail these checks can still be reviewed with a manual approval
 fingerprint; the automatic controller does not bypass its safety checks.
 Any policy assignment change can affect access immediately. Review Compose
 changes carefully before merging; a green audit is not an authorization review.
 
+
+## Terraform retirement (October 2026)
+
+The public repository no longer ships Terraform modules, a Terraform runner,
+or the HCL/state-based import and source-sync helpers. Cloudflare changes are
+made by the guarded API reconciler and driven by Compose labels. Terraform
+must **not** be run concurrently against the same resources.
+
+The legacy public HCL files can be retrieved from Git history at commit
+`9545a6f4172822584c20f52da9c7e76bfe5d2cf0`, if needed for a manual
+recovery investigation. This is not a substitute for a secured copy of the
+**private** Terraform state and the private repository's configuration.
+Neither sensitive state nor private secrets were exported or deleted by this
+change. The temporary fallback for the private credential file remains until
+its migration has been confirmed on Pleiades; it does not execute Terraform.
+
 ## Komodo scheduled audit
 
 The "Cloudflare audit" Komodo action is scheduled every six hours. Its
 cloudflare-audit.sh entrypoint runs as docker on Pleiades, sources the
-existing private terraform/cloudflare/cloudflare.env in the deployed
-checkout, and runs cloudflare-live.py when the opt-in marker is absent.
+owner-only `/home/docker/cloudflare/cloudflare.env` credential file (with a
+temporary fallback to the legacy merged-checkout path), and runs
+cloudflare-live.py when the opt-in marker is absent.
 With the marker present it invokes cloudflare-manage.py --auto.
 
-The action depends on /home/docker/cloudflare/.venv. When Terraform is
-retired, migrate credentials to a dedicated runtime secret outside the
-GitOps checkout. Unattended mutation is **off by default**. To opt in deliberately,
+The action depends on `/home/docker/cloudflare/.venv`. Before removing the
+legacy credential file from the private source repository, migrate it to the
+runtime location using the following commands **on Pleiades as root**:
+
+```bash
+install -d -o docker -g docker -m 700 /home/docker/cloudflare
+install -o docker -g docker -m 600 \\
+  /home/docker/ygg-compose/terraform/cloudflare/cloudflare.env \\
+  /home/docker/cloudflare/cloudflare.env
+sudo -u docker test -r /home/docker/cloudflare/cloudflare.env
+```
+
+Never print or commit the token. The action prefers the runtime file, verifies
+that it is owned by the executing user and mode `0600`, and warns when the
+legacy fallback is used. Remove the legacy private-repository credential file
+only after a successful Komodo run with the new path; avoid removing it from
+`ygg-compose` manually. Unattended mutation is **off by default**. To opt in deliberately,
 the docker user can create an owner-only file outside the GitOps checkout:
 
 ```bash
