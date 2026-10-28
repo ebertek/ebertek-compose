@@ -117,9 +117,9 @@ The following boundaries must be preserved:
 - Preserve encryption and recoverability of any retained private Terraform
   state and Cloudflare recovery exports. Do not treat live API configuration
   as a complete backup: it may not recover unretrievable secrets after loss
-  of the Cloudflare account. The scheduled action prefers the owner-only
-  `/home/docker/cloudflare/cloudflare.env` and retains the previous private
-  path solely as a temporary migration fallback.
+  of the Cloudflare account. The scheduled action reads the merged private
+  `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env` (sourced from
+  `ebertek-compose-secrets`); the public repository must never contain it.
 
 For implementation details and validation commands, see
 [`Scripts/cloudflare/README.md`](Scripts/cloudflare/README.md).
