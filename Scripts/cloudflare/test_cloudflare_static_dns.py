@@ -71,6 +71,51 @@ class InventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid optional description"):
                     self.load(inventory([row]))
 
+    def test_serial_date_and_ports_are_metadata_only(self):
+        """All private metadata is validated and excluded from desired DNS."""
+        row = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "description": "Test appliance",
+            "serial_number": "0x00124b003414bac3",
+            "purchase_date": "2023-01-26",
+            "open_ports": [5000, 7000, 49152, 62078],
+        }
+        expected = {HOST: ADDRESS}
+        self.assertEqual(self.load(inventory([row])), expected)
+        report = compare_static_dns(expected, [])
+        for metadata in ("Test appliance", row["serial_number"], "2023-01-26"):
+            self.assertNotIn(metadata, str(report))
+        self.assertNotIn("5000", str(report))
+
+    def test_serial_number_validation(self):
+        """Serials must be nonblank, bounded, printable strings."""
+        for value in ("", "   ", 42, "line" + chr(10) + "break", "x" * 257):
+            with self.subTest(kind=type(value).__name__):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "serial_number": value}
+                with self.assertRaisesRegex(ValueError, "invalid optional serial_number"):
+                    self.load(inventory([row]))
+
+    def test_purchase_date_validation(self):
+        """Reject impossible dates, unsupported formats and nonstrings."""
+        for value in ("2023-02-30", "20230126", "2023-1-26", 20230126, ""):
+            with self.subTest(value=value):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "purchase_date": value}
+                with self.assertRaisesRegex(ValueError, "invalid optional purchase_date"):
+                    self.load(inventory([row]))
+
+    def test_open_ports_validation(self):
+        """Only unique numeric port numbers are accepted; protocol is unknown."""
+        for value in ("80", [0], [65536], [-1], [80, 80], [True], [80.0], [{}]):
+            with self.subTest(value=value):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "open_ports": value}
+                with self.assertRaisesRegex(ValueError, "invalid optional open_ports"):
+                    self.load(inventory([row]))
+        self.assertEqual(
+            self.load(inventory([{"hostname": HOST, "ipv4": ADDRESS, "open_ports": []}])),
+            {HOST: ADDRESS},
+        )
+
     def test_optional_missing_file_and_required_missing_file(self):
         """A phased rollout is optional until the private merge is ready."""
         with TemporaryDirectory() as temporary:
