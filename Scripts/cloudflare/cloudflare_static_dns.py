@@ -34,6 +34,7 @@ def validated_entry(entry, index):
         address = ipaddress.IPv4Address(value)
     except ValueError as error:
         raise ValueError(f"{hostname}: invalid IPv4 address") from error
+    allocation_group = ipaddress.ip_network(f"{address}/27", strict=False)
     if (
         str(address) != value
         or address not in STATIC_NETWORK
