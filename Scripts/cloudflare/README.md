@@ -155,7 +155,11 @@ device or a record to create:
     {
       "hostname": "example-device.ygg.nu",
       "ipv4": "10.4.20.10",
-      "mac": "02:00:00:00:00:10"
+      "mac": "02:00:00:00:00:10",
+      "description": "Example device model and notes",
+      "serial_number": "SAMPLE-123",
+      "purchase_date": "2023-01-26",
+      "open_ports": [80, 443]
     }
   ]
 }
@@ -169,8 +173,27 @@ so future segmentation remains possible. `mac` is optional and accepts colon
 or hyphen separators,
 and is **metadata only**: the reconciler never uploads it to Cloudflare,
 uses it to infer ownership, or prints it in audit reports. Multiple DNS
-hostnames may point to the same device address. Do not include Docker
-`10.4.21.0/24` addresses.
+hostnames may point to the same device address. Optional `description`
+accepts a device model and notes (up to 512 characters), is validated as
+private metadata, and is never included in DNS requests or audit output.
+Additional optional inventory-only fields are `serial_number` (a nonempty
+string), `purchase_date` (a real date in `YYYY-MM-DD` format), and
+`open_ports` (an array of distinct numeric ports, each 1-65535). Omit a
+field if its value is unknown. `open_ports: []` means no ports recorded,
+which is different from never having collected port information. These are
+user-reported observations, **not live port scans**; no TCP/UDP transport
+or reachability is inferred from the port numbers.
+
+All of these fields stay in the private GitOps inventory and are stripped
+before comparison with Cloudflare: only hostname and IPv4 address are used
+for DNS drift detection. Use JSON string fields rather than comments, which
+JSON does not support. Do not include Docker `10.4.21.0/24` addresses.
+
+Keep non-live records separately in the private source:
+`static-hosts-reserved.json` for reserved/disconnected or not-yet-purchased
+devices, and `retired-devices.json` for formerly owned equipment (including
+records with no known hostname or IP). Neither file is read by the Cloudflare
+controller, so it cannot accidentally provision historical devices.
 
 With the file present, each audit compares inventory entries with the
 existing Cloudflare `ygg.nu` DNS snapshot. It reports missing entries,
