@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Read-only Cloudflare audit for Pleiades/Komodo.
+# Cloudflare audit; optionally performs guarded writes for Pleiades/Komodo.
 set -Eeuo pipefail
 
 root="/home/docker/ygg-compose"
@@ -24,7 +24,7 @@ if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
 fi
 
 # Unattended writes require a separate, owner-only opt-in outside GitOps.
-# Existing policy updates always remain manual.
+# Existing policy updates are allowed only after unattended safety checks.
 if [[ -f "/home/docker/cloudflare/enable-auto" ]]; then
 	exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
 fi
