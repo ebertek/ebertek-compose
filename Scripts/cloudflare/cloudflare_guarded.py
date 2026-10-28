@@ -253,7 +253,8 @@ def read_static_a_records(client, zone, hostname):
     return [
         entry
         for entry in client.list_dns(zone)
-        if entry.get("name", "").lower() == hostname
+        if isinstance(entry.get("name"), str)
+        and entry["name"].lower() == hostname
         and entry.get("type") in {"A", "CNAME"}
     ]
 
@@ -294,6 +295,10 @@ def apply_static_a(client, zone, action):
         or after[0].get("type") != "A"
         or after[0].get("content") != wanted
         or after[0].get("proxied") is not False
+        or (
+            action["kind"] == "update_static_dns_a"
+            and after[0].get("id") != action["record_id"]
+        )
     ):
         raise UnsafePlan(f"{hostname}: static DNS verification failed")
 
