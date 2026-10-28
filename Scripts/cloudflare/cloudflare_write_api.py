@@ -17,6 +17,7 @@ from cloudflare_api import (
 )
 from cloudflare_desired import HOST, UUID
 from cloudflare_live_diff import DOCKER_NETWORK
+from cloudflare_static_dns import check_static_target
 
 TUNNEL_CONFIG_KEYS = frozenset({"ingress", "originRequest", "warp-routing"})
 
@@ -192,6 +193,31 @@ class CloudflareWriter(CloudflareClient):
         """Change an existing Docker A record's content without touching its flags."""
         if ip_address(address) not in DOCKER_NETWORK:
             raise ValueError("Refusing a DNS update outside the Docker subnet")
+        return self._write(
+            "PATCH",
+            f"/zones/{checked_id(zone)}/dns_records/{checked_id(record_id)}",
+            {"content": address},
+        )
+
+    def create_static_a(self, zone, hostname, address):
+        """Create only an unproxied ygg.nu A record in the static allocation."""
+        check_static_target(hostname, address)
+        return self._write(
+            "POST",
+            f"/zones/{checked_id(zone)}/dns_records",
+            {
+                "name": hostname,
+                "type": "A",
+                "content": address,
+                "ttl": 1,
+                "proxied": False,
+            },
+        )
+
+    def patch_static_a(self, zone, record_id, address):
+        """Change only an existing static A record's content; preserve settings."""
+        # The caller independently verifies hostname, record ID and old address.
+        check_static_target("validation.ygg.nu", address)
         return self._write(
             "PATCH",
             f"/zones/{checked_id(zone)}/dns_records/{checked_id(record_id)}",
