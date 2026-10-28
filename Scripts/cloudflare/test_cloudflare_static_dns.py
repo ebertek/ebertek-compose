@@ -78,6 +78,24 @@ class InventoryTests(unittest.TestCase):
             with self.subTest(candidate=candidate), self.assertRaises(ValueError):
                 self.load(candidate)
 
+    def test_all_planned_27_allocation_boundaries_are_reserved(self):
+        """A /23 LAN still reserves network/broadcast offsets for future /27s."""
+        for base in range(0, 256, 32):
+            for offset in (0, 31):
+                address = f"10.4.20.{base + offset}"
+                with self.subTest(address=address), self.assertRaises(ValueError):
+                    self.load(inventory([{"hostname": HOST, "ipv4": address}]))
+
+    def test_27_allocation_interiors_are_allowed(self):
+        """Unassigned /27 segments remain valid for future static devices."""
+        for last in (1, 30, 33, 62, 65, 94, 97, 126, 129, 158, 161, 190):
+            address = f"10.4.20.{last}"
+            with self.subTest(address=address):
+                self.assertEqual(
+                    self.load(inventory([{"hostname": HOST, "ipv4": address}])),
+                    {HOST: address},
+                )
+
     def test_invalid_json_rejected(self):
         """Do not continue the audit with an unreadable source."""
         with TemporaryDirectory() as temporary:
