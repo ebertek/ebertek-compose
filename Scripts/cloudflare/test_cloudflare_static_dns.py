@@ -93,7 +93,9 @@ class InventoryTests(unittest.TestCase):
         for value in ("", "   ", 42, "line" + chr(10) + "break", "x" * 257):
             with self.subTest(kind=type(value).__name__):
                 row = {"hostname": HOST, "ipv4": ADDRESS, "serial_number": value}
-                with self.assertRaisesRegex(ValueError, "invalid optional serial_number"):
+                with self.assertRaisesRegex(
+                    ValueError, "invalid optional serial_number"
+                ):
                     self.load(inventory([row]))
 
     def test_purchase_date_validation(self):
@@ -101,7 +103,9 @@ class InventoryTests(unittest.TestCase):
         for value in ("2023-02-30", "20230126", "2023-1-26", 20230126, ""):
             with self.subTest(value=value):
                 row = {"hostname": HOST, "ipv4": ADDRESS, "purchase_date": value}
-                with self.assertRaisesRegex(ValueError, "invalid optional purchase_date"):
+                with self.assertRaisesRegex(
+                    ValueError, "invalid optional purchase_date"
+                ):
                     self.load(inventory([row]))
 
     def test_open_ports_validation(self):
@@ -112,7 +116,9 @@ class InventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid optional open_ports"):
                     self.load(inventory([row]))
         self.assertEqual(
-            self.load(inventory([{"hostname": HOST, "ipv4": ADDRESS, "open_ports": []}])),
+            self.load(
+                inventory([{"hostname": HOST, "ipv4": ADDRESS, "open_ports": []}])
+            ),
             {HOST: ADDRESS},
         )
 
