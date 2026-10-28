@@ -157,6 +157,7 @@ device or a record to create:
     {
       "hostname": "example-device.ygg.nu",
       "ipv4": "10.4.20.10",
+      "additional_ipv4": ["10.4.21.1"],
       "mac": "02:00:00:00:00:10",
       "description": "Example device model and notes",
       "serial_number": "SAMPLE-123",
@@ -171,7 +172,14 @@ Each entry requires a unique, lowercase, single-label `*.ygg.nu` hostname
 and a canonical IPv4 address in the `10.4.20.0/24` **allocation region**.
 The LAN itself remains `10.4.20.0/23`; the inventory reserves every
 planned `/27` network and broadcast address (for example, `.64` and `.95`)
-so future segmentation remains possible. `mac` is optional and accepts colon
+so future segmentation remains possible. An optional `additional_ipv4` array
+may **explicitly permit existing second A records** on the same hostname in
+the `10.4.21.0/24` allocation (also excluding `/27` boundaries). The example
+above illustrates such a dual-A hostname using dummy inventory data. These
+companion addresses are **observed and protected, not written**: an absent,
+proxied or unexpected companion remains a conflict. Only the primary `ipv4`
+may be created or updated automatically. Do not use this exception for ordinary
+single-A hosts. `mac` is optional and accepts colon
 or hyphen separators,
 and is **metadata only**: the reconciler never uploads it to Cloudflare,
 uses it to infer ownership, or prints it in audit reports. Multiple DNS
@@ -215,9 +223,12 @@ proxy flag, and Cloudflare comment. New records use automatic TTL and
 hostnames are supported. Removing a device from the JSON does **not** delete
 its existing Cloudflare record.
 
-Existing CNAMEs, duplicate A records, proxied A records, and existing A
-records outside the static allocation region are **conflicts**: they are
-reported but never overwritten automatically. A conflict for one hostname
+Existing CNAMEs, undeclared extra or duplicate A records, proxied A
+records, and existing primary A records outside the static allocation region
+are **conflicts**: they are reported but never overwritten automatically.
+For a declared dual-A hostname, the audit accepts exactly one unproxied
+primary record and exactly one unproxied record per declared companion IP.
+Primary-IP-only changes preserve existing companion record IDs and contents. A conflict for one hostname
 does not block safe changes for other static hostnames. Both existing
 Docker/Access/Tunnel changes and static writes share the maximum **three
 unattended operations per run**; a larger proposed plan requires manual
