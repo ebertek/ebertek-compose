@@ -22,7 +22,7 @@ from cloudflare_live_diff import DOCKER_NETWORK, compare_live
 from cloudflare_static_dns import (
     INVENTORY,
     compare_static_dns,
-    load_inventory,
+    load_inventory_details,
     plan_static_dns,
 )
 
@@ -78,10 +78,10 @@ def run_audit(
 ):  # pylint: disable=too-many-locals
     """Query Cloudflare, validate reusable policies, and return pure drift."""
     # Optional during initial rollout; set static_dns_required after private sync.
-    static_hosts = (
-        None
+    static_hosts, static_companions = (
+        (None, {})
         if skip_docker
-        else load_inventory(
+        else load_inventory_details(
             root / INVENTORY, required=settings.get("static_dns_required", False)
         )
     )
@@ -130,12 +130,14 @@ def run_audit(
     )
     report["counts"]["live_reusable_policies"] = len(policies)
     report["counts"]["live_ygg_dns_records"] = len(internal_dns)
-    report["static_dns"] = compare_static_dns(static_hosts, internal_dns)
+    report["static_dns"] = compare_static_dns(
+        static_hosts, internal_dns, static_companions
+    )
     report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
     report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
     # Only the explicit active inventory can authorize non-Docker A writes.
     static_actions = (
-        plan_static_dns(static_hosts, internal_dns)
+        plan_static_dns(static_hosts, internal_dns, static_companions)
         if settings.get("static_dns_sync", False) and static_hosts is not None
         else []
     )
