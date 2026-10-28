@@ -1,8 +1,8 @@
 """Guarded Cloudflare operations, ordered to avoid unprotected publication.
 
 This module is inert until explicitly called by a separately approved command.
-Existing Access policy updates are intentionally unsupported until complete
-application PUT payloads have been validated against real Cloudflare data.
+Existing Access policy updates require fresh-state verification and the
+unattended path additionally enforces defensive allow/deny policy guardrails.
 """
 
 import copy
@@ -87,14 +87,43 @@ AUTO_SUPPORTED = {
     "add_tunnel_ingress",
     "create_dns_cname",
     "update_docker_dns_a",
+    "update_access_policies",
 }
 
 
-def check_unattended_plan(report, maximum=3):
-    """Fail closed on existing Access policy mutations and oversized plans."""
+def check_auto_access_policies(wanted, reusable):
+    """Never automatically remove authentication or the terminal deny rule."""
+    if not isinstance(reusable, list):
+        raise UnsafePlan("Cannot validate reusable Access policy inventory")
+    indexed = {}
+    for policy in reusable:
+        if not isinstance(policy, dict):
+            raise UnsafePlan("Malformed reusable Access policy")
+        identifier = policy.get("id")
+        if not isinstance(identifier, str) or identifier in indexed:
+            raise UnsafePlan("Invalid or duplicate reusable Access policy ID")
+        indexed[identifier] = policy
+    if not isinstance(wanted, list) or len(wanted) != len(set(wanted)):
+        raise UnsafePlan("Invalid unattended Access policy assignments")
+    if not wanted or any(identifier not in indexed for identifier in wanted):
+        raise UnsafePlan("Unknown reusable policy in unattended Access update")
+    decisions = [indexed[identifier].get("decision") for identifier in wanted]
+    if decisions.count("deny") != 1 or decisions[-1] != "deny":
+        raise UnsafePlan("Unattended Access update requires a final deny policy")
+    if "allow" not in decisions[:-1]:
+        raise UnsafePlan("Unattended Access update requires an allow policy")
+    if any(decision not in {"allow", "bypass", "deny"} for decision in decisions):
+        raise UnsafePlan("Unrecognized reusable Access policy decision")
+
+
+def check_unattended_plan(report, maximum=3, reusable=None):
+    """Allow only bounded changes; require safe existing Access policy decisions."""
     actions = check_plan(report, maximum=maximum)
     if any(action["kind"] not in AUTO_SUPPORTED for action in actions):
-        raise UnsafePlan("Access policy updates require manual approval")
+        raise UnsafePlan("Unattended plan contains unsupported operations")
+    for action in actions:
+        if action["kind"] == "update_access_policies":
+            check_auto_access_policies(action["policies"], reusable)
     return actions
 
 
@@ -203,13 +232,21 @@ def audit_tunnel_route(client, context, hostname):
 
 
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-def apply_actions(client, report, context, docker_addresses=None, maximum=10):
+def apply_actions(
+    client, report, context, docker_addresses=None, maximum=10, unattended=False
+):
     """Apply only approved, narrowly scoped changes after live rechecks.
 
     No operation is automatically rolled back; rerunning the audit identifies
     remaining steps if a request fails mid-plan.
     """
     actions = check_plan(report, maximum)
+    if unattended:
+        check_unattended_plan(
+            report,
+            maximum=min(3, maximum),
+            reusable=client.list_policies(context["account"]),
+        )
     # Preflight all Tunnel shapes before any write. This avoids creating
     # orphan Access apps if a Tunnel replacement would be unsafe.
     if any(action["kind"] == "add_tunnel_ingress" for action in actions):
@@ -243,6 +280,10 @@ def apply_actions(client, report, context, docker_addresses=None, maximum=10):
             }
             if not set(action["policies"]).issubset(live_policy_ids):
                 raise UnsafePlan(f"{hostname}: reusable policy is not available")
+            if unattended:
+                check_auto_access_policies(
+                    action["policies"], client.list_policies(context["account"])
+                )
             try:
                 client.update_access_policies(
                     context["account"], action["app_id"], app, action["policies"]
