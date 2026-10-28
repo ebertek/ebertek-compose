@@ -163,7 +163,11 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
                 raise UnsafePlan("Auto-apply marker permissions must be owner-only")
             if marker.read_text().strip() != "enabled":
                 raise UnsafePlan("Auto-apply marker does not explicitly enable writes")
-            check_unattended_plan(report, maximum=min(3, args.max_operations))
+            check_unattended_plan(
+                report,
+                maximum=min(3, args.max_operations),
+                reusable=client.list_policies(context["account"]),
+            )
         elif token != args.apply:
             raise UnsafePlan("Live plan changed; review a new fingerprint")
         completed = apply_actions(
@@ -172,6 +176,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             context,
             docker_addresses=LIVE.docker_ipv4,
             maximum=args.max_operations,
+            unattended=args.auto,
         )
         for item in completed:
             print(f"Applied and verified: {item['kind']} {item['hostname']}")
