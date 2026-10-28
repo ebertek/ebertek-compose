@@ -35,10 +35,11 @@ def validated_entry(entry, index):
     except ValueError as error:
         raise ValueError(f"{hostname}: invalid IPv4 address") from error
     allocation_group = ipaddress.ip_network(f"{address}/27", strict=False)
+    edges = (allocation_group.network_address, allocation_group.broadcast_address)
     if (
         str(address) != value
         or address not in STATIC_NETWORK
-        or address in {allocation_group.network_address, allocation_group.broadcast_address}
+        or address in edges
         or address in DOCKER_NETWORK
     ):
         raise ValueError(f"{hostname}: address is outside the static host subnet")
