@@ -132,7 +132,7 @@ class InventoryTests(unittest.TestCase):
         row = {
             "hostname": HOST,
             "ipv4": ADDRESS,
-            "additional_ipv4": ["10.4.21.1"],
+            "additional_ipv4": ["10.4.21.42"],
         }
         with TemporaryDirectory() as temporary:
             path = Path(temporary) / "static-hosts.json"
@@ -140,7 +140,7 @@ class InventoryTests(unittest.TestCase):
             self.assertEqual(load_inventory(path), {HOST: ADDRESS})
             self.assertEqual(
                 load_inventory_details(path),
-                ({HOST: ADDRESS}, {HOST: ["10.4.21.1"]}),
+                ({HOST: ADDRESS}, {HOST: ["10.4.21.42"]}),
             )
 
     def test_companion_a_rejects_bad_or_unreserved_addresses(self):
@@ -164,7 +164,7 @@ class InventoryTests(unittest.TestCase):
                 }
                 with self.assertRaises(ValueError):
                     self.load(inventory([row]))
-        for values in ("10.4.21.1", [123], ["10.4.21.1"] * 2, [None]):
+        for values in ("10.4.21.42", [123], ["10.4.21.42"] * 2, [None]):
             with self.subTest(values=values):
                 row = {
                     "hostname": HOST,
@@ -328,24 +328,24 @@ class CompanionDnsTests(unittest.TestCase):
 
     def test_dual_a_is_healthy_only_when_declared(self):
         """Matching primary and declared companion count as one matched host."""
-        records = [record(), record(address="10.4.21.1")]
+        records = [record(), record(address="10.4.21.42")]
         wanted = {HOST: ADDRESS}
         self.assertEqual(compare_static_dns(wanted, records)["counts"]["drift"], 1)
-        actual = compare_static_dns(wanted, records, {HOST: ["10.4.21.1"]})
+        actual = compare_static_dns(wanted, records, {HOST: ["10.4.21.42"]})
         self.assertEqual(actual["counts"]["matched"], 1)
         self.assertEqual(actual["counts"]["drift"], 0)
-        self.assertEqual(plan_static_dns(wanted, records, {HOST: ["10.4.21.1"]}), [])
+        self.assertEqual(plan_static_dns(wanted, records, {HOST: ["10.4.21.42"]}), [])
 
     def test_extra_missing_or_unexpected_a_is_conflict(self):
         """A declared companion cannot mask missing or additional records."""
         wanted = {HOST: ADDRESS}
-        extras = {HOST: ["10.4.21.1"]}
+        extras = {HOST: ["10.4.21.42"]}
         for records in (
             [record()],
             [record(), record(address="10.4.21.2")],
-            [record(), record(address="10.4.21.1"), record(address="10.4.21.2")],
-            [record(), record(address="10.4.21.1", proxied=True)],
-            [record(), record(address="10.4.21.1", kind="CNAME")],
+            [record(), record(address="10.4.21.42"), record(address="10.4.21.2")],
+            [record(), record(address="10.4.21.42", proxied=True)],
+            [record(), record(address="10.4.21.42", kind="CNAME")],
         ):
             with self.subTest(records=records):
                 result = compare_static_dns(wanted, records, extras)
@@ -354,8 +354,8 @@ class CompanionDnsTests(unittest.TestCase):
 
     def test_primary_missing_can_be_created_beside_companion(self):
         """The companion stays protected when only the primary is missing."""
-        extras = {HOST: ["10.4.21.1"]}
-        records = [record(address="10.4.21.1")]
+        extras = {HOST: ["10.4.21.42"]}
+        records = [record(address="10.4.21.42")]
         self.assertEqual(
             compare_static_dns({HOST: ADDRESS}, records, extras)["findings"][0][
                 "status"
@@ -369,7 +369,7 @@ class CompanionDnsTests(unittest.TestCase):
                     "kind": "create_static_dns_a",
                     "hostname": HOST,
                     "content": ADDRESS,
-                    "additional_ipv4": ["10.4.21.1"],
+                    "additional_ipv4": ["10.4.21.42"],
                 }
             ],
         )
@@ -378,8 +378,8 @@ class CompanionDnsTests(unittest.TestCase):
     def test_primary_ip_change_updates_only_primary(self):
         """A declared companion does not block an ordinary primary IP change."""
         original = {**record(address="10.4.20.12"), "id": "a" * 32}
-        second = {**record(address="10.4.21.1"), "id": "b" * 32}
-        extras = {HOST: ["10.4.21.1"]}
+        second = {**record(address="10.4.21.42"), "id": "b" * 32}
+        extras = {HOST: ["10.4.21.42"]}
         self.assertEqual(
             plan_static_dns({HOST: ADDRESS}, [original, second], extras),
             [
@@ -389,7 +389,7 @@ class CompanionDnsTests(unittest.TestCase):
                     "record_id": "a" * 32,
                     "before": "10.4.20.12",
                     "content": ADDRESS,
-                    "additional_ipv4": ["10.4.21.1"],
+                    "additional_ipv4": ["10.4.21.42"],
                 }
             ],
         )
