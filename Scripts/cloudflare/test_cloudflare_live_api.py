@@ -171,7 +171,6 @@ class LiveIntegrationTests(unittest.TestCase):
             self.assertEqual(report["blocked"], [])
             self.assertEqual(report["mode"], "READ_ONLY_LIVE_API")
 
-
     def test_static_inventory_uses_existing_ygg_zone_read(self):
         """Integrate private JSON with the existing live DNS snapshot."""
         with TemporaryDirectory() as directory:
@@ -231,7 +230,9 @@ class LiveIntegrationTests(unittest.TestCase):
             self.assertEqual(report["actions"], [])
 
             with (
-                patch.object(live, "docker_ipv4", return_value={"device": "10.4.21.20"}),
+                patch.object(
+                    live, "docker_ipv4", return_value={"device": "10.4.21.20"}
+                ),
                 self.assertRaisesRegex(ValueError, "overlaps running Docker"),
             ):
                 live.run_audit(StaticCloudflare(), root, settings)
