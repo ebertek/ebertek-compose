@@ -271,9 +271,7 @@ def apply_static_a(client, zone, action):
     hostname = action["hostname"]
     wanted = action["content"]
     check_static_target(hostname, wanted)
-    allowed = validate_additional_ipv4(
-        hostname, action.get("additional_ipv4", [])
-    )
+    allowed = validate_additional_ipv4(hostname, action.get("additional_ipv4", []))
     before = read_static_a_records(client, zone, hostname)
     companions = [entry for entry in before if entry.get("content") in allowed]
     primary = [entry for entry in before if entry.get("content") not in allowed]
@@ -317,9 +315,7 @@ def apply_static_a(client, zone, action):
         raise UnsafePlan(f"{hostname}: static DNS verification failed")
     for companion in companions:
         same = [
-            entry
-            for entry in after
-            if entry.get("content") == companion["content"]
+            entry for entry in after if entry.get("content") == companion["content"]
         ]
         if len(same) != 1 or same[0].get("id") != companion.get("id"):
             raise UnsafePlan(f"{hostname}: companion A identity changed")
