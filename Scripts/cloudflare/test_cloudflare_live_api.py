@@ -237,7 +237,6 @@ class LiveIntegrationTests(unittest.TestCase):
             ):
                 live.run_audit(StaticCloudflare(), root, settings)
 
-
     def test_static_sync_plans_safe_missing_host_but_not_conflict(self):
         """A conflicting live host cannot prevent an unrelated safe creation."""
         with TemporaryDirectory() as directory:
