@@ -248,6 +248,56 @@ def audit_tunnel_route(client, context, hostname):
     return bool(validate_ingress(config["ingress"]).get(hostname))
 
 
+def read_static_a_records(client, zone, hostname):
+    """Find only A/CNAME records that could obstruct an A write."""
+    return [
+        entry
+        for entry in client.list_dns(zone)
+        if entry.get("name", "").lower() == hostname
+        and entry.get("type") in {"A", "CNAME"}
+    ]
+
+
+def apply_static_a(client, zone, action):
+    """Write one static A record with live identity checks and read-back."""
+    hostname = action["hostname"]
+    wanted = action["content"]
+    check_static_target(hostname, wanted)
+    before = read_static_a_records(client, zone, hostname)
+    if action["kind"] == "create_static_dns_a":
+        if before:
+            raise UnsafePlan(f"{hostname}: a local A/CNAME record appeared")
+        client.create_static_a(zone, hostname, wanted)
+    else:
+        if (
+            len(before) != 1
+            or before[0].get("type") != "A"
+            or before[0].get("id") != action["record_id"]
+            or before[0].get("content") != action["before"]
+            or before[0].get("proxied") is not False
+        ):
+            raise UnsafePlan(f"{hostname}: existing static A record changed")
+        current = client.get_dns_record(zone, action["record_id"])
+        if (
+            current.get("name") != hostname
+            or current.get("type") != "A"
+            or current.get("id") != action["record_id"]
+            or current.get("content") != action["before"]
+            or current.get("proxied") is not False
+        ):
+            raise UnsafePlan(f"{hostname}: static DNS record identity changed")
+        client.patch_static_a(zone, action["record_id"], wanted)
+
+    after = read_static_a_records(client, zone, hostname)
+    if (
+        len(after) != 1
+        or after[0].get("type") != "A"
+        or after[0].get("content") != wanted
+        or after[0].get("proxied") is not False
+    ):
+        raise UnsafePlan(f"{hostname}: static DNS verification failed")
+
+
 # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 # pylint: disable=too-many-arguments,too-many-positional-arguments
 def apply_actions(
@@ -355,6 +405,9 @@ def apply_actions(
                 or records[0].get("content", "").lower() != action["content"]
             ):
                 raise UnsafePlan(f"{hostname}: DNS CNAME verification failed")
+
+        elif kind in {"create_static_dns_a", "update_static_dns_a"}:
+            apply_static_a(client, context["ygg"], action)
 
         elif kind == "update_docker_dns_a":
             name = hostname.removesuffix(".ygg.nu")
