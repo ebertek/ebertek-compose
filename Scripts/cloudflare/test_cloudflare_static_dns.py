@@ -60,7 +60,7 @@ class InventoryTests(unittest.TestCase):
 
     def test_invalid_optional_descriptions_are_rejected(self):
         """Reject malformed metadata without disclosing it in errors."""
-        for description in ("", "  ", 23, "line\\nbreak", "x" * 513):
+        for description in ("", "  ", 23, "line" + chr(10) + "break", "x" * 513):
             with self.subTest(description=type(description).__name__):
                 row = {"hostname": HOST, "ipv4": ADDRESS, "description": description}
                 with self.assertRaisesRegex(ValueError, "invalid optional description"):
