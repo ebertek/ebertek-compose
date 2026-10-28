@@ -107,9 +107,10 @@ The following boundaries must be preserved:
   Disappearance from Compose does not authorize deletion from Cloudflare.
 - Static non-Docker `ygg.nu` A record writes require the explicitly enabled,
   version-controlled private active-host inventory. The controller validates
-  the planned /27 address boundaries, refuses proxied/duplicate/CNAME
+  the planned /27 address boundaries, refuses proxied/CNAME/undeclared-extra
   conflicts, re-reads current record identity before writing, and verifies
-  results. Updates modify only the IPv4 content; creation uses unproxied A
+  results. Only explicitly declared `additional_ipv4` companion A records
+  may coexist with the primary; they are never written or removed. Updates modify only the IPv4 content; creation uses unproxied A
   records. A blocked static hostname does not authorize overwriting it.
   Unmanaged, reserved, and retired devices must never be changed or deleted
   automatically. Keep MACs, serials, device descriptions, purchase dates and
