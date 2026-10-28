@@ -10,6 +10,7 @@ import re
 from collections import Counter
 from datetime import date
 
+from cloudflare_api import IDENTIFIER
 from cloudflare_live_diff import DOCKER_NETWORK, index_records
 
 STATIC_NETWORK = ipaddress.ip_network("10.4.20.0/24")
@@ -136,8 +137,6 @@ def plan_static_dns(wanted, records):
     """
     if wanted is None:
         return []
-    from cloudflare_api import IDENTIFIER  # pylint: disable=import-outside-toplevel
-
     index = index_records(records, "name")
     actions = []
     for finding in compare_static_dns(wanted, records)["findings"]:
