@@ -107,10 +107,11 @@ current implementation before modifying controller behavior.
   retired from active source. Their prior contents remain in Git history.
   Never run Terraform alongside the API writer; preserve sensitive offline
   Terraform state and private recovery exports until separately reviewed.
-- The Komodo audit prefers owner-only `/home/docker/cloudflare/cloudflare.env`.
-  Until private deployment secrets are migrated, it may fall back to the
-  private `terraform/cloudflare/cloudflare.env` in the merged checkout.
-  Do not edit or delete private source through the public repository.
+- The Komodo audit reads the private
+  `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env` merged file,
+  owned by the private `ebertek-compose-secrets` source. There is no Terraform
+  credential-path fallback. Never commit the token to this public repository
+  or edit the deployed `ygg-compose` checkout as a persistent source.
 - Runtime Python dependencies are declared in
   `Scripts/cloudflare/requirements.txt`; the virtual environment belongs
   outside the merged checkout, presently at
