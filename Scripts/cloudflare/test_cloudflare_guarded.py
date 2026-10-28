@@ -908,7 +908,7 @@ class GuardedTests(unittest.TestCase):
                 "id": "e" * 32,
                 "name": "example-device.ygg.nu",
                 "type": "A",
-                "content": "10.4.21.1",
+                "content": "10.4.21.42",
                 "proxied": False,
                 "ttl": 1800,
                 "comment": "Second protected interface",
@@ -922,7 +922,7 @@ class GuardedTests(unittest.TestCase):
                 "record_id": "f" * 32,
                 "before": "10.4.20.11",
                 "content": "10.4.20.12",
-                "additional_ipv4": ["10.4.21.1"],
+                "additional_ipv4": ["10.4.21.42"],
             }
         )
         done = apply_actions(client, candidate, CONTEXT, unattended=True)
@@ -939,7 +939,7 @@ class GuardedTests(unittest.TestCase):
                 "id": "e" * 32,
                 "name": "example-device.ygg.nu",
                 "type": "A",
-                "content": "10.4.21.1",
+                "content": "10.4.21.42",
                 "proxied": False,
                 "ttl": 1800,
             }
@@ -952,7 +952,7 @@ class GuardedTests(unittest.TestCase):
                     "kind": "create_static_dns_a",
                     "hostname": "example-device.ygg.nu",
                     "content": "10.4.20.12",
-                    "additional_ipv4": ["10.4.21.1"],
+                    "additional_ipv4": ["10.4.21.42"],
                 }
             ),
             CONTEXT,
@@ -971,7 +971,7 @@ class GuardedTests(unittest.TestCase):
                 "kind": "create_static_dns_a",
                 "hostname": "example-device.ygg.nu",
                 "content": "10.4.20.12",
-                "additional_ipv4": ["10.4.21.1"],
+                "additional_ipv4": ["10.4.21.42"],
             }
         )
         for records in (
@@ -981,7 +981,7 @@ class GuardedTests(unittest.TestCase):
                     "id": "e" * 32,
                     "name": "example-device.ygg.nu",
                     "type": "A",
-                    "content": "10.4.21.1",
+                    "content": "10.4.21.42",
                     "proxied": True,
                 }
             ],
@@ -990,7 +990,7 @@ class GuardedTests(unittest.TestCase):
                     "id": "e" * 32,
                     "name": "example-device.ygg.nu",
                     "type": "A",
-                    "content": "10.4.21.1",
+                    "content": "10.4.21.42",
                     "proxied": False,
                 },
                 {
@@ -1012,8 +1012,8 @@ class GuardedTests(unittest.TestCase):
         for invalid in (
             ["10.4.20.12"],
             ["10.4.21.31"],
-            ["10.4.21.1", "10.4.21.1"],
-            "10.4.21.1",
+            ["10.4.21.42", "10.4.21.42"],
+            "10.4.21.42",
         ):
             with self.subTest(invalid=invalid):
                 with self.assertRaises(UnsafePlan):
