@@ -37,8 +37,7 @@ def validated_entry(entry, index):
     if (
         str(address) != value
         or address not in STATIC_NETWORK
-        or address
-        in {STATIC_NETWORK.network_address, STATIC_NETWORK.broadcast_address}
+        or address in {STATIC_NETWORK.network_address, STATIC_NETWORK.broadcast_address}
         or address in DOCKER_NETWORK
     ):
         raise ValueError(f"{hostname}: address is outside the static host subnet")
