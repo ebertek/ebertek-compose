@@ -19,7 +19,7 @@ MAX_HOSTS = 256
 
 
 def validated_entry(entry, index):
-    """Validate one private inventory entry and return DNS-only data."""
+    """Validate one inventory entry and return DNS-only data."""
     if not isinstance(entry, dict) or not {"hostname", "ipv4"} <= set(entry):
         raise ValueError(f"Static DNS entry {index} requires hostname and ipv4")
     if set(entry) - {"hostname", "ipv4", "mac"}:
