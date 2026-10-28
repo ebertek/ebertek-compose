@@ -462,10 +462,12 @@ console.log("Mirror Websites completed successfully");
 
 [[action]]
 name = "Pull ygg-compose"
+description = "Pull merged GitOps checkouts on all hosts, then reconcile Cloudflare after successful pulls."
 [action.config]
 file_contents = """
 async function run(server, terminal, command) {
   console.log(`\\n===== ${server} =====`);
+  let exitCode: number | undefined;
 
   await komodo.execute_server_terminal(
     {
@@ -479,14 +481,15 @@ async function run(server, terminal, command) {
     {
       onLine: (line) => console.log(`[${server}] ${line}`),
       onFinish: (code) => {
-        console.log(`[${server}] Exit code: ${code}`);
-
-        if (Number(code) !== 0) {
-          throw new Error(`${server} failed with exit code ${code}`);
-        }
+        exitCode = Number(code);
+        console.log(`[${server}] Exit code: ${exitCode}`);
       },
     },
   );
+
+  if (exitCode !== 0) {
+    throw new Error(`${server} pull failed (exit code: ${exitCode ?? "unknown"})`);
+  }
 }
 
 await run(
@@ -506,6 +509,17 @@ await run(
   "action-git-pull-ygg",
   "su -s /bin/sh docker -c 'git -C /volume2/docker/ygg-compose pull --ff-only'",
 );
+
+// Reuse the existing guarded action; its six-hour schedule remains enabled.
+console.log("All GitOps pulls succeeded; running Cloudflare audit...");
+const audit = await komodo.execute_and_poll("RunAction", {
+  action: "Cloudflare audit",
+});
+
+if (audit.status !== "Complete" || audit.success !== true) {
+  throw new Error("Cloudflare audit failed; inspect its Komodo action logs");
+}
+console.log("Cloudflare audit completed successfully.");
 """
 
 ##
