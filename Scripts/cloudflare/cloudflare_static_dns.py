@@ -1,13 +1,14 @@
 """Read-only, private-inventory audit for non-Docker ygg.nu A records.
 
-MAC addresses and descriptions are optional, validated inventory metadata.
-Neither is sent to Cloudflare or included in audit output.
+MAC addresses, device descriptions, serials, purchase dates and ports are
+private inventory metadata. They are never sent to Cloudflare or logged.
 """
 
 import ipaddress
 import json
 import re
 from collections import Counter
+from datetime import date
 
 from cloudflare_live_diff import DOCKER_NETWORK, index_records
 
@@ -18,11 +19,57 @@ INVENTORY = "Scripts/cloudflare/static-hosts.json"
 MAX_HOSTS = 256
 
 
+def validate_metadata(entry, hostname):
+    """Reject invalid optional metadata without exposing its contents."""
+    for field, maximum in (("description", 512), ("serial_number", 256)):
+        value = entry.get(field)
+        if value is not None and (
+            not isinstance(value, str)
+            or not value.strip()
+            or len(value) > maximum
+            or any(ord(character) < 32 for character in value)
+        ):
+            raise ValueError(f"{hostname}: invalid optional {field}")
+
+    purchased = entry.get("purchase_date")
+    if purchased is not None:
+        if not isinstance(purchased, str) or not re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}", purchased
+        ):
+            raise ValueError(f"{hostname}: invalid optional purchase_date")
+        try:
+            date.fromisoformat(purchased)
+        except ValueError as error:
+            raise ValueError(f"{hostname}: invalid optional purchase_date") from error
+
+    ports = entry.get("open_ports")
+    if ports is not None:
+        if (
+            not isinstance(ports, list)
+            or any(
+                not isinstance(port, int)
+                or isinstance(port, bool)
+                or not 1 <= port <= 65535
+                for port in ports
+            )
+            or len(set(ports)) != len(ports)
+        ):
+            raise ValueError(f"{hostname}: invalid optional open_ports")
+
+
 def validated_entry(entry, index):
     """Validate one inventory entry and return DNS-only data."""
     if not isinstance(entry, dict) or not {"hostname", "ipv4"} <= set(entry):
         raise ValueError(f"Static DNS entry {index} requires hostname and ipv4")
-    if set(entry) - {"hostname", "ipv4", "mac", "description"}:
+    if set(entry) - {
+        "hostname",
+        "ipv4",
+        "mac",
+        "description",
+        "serial_number",
+        "purchase_date",
+        "open_ports",
+    }:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
     hostname = entry["hostname"]
     if not isinstance(hostname, str) or not HOST.fullmatch(hostname):
@@ -46,14 +93,7 @@ def validated_entry(entry, index):
     mac = entry.get("mac")
     if mac is not None and (not isinstance(mac, str) or not MAC.fullmatch(mac)):
         raise ValueError(f"{hostname}: invalid optional MAC address")
-    description = entry.get("description")
-    if description is not None and (
-        not isinstance(description, str)
-        or not description.strip()
-        or len(description) > 512
-        or any(ord(character) < 32 for character in description)
-    ):
-        raise ValueError(f"{hostname}: invalid optional description")
+    validate_metadata(entry, hostname)
     return hostname, value
 
 
