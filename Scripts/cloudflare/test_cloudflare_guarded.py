@@ -381,7 +381,9 @@ class GuardedTests(unittest.TestCase):
         )
         self.assertEqual(client.events, ["access", "tunnel", "dns"])
         with self.assertRaises(UnsafePlan):
-            check_unattended_plan(report(*(candidate["actions"] * 2)), reusable=client.policies)
+            check_unattended_plan(
+                report(*(candidate["actions"] * 2)), reusable=client.policies
+            )
 
     def test_unattended_new_host_rejects_unsafe_policies_before_writes(self):
         """Missing allow/deny and wrong order must never create a public app."""
@@ -418,7 +420,9 @@ class GuardedTests(unittest.TestCase):
             {"id": deny, "decision": "deny"},
         ]
         with (
-            patch.object(client, "list_policies", side_effect=[initial, initial, changed]),
+            patch.object(
+                client, "list_policies", side_effect=[initial, initial, changed]
+            ),
             self.assertRaises(UnsafePlan),
         ):
             apply_actions(
