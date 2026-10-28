@@ -92,7 +92,7 @@ AUTO_SUPPORTED = {
 
 
 def check_auto_access_policies(wanted, reusable):
-    """Never automatically remove authentication or the terminal deny rule."""
+    """Require an allow policy and a terminal deny for unattended Access changes."""
     if not isinstance(reusable, list):
         raise UnsafePlan("Cannot validate reusable Access policy inventory")
     indexed = {}
@@ -117,12 +117,12 @@ def check_auto_access_policies(wanted, reusable):
 
 
 def check_unattended_plan(report, maximum=3, reusable=None):
-    """Allow only bounded changes; require safe existing Access policy decisions."""
+    """Allow only bounded changes with safe new and existing Access policies."""
     actions = check_plan(report, maximum=maximum)
     if any(action["kind"] not in AUTO_SUPPORTED for action in actions):
         raise UnsafePlan("Unattended plan contains unsupported operations")
     for action in actions:
-        if action["kind"] == "update_access_policies":
+        if action["kind"] in {"create_access_app", "update_access_policies"}:
             check_auto_access_policies(action["policies"], reusable)
     return actions
 
@@ -269,6 +269,10 @@ def apply_actions(
             }
             if not set(action["policies"]).issubset(live_policy_ids):
                 raise UnsafePlan(f"{hostname}: reusable policy was removed")
+            if unattended:
+                check_auto_access_policies(
+                    action["policies"], client.list_policies(context["account"])
+                )
             client.create_access_app(context["account"], hostname, action["policies"])
             verify_access(client, context["account"], hostname, action["policies"])
 

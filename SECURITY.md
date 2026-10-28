@@ -86,9 +86,9 @@ contain it. Deleting a file in a later commit does not erase it from history.
 Cloudflare API reconciliation is the intended controller for new
 Compose-managed service hostnames. Desired application state comes from
 Compose labels; live DNS, Access and Tunnel configuration is read from
-Cloudflare. The old Terraform material is retained only as a migration/
-recovery reference. **Do not have Terraform and the API reconciler write
-to the same resources concurrently.**
+Cloudflare. Legacy public Terraform HCL and Terraform-specific tooling have been removed
+from active source; historical revisions remain in Git history. **Do not have
+Terraform and the API reconciler write to the same resources concurrently.**
 
 The following boundaries must be preserved:
 
@@ -100,8 +100,9 @@ The following boundaries must be preserved:
 - Unknown live API fields or conflicting DNS/Access records must block writes.
   Never silently discard application settings when updating policies.
 - Existing Access policy updates require a fresh-state check and validated
-  full-application PUT. Unattended updates additionally require at least one
-  allow policy and exactly one final deny policy; unsafe changes are refused.
+  full-application PUT. Unattended creation and policy updates additionally
+  require at least one allow policy and exactly one final deny policy;
+  unsafe changes are refused.
 - The automated reconciler is **not** an automatic deletion mechanism.
   Disappearance from Compose does not authorize deletion from Cloudflare.
 - `Scripts/cloudflare/cloudflare-live.py` and
@@ -113,10 +114,12 @@ The following boundaries must be preserved:
   read-only: its deployed entrypoint switches to `--auto` when the
   owner-only `/home/docker/cloudflare/enable-auto` marker exists. Restrict
   access to the marker and audit logs; remove it to return to GET-only mode.
-- Preserve encryption and recoverability of any retained Terraform state
-  and Cloudflare recovery exports. Do not treat live API configuration as
-  a complete backup: it may not recover unretrievable secrets or data after
-  loss of the Cloudflare account.
+- Preserve encryption and recoverability of any retained private Terraform
+  state and Cloudflare recovery exports. Do not treat live API configuration
+  as a complete backup: it may not recover unretrievable secrets after loss
+  of the Cloudflare account. The scheduled action reads the merged private
+  `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env` (sourced from
+  `ebertek-compose-secrets`); the public repository must never contain it.
 
 For implementation details and validation commands, see
 [`Scripts/cloudflare/README.md`](Scripts/cloudflare/README.md).

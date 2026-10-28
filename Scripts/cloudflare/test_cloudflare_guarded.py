@@ -48,6 +48,14 @@ def new_host_actions():
     )
 
 
+def safe_new_host_actions(allow, deny):
+    """Use authenticated policy assignments in each new-host operation."""
+    actions = new_host_actions()
+    for action in actions["actions"]:
+        action["policies"] = [allow, deny]
+    return actions
+
+
 class FakeWriter:
     """In-memory stand-in for the narrowly scoped Cloudflare API."""
 
@@ -355,11 +363,75 @@ class GuardedTests(unittest.TestCase):
         self.assertEqual(client.events, [])
 
     def test_unattended_accepts_bounded_new_host(self):
-        """A new service's three staged operations are allowed after opt-in."""
-        approved = check_unattended_plan(new_host_actions())
+        """A new service's three staged operations require allow and final deny."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        client = FakeWriter()
+        client.policies = [
+            {"id": allow, "decision": "allow"},
+            {"id": deny, "decision": "deny"},
+        ]
+        candidate = safe_new_host_actions(allow, deny)
+        approved = check_unattended_plan(candidate, reusable=client.policies)
         self.assertEqual(len(approved), 3)
+        completed = apply_actions(client, candidate, CONTEXT, unattended=True)
+        self.assertEqual(
+            [step["kind"] for step in completed],
+            ["create_access_app", "add_tunnel_ingress", "create_dns_cname"],
+        )
+        self.assertEqual(client.events, ["access", "tunnel", "dns"])
         with self.assertRaises(UnsafePlan):
-            check_unattended_plan(report(*(new_host_actions()["actions"] * 2)))
+            check_unattended_plan(
+                report(*(candidate["actions"] * 2)), reusable=client.policies
+            )
+
+    def test_unattended_new_host_rejects_unsafe_policies_before_writes(self):
+        """Missing allow/deny and wrong order must never create a public app."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        client = FakeWriter()
+        client.policies = [
+            {"id": POLICY, "decision": "bypass"},
+            {"id": allow, "decision": "allow"},
+            {"id": deny, "decision": "deny"},
+        ]
+        for policies in ([POLICY], [POLICY, deny], [allow], [deny, allow]):
+            candidate = safe_new_host_actions(allow, deny)
+            for action in candidate["actions"]:
+                action["policies"] = list(policies)
+            with self.subTest(policies=policies):
+                with self.assertRaises(UnsafePlan):
+                    check_unattended_plan(candidate, reusable=client.policies)
+                with self.assertRaises(UnsafePlan):
+                    apply_actions(client, candidate, CONTEXT, unattended=True)
+                self.assertEqual(client.events, [])
+
+    def test_unattended_new_host_rechecks_decisions_before_create(self):
+        """A decision change after initial plan validation must block POST."""
+        allow = "22222222-2222-2222-2222-222222222222"
+        deny = "33333333-3333-3333-3333-333333333333"
+        client = FakeWriter()
+        initial = [
+            {"id": allow, "decision": "allow"},
+            {"id": deny, "decision": "deny"},
+        ]
+        changed = [
+            {"id": allow, "decision": "bypass"},
+            {"id": deny, "decision": "deny"},
+        ]
+        with (
+            patch.object(
+                client, "list_policies", side_effect=[initial, initial, changed]
+            ),
+            self.assertRaises(UnsafePlan),
+        ):
+            apply_actions(
+                client,
+                safe_new_host_actions(allow, deny),
+                CONTEXT,
+                unattended=True,
+            )
+        self.assertEqual(client.events, [])
 
     def test_empty_report_requires_no_action(self):
         """An already synchronized account produces an empty execution list."""
