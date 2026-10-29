@@ -84,7 +84,7 @@ services:
       TRUSTED_PROXY_COUNT: "2"
       UMASK: "002"
     hostname: books
-    image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.57"
+    image: "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.58"
     labels:
       traefik.enable: "true"
       traefik.http.routers.books.entrypoints: "websecure"
