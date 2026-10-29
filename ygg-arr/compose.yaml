@@ -466,7 +466,7 @@ services:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5656/"]
       timeout: 5s
     hostname: unpackerr
-    image: "docker.io/golift/unpackerr:v1.0.0"
+    image: "docker.io/golift/unpackerr:v1.0.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.unpackerr.entrypoints: "websecure"
