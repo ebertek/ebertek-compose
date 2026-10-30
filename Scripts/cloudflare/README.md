@@ -321,6 +321,60 @@ Removing an entry from the inventory does not delete its DNS record.
 If a record is intentionally retained, document its owner in the
 appropriate source rather than suppressing the safety checks.
 
+### Declare intentionally retained DNS records
+
+An optional private `Scripts/cloudflare/retained-dns.json` provides explicit
+exceptions for DNS records that belong in `ygg.nu` but are not static devices
+or Docker service names. Keep this file in **ebertek-compose-secrets**, not the
+public source repository. The merged deployment reads it but never edits it.
+
+This example is illustrative and contains no real DNS inventory:
+
+```json
+{
+  "version": 1,
+  "records": [
+    {
+      "hostname": "b._dns-sd._udp.ygg.nu",
+      "type": "PTR",
+      "description": "DNS-SD browsing-domain advertisement"
+    },
+    {
+      "hostname": "selector._domainkey.ygg.nu",
+      "type": "TXT",
+      "description": "Email DKIM verification record"
+    },
+    {
+      "hostname": "dns-server.ygg.nu",
+      "type": "A",
+      "content": "10.4.21.42",
+      "description": "Manually managed internal DNS address"
+    }
+  ]
+}
+```
+
+Each declaration has an exact lowercase `hostname` (DNS service labels
+such as `_dns-sd` and `_domainkey` are supported), uppercase `type`, and
+optional human-readable `description`. A, AAAA, and CNAME declarations
+**must** specify their exact `content` target; other record types may
+optionally do so. A declaration matches only the same **DNS record type**,
+and if `content` is specified it must also match the live value.
+PTR/TXT entries without `content` verify **name and type only**, not
+their payloads. TXT content and descriptions are never printed to logs.
+
+Matching records are accounted for and reported under
+`Retained ygg.nu DNS`. Missing declarations are listed as review-only
+findings; live records with an unexpected type or IP remain in the
+`Unaccounted ygg.nu DNS` section. These declarations **do not authorize
+Cloudflare writes** and do not affect the unattended operation limit,
+approval fingerprint, or exit status.
+
+Do not misuse `static-hosts.json` `aliases` for a second A record:
+aliases are only metadata and do not validate record type or target.
+A separate, explicitly retained A declaration preserves the difference
+between an A record and a CNAME without adding automatic DNS management.
+
 ## Existing Access policy changes
 
 The guarded writer supports changing the ordered reusable policies of an

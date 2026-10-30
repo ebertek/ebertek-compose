@@ -201,6 +201,20 @@ class LiveIntegrationTests(unittest.TestCase):
                     }
                 )
             )
+            (private / "retained-dns.json").write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "records": [
+                            {
+                                "hostname": "dns-server.ygg.nu",
+                                "type": "A",
+                                "content": "10.4.21.42",
+                            }
+                        ],
+                    }
+                )
+            )
             settings = {
                 "account_id": ACCOUNT,
                 "ebi_zone": "ebi.nu",
@@ -234,6 +248,11 @@ class LiveIntegrationTests(unittest.TestCase):
                                 "type": "A",
                                 "content": "10.4.20.19",
                             },
+                            {
+                                "name": "dns-server.ygg.nu",
+                                "type": "A",
+                                "content": "10.4.21.42",
+                            },
                         ]
                     )
                     return records
@@ -247,6 +266,7 @@ class LiveIntegrationTests(unittest.TestCase):
                 report["unaccounted_ygg_dns"]["findings"][0]["hostname"],
                 "leftover.ygg.nu",
             )
+            self.assertEqual(report["unaccounted_ygg_dns"]["retained"]["present"], 1)
             self.assertEqual(report["actions"], [])
 
             with (

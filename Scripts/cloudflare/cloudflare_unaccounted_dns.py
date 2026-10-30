@@ -5,32 +5,15 @@ Findings are review hints only. Never add them to Cloudflare mutation plans.
 
 import re
 
+from cloudflare_retained_dns import matches_retained, retained_summary
+
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 ADDRESS_TYPES = frozenset({"A", "AAAA", "CNAME"})
 
 
-def audit_unaccounted_dns(
-    records, static_hosts, static_aliases, compose_services, running
-):
-    """Find live subdomain records absent from static and Docker declarations.
-
-    The zone apex is intentionally excluded: its records are managed separately.
-    A service's Compose name counts even if its container is currently stopped.
-    Alias declarations count as inventory ownership, not as desired CNAMEs.
-    """
-    if records is None or static_hosts is None:
-        return {
-            "enabled": False,
-            "counts": {
-                "records": 0,
-                "hostnames": 0,
-                "address_records": 0,
-                "other_records": 0,
-            },
-            "findings": [],
-        }
-
-    owned = set(static_hosts) | set(static_aliases)
+def declared_dns_names(static_aliases, compose_services, running):
+    """Collect alias and Docker names even when services are stopped."""
+    owned = set(static_aliases)
     for service in compose_services:
         name = service.get("Name", "").rsplit("/", 1)[-1]
         if NAME.fullmatch(name):
@@ -41,6 +24,26 @@ def audit_unaccounted_dns(
     for name in running:
         if NAME.fullmatch(name):
             owned.add(name + ".ygg.nu")
+    return owned
+
+
+def audit_unaccounted_dns(records, static_hosts, declared_names, retained=None):
+    """Find live DNS records absent from static, alias and Docker declarations."""
+    retained = retained or []
+    if records is None or static_hosts is None:
+        return {
+            "enabled": False,
+            "counts": {
+                "records": 0,
+                "hostnames": 0,
+                "address_records": 0,
+                "other_records": 0,
+            },
+            "findings": [],
+            "retained": {"declared": 0, "present": 0, "missing": []},
+        }
+
+    owned = set(static_hosts) | set(declared_names)
 
     findings = []
     for record in records:
@@ -49,6 +52,8 @@ def audit_unaccounted_dns(
             continue
         name = name.lower().rstrip(".")
         if name == "ygg.nu" or not name.endswith(".ygg.nu") or name in owned:
+            continue
+        if any(matches_retained(wanted, record) for wanted in retained):
             continue
         kind = record.get("type")
         kind = kind.upper() if isinstance(kind, str) else "UNKNOWN"
@@ -78,6 +83,7 @@ def audit_unaccounted_dns(
             "other_records": sum(item["category"] == "other" for item in findings),
         },
         "findings": findings,
+        "retained": retained_summary(retained, records),
     }
 
 
@@ -86,6 +92,18 @@ def print_unaccounted_summary(report):
     summary = report.get("unaccounted_ygg_dns", {})
     if not summary.get("enabled"):
         return
+    declared = summary.get("retained", {})
+    if declared.get("declared"):
+        print(
+            f"Retained ygg.nu DNS: {declared['present']}/"
+            f"{declared['declared']} matching (review only; no writes)"
+        )
+        for expected in declared["missing"]:
+            destination = f" -> {expected['content']}" if "content" in expected else ""
+            print(
+                f"  ! RETAINED missing {expected['type']} "
+                f"{expected['hostname']}{destination}"
+            )
     counts = summary["counts"]
     print(
         f"Unaccounted ygg.nu DNS: {counts['records']} records across "
