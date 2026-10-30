@@ -163,8 +163,13 @@ device or a record to create:
       "serial_number": "SAMPLE-123",
       "purchase_date": "2023-01-26",
       "ports": [
-        {"protocol": "tcp", "port": 80},
-        {"port": 443}
+        {
+          "protocol": "tcp",
+          "port": 80
+        },
+        {
+          "port": 443
+        }
       ],
       "aliases": [
         "example-web.ygg.nu",
