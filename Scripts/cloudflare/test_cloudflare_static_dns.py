@@ -173,6 +173,8 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
             [{"port": 80, "protocol": "TCP"}],
             [{"port": 80, "protocol": "icmp"}],
             [{"port": 80, "protocol": None}],
+            [{"port": 80, "protocol": []}],
+            [{"port": 80, "protocol": {}}],
             [{"port": 80, "service": "http"}],
             [{"port": 80}, {"port": 80}],
             [{"port": 80, "protocol": "tcp"}, {"port": 80, "protocol": "tcp"}],
