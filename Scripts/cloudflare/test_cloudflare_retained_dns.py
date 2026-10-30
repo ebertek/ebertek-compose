@@ -15,9 +15,9 @@ def expected():
         {"hostname": "b._dns-sd._udp.ygg.nu", "type": "PTR"},
         {"hostname": "selector._domainkey.ygg.nu", "type": "TXT"},
         {
-            "hostname": "ns.ygg.nu",
+            "hostname": "example-ns.ygg.nu",
             "type": "A",
-            "content": "10.4.21.34",
+            "content": "10.4.21.42",
             "description": "Existing internal DNS service",
         },
     ]
@@ -41,11 +41,11 @@ class RetainedDnsTests(unittest.TestCase):
     def test_malformed_entries_are_rejected(self):
         """Wrong types and missing targets must not silently hide drift."""
         invalid = [
-            [{"hostname": "ns.ygg.nu", "type": "A"}],
-            [{"hostname": "ns.ygg.nu", "type": "CNAME"}],
-            [{"hostname": "ns.ygg.nu", "type": "A", "content": "10.4.21.999"}],
+            [{"hostname": "example-ns.ygg.nu", "type": "A"}],
+            [{"hostname": "example-ns.ygg.nu", "type": "CNAME"}],
+            [{"hostname": "example-ns.ygg.nu", "type": "A", "content": "10.4.21.999"}],
             [{"hostname": "outside.example.org", "type": "TXT"}],
-            [{"hostname": "ns.ygg.nu", "type": "a", "content": "10.4.21.34"}],
+            [{"hostname": "example-ns.ygg.nu", "type": "a", "content": "10.4.21.42"}],
             [expected()[0], expected()[0]],
         ]
         with TemporaryDirectory() as directory:
@@ -61,7 +61,7 @@ class RetainedDnsTests(unittest.TestCase):
         live = [
             {"name": "b._dns-sd._udp.ygg.nu", "type": "PTR", "content": "ygg.nu"},
             {"name": "selector._domainkey.ygg.nu", "type": "TXT", "content": "private"},
-            {"name": "ns.ygg.nu", "type": "A", "content": "10.4.21.34"},
+            {"name": "example-ns.ygg.nu", "type": "A", "content": "10.4.21.42"},
         ]
         report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 0)
@@ -69,20 +69,20 @@ class RetainedDnsTests(unittest.TestCase):
         self.assertEqual(report["retained"]["missing"], [])
         self.assertNotIn("private", str(report))
 
-        live[-1] = {"name": "ns.ygg.nu", "type": "CNAME", "content": "pleiades.ygg.nu"}
+        live[-1] = {"name": "example-ns.ygg.nu", "type": "CNAME", "content": "pleiades.ygg.nu"}
         report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 1)
         self.assertEqual(report["findings"][0]["type"], "CNAME")
         self.assertEqual(report["retained"]["present"], 2)
         self.assertEqual(
             report["retained"]["missing"],
-            [{"hostname": "ns.ygg.nu", "type": "A", "content": "10.4.21.34"}],
+            [{"hostname": "example-ns.ygg.nu", "type": "A", "content": "10.4.21.42"}],
         )
 
-        live[-1] = {"name": "ns.ygg.nu", "type": "A", "content": "10.4.21.35"}
+        live[-1] = {"name": "example-ns.ygg.nu", "type": "A", "content": "10.4.21.43"}
         report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 1)
-        self.assertEqual(report["findings"][0]["content"], "10.4.21.35")
+        self.assertEqual(report["findings"][0]["content"], "10.4.21.43")
         self.assertEqual(report["retained"]["present"], 2)
 
 
