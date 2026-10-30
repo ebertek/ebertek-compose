@@ -171,10 +171,7 @@ device or a record to create:
           "port": 443
         }
       ],
-      "aliases": [
-        "example-web.ygg.nu",
-        "example-alt.ygg.nu"
-      ]
+      "aliases": ["example-web.ygg.nu", "example-alt.ygg.nu"]
     }
   ]
 }
