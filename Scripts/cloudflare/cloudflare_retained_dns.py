@@ -15,70 +15,80 @@ CONTENT_REQUIRED = frozenset({"A", "AAAA", "CNAME"})
 DOMAIN_TARGETS = frozenset({"CNAME", "PTR", "NS"})
 
 
+def validate_document(document):
+    """Require an explicit, bounded version-one retained DNS record list."""
+    if not isinstance(document, dict) or set(document) != {"version", "records"}:
+        raise ValueError("Invalid retained DNS inventory structure")
+    if document["version"] != 1 or isinstance(document["version"], bool):
+        raise ValueError("Unsupported retained DNS inventory version")
+    records = document["records"]
+    if not isinstance(records, list) or len(records) > 256:
+        raise ValueError("Invalid retained DNS record list")
+    return records
+
+
+def validate_identity(record, index):
+    """Require canonical DNS names and record types, including DNS-SD labels."""
+    if (
+        not isinstance(record, dict)
+        or not {"hostname", "type"} <= set(record)
+        or set(record) - {"hostname", "type", "content", "description"}
+    ):
+        raise ValueError(f"Invalid retained DNS entry {index}")
+    hostname = record["hostname"]
+    kind = record["type"]
+    if not isinstance(hostname, str) or len(hostname) > 253:
+        raise ValueError(f"Invalid retained DNS hostname at entry {index}")
+    if not HOST.fullmatch(hostname):
+        raise ValueError(f"Invalid retained DNS hostname at entry {index}")
+    if any(len(label) > 63 for label in hostname.split(".")):
+        raise ValueError(f"Invalid retained DNS label at entry {index}")
+    if not isinstance(kind, str) or not TYPE.fullmatch(kind):
+        raise ValueError(f"Invalid retained DNS type at entry {index}")
+    return hostname, kind
+
+
+def validate_payload(record, hostname, kind):
+    """Validate optional content and metadata without exposing their values."""
+    content = record.get("content")
+    if "content" in record and (
+        not isinstance(content, str)
+        or not content.strip()
+        or len(content) > 512
+        or any(ord(char) < 32 for char in content)
+    ):
+        raise ValueError(f"{hostname}: invalid retained DNS content")
+    if kind in CONTENT_REQUIRED and "content" not in record:
+        raise ValueError(f"{hostname}: {kind} requires expected content")
+    if kind in {"A", "AAAA"}:
+        try:
+            address = ipaddress.ip_address(content)
+        except ValueError as error:
+            raise ValueError(f"{hostname}: invalid {kind} address") from error
+        expected_version = 4 if kind == "A" else 6
+        if address.version != expected_version or str(address) != content:
+            raise ValueError(f"{hostname}: noncanonical {kind} address")
+    description = record.get("description")
+    if "description" in record and (
+        not isinstance(description, str)
+        or not description.strip()
+        or len(description) > 256
+        or any(ord(char) < 32 for char in description)
+    ):
+        raise ValueError(f"{hostname}: invalid retained DNS description")
+    return content
+
+
 def load_retained_dns(path):
     """Load and validate optional exact-type DNS exceptions from private GitOps."""
     if not path.is_file():
         return []
     document = json.loads(path.read_text(encoding="utf-8"))
-    if (
-        not isinstance(document, dict)
-        or set(document) != {"version", "records"}
-        or document["version"] != 1
-        or isinstance(document["version"], bool)
-        or not isinstance(document["records"], list)
-        or len(document["records"]) > 256
-    ):
-        raise ValueError("Invalid retained DNS inventory structure")
-
     declarations = []
     seen = set()
-    for index, record in enumerate(document["records"], 1):
-        if (
-            not isinstance(record, dict)
-            or not {"hostname", "type"} <= set(record)
-            or set(record) - {"hostname", "type", "content", "description"}
-        ):
-            raise ValueError(f"Invalid retained DNS entry {index}")
-        hostname = record["hostname"]
-        kind = record["type"]
-        if (
-            not isinstance(hostname, str)
-            or len(hostname) > 253
-            or not HOST.fullmatch(hostname)
-            or any(len(label) > 63 for label in hostname.split("."))
-            or not isinstance(kind, str)
-            or not TYPE.fullmatch(kind)
-        ):
-            raise ValueError(f"Invalid retained DNS name or type at entry {index}")
-
-        content = record.get("content")
-        if "content" in record and (
-            not isinstance(content, str)
-            or not content.strip()
-            or len(content) > 512
-            or any(ord(char) < 32 for char in content)
-        ):
-            raise ValueError(f"{hostname}: invalid retained DNS content")
-        if kind in CONTENT_REQUIRED and "content" not in record:
-            raise ValueError(f"{hostname}: {kind} requires expected content")
-        if kind in {"A", "AAAA"}:
-            try:
-                address = ipaddress.ip_address(content)
-            except ValueError as error:
-                raise ValueError(f"{hostname}: invalid {kind} address") from error
-            expected_version = 4 if kind == "A" else 6
-            if address.version != expected_version or str(address) != content:
-                raise ValueError(f"{hostname}: noncanonical {kind} address")
-
-        description = record.get("description")
-        if "description" in record and (
-            not isinstance(description, str)
-            or not description.strip()
-            or len(description) > 256
-            or any(ord(char) < 32 for char in description)
-        ):
-            raise ValueError(f"{hostname}: invalid retained DNS description")
-
+    for index, record in enumerate(validate_document(document), 1):
+        hostname, kind = validate_identity(record, index)
+        content = validate_payload(record, hostname, kind)
         identity = (hostname, kind, content)
         if identity in seen:
             raise ValueError(f"{hostname}: duplicate retained DNS entry")
