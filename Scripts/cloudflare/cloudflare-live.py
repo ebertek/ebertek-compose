@@ -19,9 +19,11 @@ from pathlib import Path
 from cloudflare_api import CloudflareClient, CloudflareError, checked_id
 from cloudflare_desired import compose_inventory, discover
 from cloudflare_live_diff import DOCKER_NETWORK, compare_live
+from cloudflare_unaccounted_dns import audit_unaccounted_dns
 from cloudflare_static_dns import (
     INVENTORY,
     compare_static_dns,
+    load_inventory_aliases,
     load_inventory_details,
     plan_static_dns,
 )
@@ -94,7 +96,8 @@ def run_audit(
     policies = client.list_policies(account)
     if not policies:
         raise CloudflareError("No reusable Access policies returned")
-    desired, errors = discover(compose_inventory(root), policies)
+    compose_services = compose_inventory(root)
+    desired, errors = discover(compose_services, policies)
     if errors:
         raise ValueError(
             "Compose labels failed Access validation:\n" + "\n".join(errors)
@@ -135,6 +138,16 @@ def run_audit(
     )
     report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
     report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
+    report["unaccounted_ygg_dns"] = audit_unaccounted_dns(
+        None if skip_docker else internal_dns,
+        static_hosts,
+        load_inventory_aliases(root / INVENTORY) if static_hosts is not None else set(),
+        compose_services,
+        docker_addresses or {},
+    )
+    report["counts"]["unaccounted_ygg_dns_records"] = report[
+        "unaccounted_ygg_dns"
+    ]["counts"]["records"]
     # Only the explicit active inventory can authorize non-Docker A writes.
     static_actions = (
         plan_static_dns(static_hosts, internal_dns, static_companions)
@@ -154,6 +167,7 @@ def run_audit(
         "Unmanaged Cloudflare resources and stopped containers are preserved",
         "Policy changes are suggestions, not automatically applied",
         "Static non-Docker DNS is managed only when static_dns_sync is enabled",
+        "Unaccounted ygg.nu DNS findings are review-only; never deleted automatically",
     ]
     return report
 
@@ -216,6 +230,15 @@ def main():
                 print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
         else:
             print("Static DNS: inventory not configured (audit disabled)")
+        unaccounted = report["unaccounted_ygg_dns"]
+        if unaccounted["enabled"]:
+            print("Unaccounted ygg.nu DNS:", json.dumps(unaccounted["counts"], sort_keys=True))
+            for finding in unaccounted["findings"]:
+                destination = f" -> {finding['content']}" if "content" in finding else ""
+                print(
+                    f"  ? REVIEW {finding['category']} {finding['type']} "
+                    f"{finding['hostname']}{destination}"
+                )
         print("No changes made to Cloudflare, Terraform, or Git.")
     return 2 if report["blocked"] or report["counts"]["static_dns_drift"] else 0
 
