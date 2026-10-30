@@ -79,3 +79,21 @@ def audit_unaccounted_dns(
         },
         "findings": findings,
     }
+
+
+def print_unaccounted_summary(report):
+    """Show review-only DNS leftovers without proposing any deletion."""
+    summary = report.get("unaccounted_ygg_dns", {})
+    if not summary.get("enabled"):
+        return
+    counts = summary["counts"]
+    print(
+        f"Unaccounted ygg.nu DNS: {counts['records']} records across "
+        f"{counts['hostnames']} hostnames (review only; no deletions)"
+    )
+    for finding in summary["findings"]:
+        destination = f" -> {finding['content']}" if "content" in finding else ""
+        print(
+            f"  ? REVIEW {finding['category']} {finding['type']} "
+            f"{finding['hostname']}{destination}"
+        )
