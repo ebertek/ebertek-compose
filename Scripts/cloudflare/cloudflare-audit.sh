@@ -33,10 +33,17 @@ if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
 	exit 1
 fi
 
-# Unattended writes require a separate, owner-only opt-in outside GitOps.
-# Existing policy updates are allowed only after unattended safety checks.
-if [[ -f "/home/docker/cloudflare/enable-auto" ]]; then
-	exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
-fi
-
-exec "${python}" Scripts/cloudflare/cloudflare-live.py
+# The private cloudflare.env explicitly controls unattended writes.
+# Unknown values fail closed rather than unexpectedly changing audit mode.
+case "${CF_AUTO_APPLY:-false}" in
+	true)
+		exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
+		;;
+	false)
+		exec "${python}" Scripts/cloudflare/cloudflare-live.py
+		;;
+	*)
+		echo "ERROR: CF_AUTO_APPLY must be true or false" >&2
+		exit 2
+		;;
+esac
