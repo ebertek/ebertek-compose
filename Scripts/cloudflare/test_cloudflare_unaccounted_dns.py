@@ -2,7 +2,7 @@
 
 import unittest
 
-from cloudflare_unaccounted_dns import audit_unaccounted_dns
+from cloudflare_unaccounted_dns import audit_unaccounted_dns, declared_dns_names
 
 
 class UnaccountedTests(unittest.TestCase):
@@ -28,12 +28,14 @@ class UnaccountedTests(unittest.TestCase):
         report = audit_unaccounted_dns(
             records,
             {"static.ygg.nu": "10.4.20.2", "pleiades.ygg.nu": "10.4.20.20"},
-            {"alias.ygg.nu"},
-            [
-                {"Name": "arr/stopped"},
-                {"Name": "group/service", "ContainerName": "custom"},
-            ],
-            {"running": "10.4.21.12"},
+            declared_dns_names(
+                {"alias.ygg.nu"},
+                [
+                    {"Name": "arr/stopped"},
+                    {"Name": "group/service", "ContainerName": "custom"},
+                ],
+                {"running": "10.4.21.12"},
+            ),
         )
         self.assertEqual(report["counts"]["records"], 1)
         self.assertEqual(
@@ -59,8 +61,6 @@ class UnaccountedTests(unittest.TestCase):
             ],
             {},
             set(),
-            [],
-            {},
         )
         self.assertEqual(
             report["counts"],
@@ -76,8 +76,8 @@ class UnaccountedTests(unittest.TestCase):
 
     def test_disabled_without_private_inventory(self):
         """Do not mark an entire zone orphaned when static inventory is absent."""
-        self.assertFalse(audit_unaccounted_dns([], None, [], [], {})["enabled"])
-        self.assertFalse(audit_unaccounted_dns(None, {}, [], [], {})["enabled"])
+        self.assertFalse(audit_unaccounted_dns([], None, set())["enabled"])
+        self.assertFalse(audit_unaccounted_dns(None, {}, set())["enabled"])
 
 
 if __name__ == "__main__":
