@@ -368,7 +368,7 @@ services:
       test: ["CMD-SHELL", "pgrep Xtigervnc >/dev/null || exit 1"]
       timeout: 10s
     hostname: tmm
-    image: "docker.io/tinymediamanager/tinymediamanager:5.3.4"
+    image: "docker.io/tinymediamanager/tinymediamanager:5.3.5"
     labels:
       traefik.enable: "true"
       traefik.http.routers.tmm.entrypoints: "websecure"
