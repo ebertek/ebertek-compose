@@ -1,0 +1,69 @@
+---
+name: Python Black autofix
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**/*.py"
+
+permissions: {}
+
+concurrency:
+  group: python-black-autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  black-autofix:
+    name: Auto-format changed Python files
+    # Never grant a PR from a fork the repository's write token.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref != github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      statuses: write
+      actions: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply Black formatting via Super-Linter
+        uses: super-linter/super-linter/slim@v9.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_PYTHON_BLACK: true
+          FIX_PYTHON_BLACK: true
+          SAVE_SUPER_LINTER_SUMMARY: false
+
+      - name: Commit and push formatting changes
+        id: commit
+        env:
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet -- '*.py'; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Black made no changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.py'
+          git commit -m "style: apply Black formatting"
+          git push origin "HEAD:refs/heads/${PR_BRANCH}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger fresh CI for the formatted commit
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: gh workflow run lint.yml --ref "$PR_BRANCH"
