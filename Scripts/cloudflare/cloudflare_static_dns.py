@@ -66,7 +66,11 @@ def validate_ports(entry, hostname):
             ):
                 raise ValueError(f"{hostname}: invalid ports entry")
             port = item["port"]
-            if not isinstance(port, int) or isinstance(port, bool) or not 1 <= port <= 65535:
+            if (
+                not isinstance(port, int)
+                or isinstance(port, bool)
+                or not 1 <= port <= 65535
+            ):
                 raise ValueError(f"{hostname}: invalid port number")
             protocol = item.get("protocol")
             if "protocol" in item and protocol not in {"tcp", "udp"}:
