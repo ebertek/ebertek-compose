@@ -121,9 +121,11 @@ The following boundaries must be preserved:
   `--auto` path can perform bounded, allowlisted writes if explicitly
   enabled.
 - The Komodo action named **Cloudflare audit** does **not** always mean
-  read-only: its deployed entrypoint switches to `--auto` when the
-  owner-only `/home/docker/cloudflare/enable-auto` marker exists. Restrict
-  access to the marker and audit logs; remove it to return to GET-only mode.
+  read-only: its deployed entrypoint switches to `--auto` only when
+  `CF_AUTO_APPLY=true` is explicitly set in the **private**
+  `Scripts/cloudflare/cloudflare.env`. Unset or `false` is GET-only;
+  invalid values abort. Restrict access to that file and audit logs; set
+  `CF_AUTO_APPLY=false` to disable unattended writes.
 - Preserve encryption and recoverability of any retained private Terraform
   state and Cloudflare recovery exports. Do not treat live API configuration
   as a complete backup: it may not recover unretrievable secrets after loss
