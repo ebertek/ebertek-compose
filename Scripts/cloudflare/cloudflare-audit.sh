@@ -39,14 +39,14 @@ fi
 # The private cloudflare.env explicitly controls unattended writes.
 # Unknown values fail closed rather than unexpectedly changing audit mode.
 case "${CF_AUTO_APPLY:-false}" in
-	true)
-		exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
-		;;
-	false)
-		exec "${python}" Scripts/cloudflare/cloudflare-live.py
-		;;
-	*)
-		echo "ERROR: CF_AUTO_APPLY must be true or false" >&2
-		exit 2
-		;;
+true)
+	exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
+	;;
+false)
+	exec "${python}" Scripts/cloudflare/cloudflare-live.py
+	;;
+*)
+	echo "ERROR: CF_AUTO_APPLY must be true or false" >&2
+	exit 2
+	;;
 esac
