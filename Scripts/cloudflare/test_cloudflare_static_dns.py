@@ -42,7 +42,7 @@ def record(name=HOST, address=ADDRESS, kind="A", proxied=False):
     }
 
 
-class InventoryTests(unittest.TestCase):
+class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """Require explicit schema and safe static-only IPv4 addresses."""
 
     def load(self, contents, required=True):
@@ -116,19 +116,148 @@ class InventoryTests(unittest.TestCase):
                 ):
                     self.load(inventory([row]))
 
-    def test_open_ports_validation(self):
-        """Only unique numeric port numbers are accepted; protocol is unknown."""
+    def test_legacy_open_ports_validation(self):
+        """Old private GitOps files remain valid until explicitly migrated."""
         for value in ("80", [0], [65536], [-1], [80, 80], [True], [80.0], [{}]):
             with self.subTest(value=value):
                 row = {"hostname": HOST, "ipv4": ADDRESS, "open_ports": value}
-                with self.assertRaisesRegex(ValueError, "invalid optional open_ports"):
+                with self.assertRaisesRegex(ValueError, "invalid legacy open_ports"):
                     self.load(inventory([row]))
+        self.assertEqual(
+            self.load(
+                inventory([{"hostname": HOST, "ipv4": ADDRESS, "open_ports": [80]}])
+            ),
+            {HOST: ADDRESS},
+        )
         self.assertEqual(
             self.load(
                 inventory([{"hostname": HOST, "ipv4": ADDRESS, "open_ports": []}])
             ),
             {HOST: ADDRESS},
         )
+
+    def test_protocol_aware_ports_and_aliases_are_private_metadata(self):
+        """Aliases and port details never influence primary or companion DNS."""
+        row = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "ports": [
+                {"protocol": "tcp", "port": 6444, "description": "Test control API"},
+                {"protocol": "udp", "port": 6444},
+                {"port": 8080},
+            ],
+            "aliases": ["device-web.ygg.nu", "device-alt.ygg.nu"],
+        }
+        wanted = self.load(inventory([row]))
+        self.assertEqual(wanted, {HOST: ADDRESS})
+        self.assertEqual(compare_static_dns(wanted, [record()])["counts"]["drift"], 0)
+        self.assertEqual(plan_static_dns(wanted, [record()]), [])
+        output = str(compare_static_dns(wanted, []))
+        self.assertNotIn("device-web", output)
+        self.assertNotIn("6444", output)
+        self.assertNotIn("Test control API", output)
+
+    def test_ports_reject_invalid_entries_and_duplicates(self):
+        """Each port is a unique protocol/number pair or an unknown protocol."""
+        invalid = (
+            None,
+            80,
+            "tcp/6444",
+            [80],
+            [{}],
+            [{"protocol": "tcp"}],
+            [{"port": 0}],
+            [{"port": 65536}],
+            [{"port": True}],
+            [{"port": 80.0}],
+            [{"port": "80"}],
+            [{"port": 80, "protocol": "TCP"}],
+            [{"port": 80, "protocol": "icmp"}],
+            [{"port": 80, "protocol": None}],
+            [{"port": 80, "protocol": []}],
+            [{"port": 80, "protocol": {}}],
+            [{"port": 80, "service": "http"}],
+            [{"port": 80, "description": None}],
+            [{"port": 80, "description": 5}],
+            [{"port": 80, "description": ""}],
+            [{"port": 80, "description": " "}],
+            [{"port": 80, "description": "line" + chr(10) + "break"}],
+            [{"port": 80, "description": "x" * 257}],
+            [{"port": 80}, {"port": 80}],
+            [{"port": 80, "protocol": "tcp"}, {"port": 80, "protocol": "tcp"}],
+        )
+        for ports in invalid:
+            with self.subTest(ports=ports):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "ports": ports}
+                with self.assertRaises(ValueError):
+                    self.load(inventory([row]))
+        for ports in ([], [{"port": 80}], [{"port": 80, "description": "HTTP"}]):
+            with self.subTest(ports=ports):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "ports": ports}
+                self.assertEqual(self.load(inventory([row])), {HOST: ADDRESS})
+
+    def test_ports_and_legacy_open_ports_are_mutually_exclusive(self):
+        """Prevent silently inconsistent old/new fields during migration."""
+        row = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "open_ports": [80],
+            "ports": [{"port": 80, "protocol": "tcp"}],
+        }
+        with self.assertRaisesRegex(ValueError, "cannot combine"):
+            self.load(inventory([row]))
+
+    def test_aliases_are_unique_single_label_ygg_nu_names(self):
+        """Reject malformed aliases before any guarded DNS operations."""
+        invalid = (
+            None,
+            "alias.ygg.nu",
+            [None],
+            [123],
+            ["device.ebi.nu"],
+            ["deep.alias.ygg.nu"],
+            ["Alias.ygg.nu"],
+            [HOST],
+            ["alias.ygg.nu", "alias.ygg.nu"],
+            [f"alias-{index}.ygg.nu" for index in range(17)],
+        )
+        for aliases in invalid:
+            with self.subTest(aliases=aliases):
+                row = {"hostname": HOST, "ipv4": ADDRESS, "aliases": aliases}
+                with self.assertRaises(ValueError):
+                    self.load(inventory([row]))
+        row = {"hostname": HOST, "ipv4": ADDRESS, "aliases": []}
+        self.assertEqual(self.load(inventory([row])), {HOST: ADDRESS})
+
+    def test_aliases_cannot_shadow_other_inventory_hosts_or_aliases(self):
+        """Reject cross-device collisions, regardless of inventory order."""
+        first = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "aliases": ["shared.ygg.nu"],
+        }
+        with self.assertRaisesRegex(ValueError, "aliases conflict"):
+            self.load(
+                inventory(
+                    [
+                        first,
+                        {"hostname": "shared.ygg.nu", "ipv4": "10.4.20.11"},
+                    ]
+                )
+            )
+        with self.assertRaisesRegex(ValueError, "aliases conflict"):
+            self.load(
+                inventory(
+                    [
+                        first,
+                        {
+                            "hostname": "second.ygg.nu",
+                            "ipv4": "10.4.20.11",
+                            "aliases": ["shared.ygg.nu"],
+                        },
+                    ]
+                )
+            )
 
     def test_companion_a_is_validated_but_does_not_replace_primary(self):
         """A second address is explicit DNS metadata, not a primary target."""
