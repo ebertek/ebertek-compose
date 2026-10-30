@@ -144,9 +144,7 @@ def run_audit(
     report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
     report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
     aliases = (
-        load_inventory_aliases(root / INVENTORY)
-        if static_hosts is not None
-        else set()
+        load_inventory_aliases(root / INVENTORY) if static_hosts is not None else set()
     )
     declared = declared_dns_names(aliases, compose_services, docker_addresses or {})
     report["unaccounted_ygg_dns"] = audit_unaccounted_dns(
