@@ -87,9 +87,7 @@ def print_static_summary(report):
 def require_auto_opt_in():
     """Only a private environment opt-in may authorize unattended writes."""
     if os.environ.get("CF_AUTO_APPLY") != "true":
-        raise UnsafePlan(
-            "Unattended Cloudflare writes require CF_AUTO_APPLY=true"
-        )
+        raise UnsafePlan("Unattended Cloudflare writes require CF_AUTO_APPLY=true")
 
 
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
