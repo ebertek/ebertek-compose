@@ -142,7 +142,7 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
             "hostname": HOST,
             "ipv4": ADDRESS,
             "ports": [
-                {"protocol": "tcp", "port": 6444},
+                {"protocol": "tcp", "port": 6444, "description": "Test control API"},
                 {"protocol": "udp", "port": 6444},
                 {"port": 8080},
             ],
@@ -155,6 +155,7 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
         output = str(compare_static_dns(wanted, []))
         self.assertNotIn("device-web", output)
         self.assertNotIn("6444", output)
+        self.assertNotIn("Test control API", output)
 
     def test_ports_reject_invalid_entries_and_duplicates(self):
         """Each port is a unique protocol/number pair or an unknown protocol."""
@@ -176,6 +177,12 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
             [{"port": 80, "protocol": []}],
             [{"port": 80, "protocol": {}}],
             [{"port": 80, "service": "http"}],
+            [{"port": 80, "description": None}],
+            [{"port": 80, "description": 5}],
+            [{"port": 80, "description": ""}],
+            [{"port": 80, "description": " "}],
+            [{"port": 80, "description": "line" + chr(10) + "break"}],
+            [{"port": 80, "description": "x" * 257}],
             [{"port": 80}, {"port": 80}],
             [{"port": 80, "protocol": "tcp"}, {"port": 80, "protocol": "tcp"}],
         )
@@ -184,7 +191,7 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 row = {"hostname": HOST, "ipv4": ADDRESS, "ports": ports}
                 with self.assertRaises(ValueError):
                     self.load(inventory([row]))
-        for ports in ([], [{"port": 80}]):
+        for ports in ([], [{"port": 80}], [{"port": 80, "description": "HTTP"}]):
             with self.subTest(ports=ports):
                 row = {"hostname": HOST, "ipv4": ADDRESS, "ports": ports}
                 self.assertEqual(self.load(inventory([row])), {HOST: ADDRESS})
