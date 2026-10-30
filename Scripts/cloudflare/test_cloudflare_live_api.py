@@ -209,7 +209,7 @@ class LiveIntegrationTests(unittest.TestCase):
                             {
                                 "hostname": "dns-server.ygg.nu",
                                 "type": "A",
-                                "content": "10.4.21.34",
+                                "content": "10.4.21.42",
                             }
                         ],
                     }
@@ -251,7 +251,7 @@ class LiveIntegrationTests(unittest.TestCase):
                             {
                                 "name": "dns-server.ygg.nu",
                                 "type": "A",
-                                "content": "10.4.21.34",
+                                "content": "10.4.21.42",
                             },
                         ]
                     )
