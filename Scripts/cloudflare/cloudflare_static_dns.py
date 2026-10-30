@@ -62,7 +62,7 @@ def validate_ports(entry, hostname):
             if (
                 not isinstance(item, dict)
                 or "port" not in item
-                or set(item) - {"port", "protocol"}
+                or set(item) - {"port", "protocol", "description"}
             ):
                 raise ValueError(f"{hostname}: invalid ports entry")
             port = item["port"]
@@ -72,6 +72,14 @@ def validate_ports(entry, hostname):
                 or not 1 <= port <= 65535
             ):
                 raise ValueError(f"{hostname}: invalid port number")
+            description = item.get("description")
+            if "description" in item and (
+                not isinstance(description, str)
+                or not description.strip()
+                or len(description) > 256
+                or any(ord(char) < 32 for char in description)
+            ):
+                raise ValueError(f"{hostname}: invalid port description")
             protocol = item.get("protocol")
             if "protocol" in item and (
                 not isinstance(protocol, str) or protocol not in ("tcp", "udp")
