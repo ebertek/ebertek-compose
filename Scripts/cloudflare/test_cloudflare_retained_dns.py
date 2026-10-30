@@ -69,7 +69,11 @@ class RetainedDnsTests(unittest.TestCase):
         self.assertEqual(report["retained"]["missing"], [])
         self.assertNotIn("private", str(report))
 
-        live[-1] = {"name": "example-ns.ygg.nu", "type": "CNAME", "content": "pleiades.ygg.nu"}
+        live[-1] = {
+            "name": "example-ns.ygg.nu",
+            "type": "CNAME",
+            "content": "pleiades.ygg.nu",
+        }
         report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 1)
         self.assertEqual(report["findings"][0]["type"], "CNAME")
