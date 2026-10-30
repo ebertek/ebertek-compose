@@ -27,7 +27,11 @@ from cloudflare_static_dns import (
     load_inventory_details,
     plan_static_dns,
 )
-from cloudflare_unaccounted_dns import audit_unaccounted_dns, print_unaccounted_summary
+from cloudflare_unaccounted_dns import (
+    audit_unaccounted_dns,
+    declared_dns_names,
+    print_unaccounted_summary,
+)
 
 CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
@@ -139,12 +143,16 @@ def run_audit(
     )
     report["counts"]["static_dns_hosts"] = report["static_dns"]["counts"]["hosts"]
     report["counts"]["static_dns_drift"] = report["static_dns"]["counts"]["drift"]
+    aliases = (
+        load_inventory_aliases(root / INVENTORY)
+        if static_hosts is not None
+        else set()
+    )
+    declared = declared_dns_names(aliases, compose_services, docker_addresses or {})
     report["unaccounted_ygg_dns"] = audit_unaccounted_dns(
         None if skip_docker else internal_dns,
         static_hosts,
-        load_inventory_aliases(root / INVENTORY) if static_hosts is not None else set(),
-        compose_services,
-        docker_addresses or {},
+        declared,
         retained=(
             load_retained_dns(root / RETAINED) if static_hosts is not None else []
         ),
