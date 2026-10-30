@@ -232,9 +232,14 @@ def main():
             print("Static DNS: inventory not configured (audit disabled)")
         unaccounted = report["unaccounted_ygg_dns"]
         if unaccounted["enabled"]:
-            print("Unaccounted ygg.nu DNS:", json.dumps(unaccounted["counts"], sort_keys=True))
+            print(
+                "Unaccounted ygg.nu DNS:",
+                json.dumps(unaccounted["counts"], sort_keys=True),
+            )
             for finding in unaccounted["findings"]:
-                destination = f" -> {finding['content']}" if "content" in finding else ""
+                destination = (
+                    f" -> {finding['content']}" if "content" in finding else ""
+                )
                 print(
                     f"  ? REVIEW {finding['category']} {finding['type']} "
                     f"{finding['hostname']}{destination}"
