@@ -6,6 +6,15 @@ enabled = true
 ##
 
 [[server]]
+name = "head.ktk.bme.hu"
+[server.config]
+enabled = true
+disk_warning = 97.0
+disk_critical = 99.0
+
+##
+
+[[server]]
 name = "pleiades.ygg.nu"
 [server.config]
 enabled = true
