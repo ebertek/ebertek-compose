@@ -19,6 +19,7 @@ from pathlib import Path
 from cloudflare_api import CloudflareClient, CloudflareError, checked_id
 from cloudflare_desired import compose_inventory, discover
 from cloudflare_live_diff import DOCKER_NETWORK, compare_live
+from cloudflare_retained_dns import RETAINED, load_retained_dns
 from cloudflare_static_dns import (
     INVENTORY,
     compare_static_dns,
@@ -144,6 +145,11 @@ def run_audit(
         load_inventory_aliases(root / INVENTORY) if static_hosts is not None else set(),
         compose_services,
         docker_addresses or {},
+        retained=(
+            load_retained_dns(root / RETAINED)
+            if static_hosts is not None
+            else []
+        ),
     )
     report["counts"]["unaccounted_ygg_dns_records"] = report["unaccounted_ygg_dns"][
         "counts"
@@ -168,6 +174,7 @@ def run_audit(
         "Policy changes are suggestions, not automatically applied",
         "Static non-Docker DNS is managed only when static_dns_sync is enabled",
         "Unaccounted ygg.nu DNS findings are review-only; never deleted automatically",
+        "Retained DNS declarations are read-only exact-type expectations",
     ]
     return report
 
