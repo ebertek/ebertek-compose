@@ -25,6 +25,7 @@ from cloudflare_guarded import (
     fingerprint,
     preflight_compatibility,
 )
+from cloudflare_unaccounted_dns import print_unaccounted_summary
 from cloudflare_write_api import CloudflareWriter
 
 SPEC = importlib.util.spec_from_file_location(
@@ -88,24 +89,6 @@ def require_auto_opt_in():
     """Only a private environment opt-in may authorize unattended writes."""
     if os.environ.get("CF_AUTO_APPLY") != "true":
         raise UnsafePlan("Unattended Cloudflare writes require CF_AUTO_APPLY=true")
-
-
-def print_unaccounted_summary(report):
-    """Show review-only DNS leftovers without proposing any deletion."""
-    summary = report.get("unaccounted_ygg_dns", {})
-    if not summary.get("enabled"):
-        return
-    counts = summary["counts"]
-    print(
-        f"Unaccounted ygg.nu DNS: {counts['records']} records across "
-        f"{counts['hostnames']} hostnames (review only; no deletions)"
-    )
-    for finding in summary["findings"]:
-        destination = f" -> {finding['content']}" if "content" in finding else ""
-        print(
-            f"  ? REVIEW {finding['category']} {finding['type']} "
-            f"{finding['hostname']}{destination}"
-        )
 
 
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
