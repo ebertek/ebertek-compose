@@ -84,9 +84,10 @@ current implementation before modifying controller behavior.
   explicitly opted-in, bounded unattended operations.
 - The scheduled Komodo action `Cloudflare audit` uses
   `Scripts/cloudflare/cloudflare-audit.sh`. **Do not infer its effects from
-  its name:** without `/home/docker/cloudflare/enable-auto` it performs a
-  GET-only audit; with the owner-only opt-in marker it invokes `--auto`.
-  Check this mode before describing a run as read-only.
+  its name:** the private `Scripts/cloudflare/cloudflare.env` controls
+  its mode via `CF_AUTO_APPLY=true` (guarded unattended writes). If unset
+  or `false`, it runs a GET-only audit; invalid values abort.
+  Check this setting before describing a run as read-only.
 - Unattended mutations are restricted to a small allowlist and at most three
   operations per run. New Access applications and existing policy updates
   require at least one verified allow policy and exactly one final deny

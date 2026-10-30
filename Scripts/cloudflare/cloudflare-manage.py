@@ -25,6 +25,7 @@ from cloudflare_guarded import (
     fingerprint,
     preflight_compatibility,
 )
+from cloudflare_unaccounted_dns import print_unaccounted_summary
 from cloudflare_write_api import CloudflareWriter
 
 SPEC = importlib.util.spec_from_file_location(
@@ -84,22 +85,10 @@ def print_static_summary(report):
         print(f"  ! STATIC {finding['status']}: {finding['hostname']}{reason}")
 
 
-def print_unaccounted_summary(report):
-    """Show review-only DNS leftovers without proposing any deletion."""
-    summary = report.get("unaccounted_ygg_dns", {})
-    if not summary.get("enabled"):
-        return
-    counts = summary["counts"]
-    print(
-        f"Unaccounted ygg.nu DNS: {counts['records']} records across "
-        f"{counts['hostnames']} hostnames (review only; no deletions)"
-    )
-    for finding in summary["findings"]:
-        destination = f" -> {finding['content']}" if "content" in finding else ""
-        print(
-            f"  ? REVIEW {finding['category']} {finding['type']} "
-            f"{finding['hostname']}{destination}"
-        )
+def require_auto_opt_in():
+    """Only a private environment opt-in may authorize unattended writes."""
+    if os.environ.get("CF_AUTO_APPLY") != "true":
+        raise UnsafePlan("Unattended Cloudflare writes require CF_AUTO_APPLY=true")
 
 
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
@@ -124,7 +113,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
     parser.add_argument(
         "--auto",
         action="store_true",
-        help="Unattended apply, only when securely opted in outside GitOps",
+        help="Unattended apply, requires CF_AUTO_APPLY=true in private cloudflare.env",
     )
     parser.add_argument(
         "--max-operations",
@@ -137,6 +126,8 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         raise ValueError("--preflight, --apply and --auto are mutually exclusive")
     if not 1 <= args.max_operations <= 10:
         raise ValueError("Maximum operations must be between 1 and 10")
+    if args.auto:
+        require_auto_opt_in()
     root = args.root.expanduser().resolve()
     if not root.is_dir():
         raise ValueError("Merged GitOps checkout does not exist")
@@ -206,12 +197,6 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
                 return 0
             raise UnsafePlan("Refusing apply: no operations remain")
         if args.auto:
-            marker = Path.home() / "cloudflare" / "enable-auto"
-            status = marker.stat()
-            if status.st_uid != os.getuid() or status.st_mode & 0o077:
-                raise UnsafePlan("Auto-apply marker permissions must be owner-only")
-            if marker.read_text().strip() != "enabled":
-                raise UnsafePlan("Auto-apply marker does not explicitly enable writes")
             check_unattended_plan(
                 report,
                 maximum=min(3, args.max_operations),

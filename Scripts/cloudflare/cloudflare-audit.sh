@@ -13,6 +13,9 @@ if [[ ! -x "${python}" || ! -r "${credentials}" ]]; then
 	exit 1
 fi
 
+# Ignore an inherited opt-in: only the private GitOps env file may set it.
+unset CF_AUTO_APPLY
+
 # Keep the existing GitOps checkout read-only.
 cd "${root}"
 set -a
@@ -33,10 +36,17 @@ if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
 	exit 1
 fi
 
-# Unattended writes require a separate, owner-only opt-in outside GitOps.
-# Existing policy updates are allowed only after unattended safety checks.
-if [[ -f "/home/docker/cloudflare/enable-auto" ]]; then
+# The private cloudflare.env explicitly controls unattended writes.
+# Unknown values fail closed rather than unexpectedly changing audit mode.
+case "${CF_AUTO_APPLY:-false}" in
+true)
 	exec "${python}" Scripts/cloudflare/cloudflare-manage.py --auto
-fi
-
-exec "${python}" Scripts/cloudflare/cloudflare-live.py
+	;;
+false)
+	exec "${python}" Scripts/cloudflare/cloudflare-live.py
+	;;
+*)
+	echo "ERROR: CF_AUTO_APPLY must be true or false" >&2
+	exit 2
+	;;
+esac
