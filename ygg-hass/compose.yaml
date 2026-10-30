@@ -263,7 +263,7 @@ services:
         ]
       timeout: 5s
     hostname: mass
-    image: "ghcr.io/music-assistant/server:2.10.8"
+    image: "ghcr.io/music-assistant/server:2.10.9"
     labels:
       traefik.enable: "true"
       traefik.http.routers.mass.entrypoints: "websecure"
