@@ -38,6 +38,8 @@ jobs:
         uses: super-linter/super-linter/slim@v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Checkout is the PR head, not GitHub's synthetic merge commit.
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_PYTHON_BLACK: true
           FIX_PYTHON_BLACK: true
