@@ -19,7 +19,6 @@ from pathlib import Path
 from cloudflare_api import CloudflareClient, CloudflareError, checked_id
 from cloudflare_desired import compose_inventory, discover
 from cloudflare_live_diff import DOCKER_NETWORK, compare_live
-from cloudflare_unaccounted_dns import audit_unaccounted_dns
 from cloudflare_static_dns import (
     INVENTORY,
     compare_static_dns,
@@ -27,6 +26,7 @@ from cloudflare_static_dns import (
     load_inventory_details,
     plan_static_dns,
 )
+from cloudflare_unaccounted_dns import audit_unaccounted_dns
 
 CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
@@ -145,9 +145,9 @@ def run_audit(
         compose_services,
         docker_addresses or {},
     )
-    report["counts"]["unaccounted_ygg_dns_records"] = report[
-        "unaccounted_ygg_dns"
-    ]["counts"]["records"]
+    report["counts"]["unaccounted_ygg_dns_records"] = report["unaccounted_ygg_dns"][
+        "counts"
+    ]["records"]
     # Only the explicit active inventory can authorize non-Docker A writes.
     static_actions = (
         plan_static_dns(static_hosts, internal_dns, static_companions)
@@ -170,6 +170,25 @@ def run_audit(
         "Unaccounted ygg.nu DNS findings are review-only; never deleted automatically",
     ]
     return report
+
+
+def print_unaccounted_summary(report):
+    """Print review-only unknown ygg.nu DNS records without modifying them."""
+    unaccounted = report["unaccounted_ygg_dns"]
+    if not unaccounted["enabled"]:
+        return
+    print(
+        "Unaccounted ygg.nu DNS:",
+        json.dumps(unaccounted["counts"], sort_keys=True),
+    )
+    for finding in unaccounted["findings"]:
+        destination = (
+            f" -> {finding['content']}" if "content" in finding else ""
+        )
+        print(
+            f"  ? REVIEW {finding['category']} {finding['type']} "
+            f"{finding['hostname']}{destination}"
+        )
 
 
 def main():
@@ -230,20 +249,7 @@ def main():
                 print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
         else:
             print("Static DNS: inventory not configured (audit disabled)")
-        unaccounted = report["unaccounted_ygg_dns"]
-        if unaccounted["enabled"]:
-            print(
-                "Unaccounted ygg.nu DNS:",
-                json.dumps(unaccounted["counts"], sort_keys=True),
-            )
-            for finding in unaccounted["findings"]:
-                destination = (
-                    f" -> {finding['content']}" if "content" in finding else ""
-                )
-                print(
-                    f"  ? REVIEW {finding['category']} {finding['type']} "
-                    f"{finding['hostname']}{destination}"
-                )
+        print_unaccounted_summary(report)
         print("No changes made to Cloudflare, Terraform, or Git.")
     return 2 if report["blocked"] or report["counts"]["static_dns_drift"] else 0
 
