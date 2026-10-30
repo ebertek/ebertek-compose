@@ -66,7 +66,7 @@ def validate_ports(entry, hostname):
             ):
                 raise ValueError(f"{hostname}: invalid ports entry")
             port = item["port"]
-            if type(port) is not int or not 1 <= port <= 65535:
+            if not isinstance(port, int) or isinstance(port, bool) or not 1 <= port <= 65535:
                 raise ValueError(f"{hostname}: invalid port number")
             protocol = item.get("protocol")
             if "protocol" in item and protocol not in {"tcp", "udp"}:
@@ -80,7 +80,12 @@ def validate_ports(entry, hostname):
     old = entry.get("open_ports")
     if old is not None and (
         not isinstance(old, list)
-        or any(type(port) is not int or not 1 <= port <= 65535 for port in old)
+        or any(
+            not isinstance(port, int)
+            or isinstance(port, bool)
+            or not 1 <= port <= 65535
+            for port in old
+        )
         or len(set(old)) != len(old)
     ):
         raise ValueError(f"{hostname}: invalid legacy open_ports")
