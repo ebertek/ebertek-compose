@@ -18,13 +18,21 @@ class UnaccountedTests(unittest.TestCase):
             {"name": "stopped.ygg.nu", "type": "A", "content": "10.4.21.10"},
             {"name": "custom.ygg.nu", "type": "A", "content": "10.4.21.11"},
             {"name": "running.ygg.nu", "type": "A", "content": "10.4.21.12"},
-            {"name": "orphan.ygg.nu", "type": "A", "content": "10.4.20.55", "proxied": False},
+            {
+                "name": "orphan.ygg.nu",
+                "type": "A",
+                "content": "10.4.20.55",
+                "proxied": False,
+            },
         ]
         report = audit_unaccounted_dns(
             records,
             {"static.ygg.nu": "10.4.20.2", "pleiades.ygg.nu": "10.4.20.20"},
             {"alias.ygg.nu"},
-            [{"Name": "arr/stopped"}, {"Name": "group/service", "ContainerName": "custom"}],
+            [
+                {"Name": "arr/stopped"},
+                {"Name": "group/service", "ContainerName": "custom"},
+            ],
             {"running": "10.4.21.12"},
         )
         self.assertEqual(report["counts"]["records"], 1)
