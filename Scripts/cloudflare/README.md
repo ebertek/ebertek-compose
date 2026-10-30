@@ -162,7 +162,14 @@ device or a record to create:
       "description": "Example device model and notes",
       "serial_number": "SAMPLE-123",
       "purchase_date": "2023-01-26",
-      "open_ports": [80, 443]
+      "ports": [
+        {"protocol": "tcp", "port": 80},
+        {"port": 443}
+      ],
+      "aliases": [
+        "example-web.ygg.nu",
+        "example-alt.ygg.nu"
+      ]
     }
   ]
 }
@@ -187,12 +194,31 @@ hostnames may point to the same device address. Optional `description`
 accepts a device model and notes (up to 512 characters), is validated as
 private metadata, and is never included in DNS requests or audit output.
 Additional optional inventory-only fields are `serial_number` (a nonempty
-string), `purchase_date` (a real date in `YYYY-MM-DD` format), and
-`open_ports` (an array of distinct numeric ports, each 1-65535). Omit a
-field if its value is unknown. `open_ports: []` means no ports recorded,
-which is different from never having collected port information. These are
-user-reported observations, **not live port scans**; no TCP/UDP transport
-or reachability is inferred from the port numbers.
+string), `purchase_date` (a real date in `YYYY-MM-DD` format), `ports`,
+and `aliases`.
+
+`ports` is an array of objects with a required integer `port` (1–65535)
+and optional lowercase `protocol` (`tcp` or `udp`). If the transport is
+unknown, **omit** `protocol`; do not guess TCP. Distinct TCP and UDP
+entries for the same port number are valid, but duplicate
+`(protocol, port)` pairs are rejected. An omitted `ports` field means
+no port observations were supplied; `"ports": []` means an explicitly
+empty observation list. These are user-reported observations, **not live
+port scans**; the reconciler does not verify port reachability.
+
+The previous `open_ports: [80, 443]` integer format is temporarily
+accepted **only for migration**. Do not mix `open_ports` and `ports`
+in the same entry. Migrate old entries to `"ports": [{"port": 80},
+{"port": 443}]` with the protocols omitted until they are known.
+
+`aliases` is an optional list of up to 16 canonical, lowercase,
+single-label `*.ygg.nu` hostnames (e.g. `web-device.ygg.nu`). A
+device may declare multiple aliases. Each alias must be unique across
+the entire active inventory and must not collide with any device's
+primary `hostname`. They are reserved for **possible future CNAME
+creation**, but are currently **metadata-only**: no CNAME is created,
+updated, deleted, audited, or included in the live DNS plan.
+Neither aliases nor port metadata enter Cloudflare API requests or logs.
 
 All of these fields stay in the private GitOps inventory and are stripped
 before comparison with Cloudflare: only hostname and IPv4 address are used
