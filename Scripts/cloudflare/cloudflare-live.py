@@ -182,9 +182,7 @@ def print_unaccounted_summary(report):
         json.dumps(unaccounted["counts"], sort_keys=True),
     )
     for finding in unaccounted["findings"]:
-        destination = (
-            f" -> {finding['content']}" if "content" in finding else ""
-        )
+        destination = f" -> {finding['content']}" if "content" in finding else ""
         print(
             f"  ? REVIEW {finding['category']} {finding['type']} "
             f"{finding['hostname']}{destination}"
