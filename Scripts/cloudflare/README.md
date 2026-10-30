@@ -165,7 +165,8 @@ device or a record to create:
       "ports": [
         {
           "protocol": "tcp",
-          "port": 80
+          "port": 80,
+          "description": "Example HTTP endpoint"
         },
         {
           "port": 443
@@ -199,11 +200,13 @@ Additional optional inventory-only fields are `serial_number` (a nonempty
 string), `purchase_date` (a real date in `YYYY-MM-DD` format), `ports`,
 and `aliases`.
 
-`ports` is an array of objects with a required integer `port` (1–65535)
-and optional lowercase `protocol` (`tcp` or `udp`). If the transport is
-unknown, **omit** `protocol`; do not guess TCP. Distinct TCP and UDP
-entries for the same port number are valid, but duplicate
-`(protocol, port)` pairs are rejected. An omitted `ports` field means
+`ports` is an array of objects with a required integer `port` (1–65535),
+optional lowercase `protocol` (`tcp` or `udp`), and optional `description`
+(a nonblank printable string up to 256 characters). A description can
+document the suspected service without implying it has been verified.
+If the transport is unknown, **omit** `protocol`; do not guess TCP.
+Distinct TCP and UDP entries for the same port number are valid, but
+duplicate `(protocol, port)` pairs are rejected. An omitted `ports` field means
 no port observations were supplied; `"ports": []` means an explicitly
 empty observation list. These are user-reported observations, **not live
 port scans**; the reconciler does not verify port reachability.
