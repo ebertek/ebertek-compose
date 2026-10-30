@@ -13,6 +13,9 @@ if [[ ! -x "${python}" || ! -r "${credentials}" ]]; then
 	exit 1
 fi
 
+# Ignore an inherited opt-in: only the private GitOps env file may set it.
+unset CF_AUTO_APPLY
+
 # Keep the existing GitOps checkout read-only.
 cd "${root}"
 set -a
