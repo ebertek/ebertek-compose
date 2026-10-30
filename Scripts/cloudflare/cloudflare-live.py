@@ -26,7 +26,7 @@ from cloudflare_static_dns import (
     load_inventory_details,
     plan_static_dns,
 )
-from cloudflare_unaccounted_dns import audit_unaccounted_dns
+from cloudflare_unaccounted_dns import audit_unaccounted_dns, print_unaccounted_summary
 
 CONTAINER_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
@@ -170,23 +170,6 @@ def run_audit(
         "Unaccounted ygg.nu DNS findings are review-only; never deleted automatically",
     ]
     return report
-
-
-def print_unaccounted_summary(report):
-    """Print review-only unknown ygg.nu DNS records without modifying them."""
-    unaccounted = report["unaccounted_ygg_dns"]
-    if not unaccounted["enabled"]:
-        return
-    print(
-        "Unaccounted ygg.nu DNS:",
-        json.dumps(unaccounted["counts"], sort_keys=True),
-    )
-    for finding in unaccounted["findings"]:
-        destination = f" -> {finding['content']}" if "content" in finding else ""
-        print(
-            f"  ? REVIEW {finding['category']} {finding['type']} "
-            f"{finding['hostname']}{destination}"
-        )
 
 
 def main():
