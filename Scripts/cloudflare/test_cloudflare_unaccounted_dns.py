@@ -36,10 +36,18 @@ class UnaccountedTests(unittest.TestCase):
             {"running": "10.4.21.12"},
         )
         self.assertEqual(report["counts"]["records"], 1)
-        self.assertEqual(report["findings"], [{
-            "hostname": "orphan.ygg.nu", "type": "A", "category": "address",
-            "proxied": False, "content": "10.4.20.55",
-        }])
+        self.assertEqual(
+            report["findings"],
+            [
+                {
+                    "hostname": "orphan.ygg.nu",
+                    "type": "A",
+                    "category": "address",
+                    "proxied": False,
+                    "content": "10.4.20.55",
+                }
+            ],
+        )
 
     def test_unknown_types_listed_without_sensitive_payload(self):
         """TXT and other records are visible, without logging their values."""
@@ -48,11 +56,21 @@ class UnaccountedTests(unittest.TestCase):
                 {"name": "_verification.ygg.nu", "type": "TXT", "content": "secret"},
                 {"name": "old.ygg.nu", "type": "CNAME", "content": "example.com"},
                 {"name": "old.ygg.nu", "type": "AAAA", "content": "fd00::1"},
-            ], {}, set(), [], {},
+            ],
+            {},
+            set(),
+            [],
+            {},
         )
-        self.assertEqual(report["counts"], {
-            "records": 3, "hostnames": 2, "address_records": 2, "other_records": 1,
-        })
+        self.assertEqual(
+            report["counts"],
+            {
+                "records": 3,
+                "hostnames": 2,
+                "address_records": 2,
+                "other_records": 1,
+            },
+        )
         self.assertNotIn("content", report["findings"][0])
         self.assertEqual(report["findings"][1]["content"], "fd00::1")
 
