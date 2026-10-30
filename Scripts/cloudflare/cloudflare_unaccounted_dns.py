@@ -9,7 +9,9 @@ NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 ADDRESS_TYPES = frozenset({"A", "AAAA", "CNAME"})
 
 
-def audit_unaccounted_dns(records, static_hosts, static_aliases, compose_services, running):
+def audit_unaccounted_dns(
+    records, static_hosts, static_aliases, compose_services, running
+):
     """Find live subdomain records absent from static and Docker declarations.
 
     The zone apex is intentionally excluded: its records are managed separately.
@@ -19,7 +21,12 @@ def audit_unaccounted_dns(records, static_hosts, static_aliases, compose_service
     if records is None or static_hosts is None:
         return {
             "enabled": False,
-            "counts": {"records": 0, "hostnames": 0, "address_records": 0, "other_records": 0},
+            "counts": {
+                "records": 0,
+                "hostnames": 0,
+                "address_records": 0,
+                "other_records": 0,
+            },
             "findings": [],
         }
 
@@ -59,7 +66,9 @@ def audit_unaccounted_dns(records, static_hosts, static_aliases, compose_service
         ):
             finding["content"] = content
         findings.append(finding)
-    findings.sort(key=lambda item: (item["hostname"], item["type"], item.get("content", "")))
+    findings.sort(
+        key=lambda item: (item["hostname"], item["type"], item.get("content", ""))
+    )
     return {
         "enabled": True,
         "counts": {
