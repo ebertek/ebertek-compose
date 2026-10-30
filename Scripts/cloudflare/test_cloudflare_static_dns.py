@@ -42,7 +42,7 @@ def record(name=HOST, address=ADDRESS, kind="A", proxied=False):
     }
 
 
-class InventoryTests(unittest.TestCase):
+class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """Require explicit schema and safe static-only IPv4 addresses."""
 
     def load(self, contents, required=True):
