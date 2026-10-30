@@ -9,7 +9,7 @@ import json
 import re
 
 RETAINED = "Scripts/cloudflare/retained-dns.json"
-HOST = re.compile(r"^(?:[a-z0-9_][a-z0-9_-]{0,62}\\.)+ygg\\.nu$")
+HOST = re.compile(r"^(?:[a-z0-9_][a-z0-9_-]{0,62}\.)+ygg\.nu$")
 TYPE = re.compile(r"^[A-Z][A-Z0-9]{0,9}$")
 CONTENT_REQUIRED = frozenset({"A", "AAAA", "CNAME"})
 DOMAIN_TARGETS = frozenset({"CNAME", "PTR", "NS"})
