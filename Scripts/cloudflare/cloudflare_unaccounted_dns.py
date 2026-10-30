@@ -11,15 +11,24 @@ NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 ADDRESS_TYPES = frozenset({"A", "AAAA", "CNAME"})
 
 
-def audit_unaccounted_dns(
-    records, static_hosts, static_aliases, compose_services, running, retained=None
-):
-    """Find live subdomain records absent from static and Docker declarations.
+def declared_dns_names(static_aliases, compose_services, running):
+    """Collect alias and Docker names even when services are stopped."""
+    owned = set(static_aliases)
+    for service in compose_services:
+        name = service.get("Name", "").rsplit("/", 1)[-1]
+        if NAME.fullmatch(name):
+            owned.add(name + ".ygg.nu")
+        custom = service.get("ContainerName")
+        if isinstance(custom, str) and NAME.fullmatch(custom):
+            owned.add(custom + ".ygg.nu")
+    for name in running:
+        if NAME.fullmatch(name):
+            owned.add(name + ".ygg.nu")
+    return owned
 
-    The zone apex is intentionally excluded: its records are managed separately.
-    A service's Compose name counts even if its container is currently stopped.
-    Alias declarations count as inventory ownership, not as desired CNAMEs.
-    """
+
+def audit_unaccounted_dns(records, static_hosts, declared_names, retained=None):
+    """Find live DNS records absent from static, alias and Docker declarations."""
     retained = retained or []
     if records is None or static_hosts is None:
         return {
@@ -34,17 +43,7 @@ def audit_unaccounted_dns(
             "retained": {"declared": 0, "present": 0, "missing": []},
         }
 
-    owned = set(static_hosts) | set(static_aliases)
-    for service in compose_services:
-        name = service.get("Name", "").rsplit("/", 1)[-1]
-        if NAME.fullmatch(name):
-            owned.add(name + ".ygg.nu")
-        custom = service.get("ContainerName")
-        if isinstance(custom, str) and NAME.fullmatch(custom):
-            owned.add(custom + ".ygg.nu")
-    for name in running:
-        if NAME.fullmatch(name):
-            owned.add(name + ".ygg.nu")
+    owned = set(static_hosts) | set(declared_names)
 
     findings = []
     for record in records:
