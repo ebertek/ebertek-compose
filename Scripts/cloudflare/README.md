@@ -210,8 +210,8 @@ port scans**; the reconciler does not verify port reachability.
 
 The previous `open_ports: [80, 443]` integer format is temporarily
 accepted **only for migration**. Do not mix `open_ports` and `ports`
-in the same entry. Migrate old entries to `"ports": [{"port": 80},
-{"port": 443}]` with the protocols omitted until they are known.
+in the same entry. Migrate old entries to
+`"ports": [{"port": 80}, {"port": 443}]` without guessing the protocols.
 
 `aliases` is an optional list of up to 16 canonical, lowercase,
 single-label `*.ygg.nu` hostnames (e.g. `web-device.ygg.nu`). A
