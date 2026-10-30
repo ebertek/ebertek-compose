@@ -63,14 +63,14 @@ class RetainedDnsTests(unittest.TestCase):
             {"name": "selector._domainkey.ygg.nu", "type": "TXT", "content": "private"},
             {"name": "ns.ygg.nu", "type": "A", "content": "10.4.21.34"},
         ]
-        report = audit_unaccounted_dns(live, {}, set(), [], {}, expected())
+        report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 0)
         self.assertEqual(report["retained"]["present"], 3)
         self.assertEqual(report["retained"]["missing"], [])
         self.assertNotIn("private", str(report))
 
         live[-1] = {"name": "ns.ygg.nu", "type": "CNAME", "content": "pleiades.ygg.nu"}
-        report = audit_unaccounted_dns(live, {}, set(), [], {}, expected())
+        report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 1)
         self.assertEqual(report["findings"][0]["type"], "CNAME")
         self.assertEqual(report["retained"]["present"], 2)
@@ -80,7 +80,7 @@ class RetainedDnsTests(unittest.TestCase):
         )
 
         live[-1] = {"name": "ns.ygg.nu", "type": "A", "content": "10.4.21.35"}
-        report = audit_unaccounted_dns(live, {}, set(), [], {}, expected())
+        report = audit_unaccounted_dns(live, {}, set(), expected())
         self.assertEqual(report["counts"]["records"], 1)
         self.assertEqual(report["findings"][0]["content"], "10.4.21.35")
         self.assertEqual(report["retained"]["present"], 2)
