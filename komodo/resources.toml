@@ -259,7 +259,7 @@ executions = [
 
 [[action]]
 name = "Cloudflare audit"
-description = "Cloudflare reconciliation: GET-only by default; guarded writes when the external enable-auto marker is present."
+description = "Cloudflare reconciliation: GET-only by default; guarded writes when private cloudflare.env sets CF_AUTO_APPLY=true."
 [action.config]
 schedule_format = "Cron"
 schedule = "0 0 */6 * * *"
