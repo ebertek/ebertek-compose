@@ -124,7 +124,7 @@ The supported API writes are:
 Existing Access policy changes use validated full-application PUT requests.
 Unknown live application settings are rejected, not discarded. Deletes and
 Terraform writes are never supported. Scheduled Komodo work is read-only
-unless its explicit external enable-auto marker is present.
+unless the private cloudflare.env explicitly sets CF_AUTO_APPLY=true.
 
 An interrupted apply is not rolled back: rerunning the live audit determines
 which operations remain. Every operation is checked against current live
@@ -300,8 +300,8 @@ API returns an unrecognized setting. For supported settings it uses the
 full-application PUT and rechecks policies afterward.
 
 A controlled live update to Unpackerr succeeded, followed by zero-drift
-verification. With the external enable-auto marker present, creation of new
-Access applications and updates to existing applications may run unattended,
+verification. With CF_AUTO_APPLY=true in the private cloudflare.env, creation
+of new Access applications and updates to existing applications may run unattended,
 subject to all of these gates:
 
 - At most three total approved operations per run, including policy updates.
@@ -362,18 +362,26 @@ sudo -u docker test -r /home/docker/ygg-compose/Scripts/cloudflare/cloudflare.en
 ```
 
 The action uses `/home/docker/cloudflare/.venv` for its Python environment.
-Without the opt-in marker it executes the GET-only live audit; with the
-owner-only marker it executes `cloudflare-manage.py --auto`. The opt-in marker
-remains outside the GitOps checkout:
+Its mode is controlled by **one explicit private GitOps setting** in
+`ebertek-compose-secrets/Scripts/cloudflare/cloudflare.env`:
 
 ```bash
-install -d -m 700 /home/docker/cloudflare
-printf 'enabled\n' > /home/docker/cloudflare/enable-auto
-chmod 600 /home/docker/cloudflare/enable-auto
+# Opt in to guarded unattended Cloudflare writes (up to three operations/run).
+CF_AUTO_APPLY=true
 ```
 
-Only a maximum of three changes per run are eligible, including guarded
-Access application creation and existing policy updates. Removing the marker
-returns the scheduled action to GET-only mode. The marker must be owned by
-the executing user and inaccessible to other users. Review the next Komodo
-action output after synchronizing the private credential path.
+Unset or `CF_AUTO_APPLY=false` selects the GET-only live audit; any other
+value (including `TRUE`, `1` or a typo) aborts the action. The management
+CLI also refuses `--auto` unless `CF_AUTO_APPLY=true` is present in its
+environment. Manual `--apply <fingerprint>` is unaffected.
+
+This replaces the old `/home/docker/cloudflare/enable-auto` marker. Once
+the public code **and** private env setting are deployed, the old marker is
+ignored and can be removed. If previously enabled via the marker, scheduled
+writes will be disabled until the private `CF_AUTO_APPLY=true` is deployed.
+Do not persist configuration changes directly in `~/ygg-compose`.
+
+Only a maximum of three unattended changes per run are eligible, including
+guarded Access application creation and existing policy updates. Protect the
+private credential file and review the next Komodo action output after
+synchronizing the private source.
