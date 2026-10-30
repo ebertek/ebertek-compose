@@ -195,6 +195,7 @@ class LiveIntegrationTests(unittest.TestCase):
                                 "hostname": "device.ygg.nu",
                                 "ipv4": "10.4.20.10",
                                 "mac": "aa:bb:cc:dd:ee:ff",
+                                "aliases": ["device-alias.ygg.nu"],
                             }
                         ],
                     }
@@ -221,12 +222,31 @@ class LiveIntegrationTests(unittest.TestCase):
                             "proxied": False,
                         }
                     )
+                    records.extend(
+                        [
+                            {
+                                "name": "device-alias.ygg.nu",
+                                "type": "CNAME",
+                                "content": "device.ygg.nu",
+                            },
+                            {
+                                "name": "leftover.ygg.nu",
+                                "type": "A",
+                                "content": "10.4.20.19",
+                            },
+                        ]
+                    )
                     return records
 
             with patch.object(live, "docker_ipv4", return_value={}):
                 report = live.run_audit(StaticCloudflare(), root, settings)
             self.assertEqual(report["static_dns"]["counts"]["matched"], 1)
             self.assertEqual(report["counts"]["static_dns_drift"], 0)
+            self.assertEqual(report["unaccounted_ygg_dns"]["counts"]["records"], 1)
+            self.assertEqual(
+                report["unaccounted_ygg_dns"]["findings"][0]["hostname"],
+                "leftover.ygg.nu",
+            )
             self.assertEqual(report["actions"], [])
 
             with (

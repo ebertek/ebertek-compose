@@ -291,6 +291,36 @@ interfaces and devices not yet purchased, to avoid false missing-DNS findings. N
 assignment should be checked against the original device list before
 considering any automatic static DNS mutations in a later phase.
 
+## Review unaccounted ygg.nu DNS records (read-only)
+
+The controller also compares **all live subdomain DNS records** in the
+`ygg.nu` zone with the active private static inventory, declared
+`aliases`, Compose services (including services whose containers are
+currently stopped), and currently running Docker container names.
+
+The `cloudflare-live.py` read-only audit, `cloudflare-manage.py` plan
+preview and the scheduled Komodo audit all show a separate
+`Unaccounted ygg.nu DNS` section. Records whose names are not declared by
+any of these sources are listed by hostname and type. A, AAAA and CNAME
+targets are shown where safe; TXT, MX, SRV and other payloads are **not
+logged**. Zone-apex `ygg.nu` records are excluded because those require
+separate infrastructure/zone review.
+
+An undeclared record is a **manual cleanup candidate, not proof that it
+is stale**. It may belong to another tool, a temporarily decommissioned
+service, a delegation, or an external integration. Review ownership,
+record dependencies and live clients in Cloudflare before deleting it.
+Alias declarations are recognized as inventory ownership but remain
+metadata-only; their live contents are not automatically validated.
+
+The report is deliberately non-blocking and **never adds deletion
+operations**, alters the approval fingerprint or consumes the
+three-operation unattended budget. A missing private inventory disables
+the orphan report rather than treating the entire zone as orphaned.
+Removing an entry from the inventory does not delete its DNS record.
+If a record is intentionally retained, document its owner in the
+appropriate source rather than suppressing the safety checks.
+
 ## Existing Access policy changes
 
 The guarded writer supports changing the ordered reusable policies of an

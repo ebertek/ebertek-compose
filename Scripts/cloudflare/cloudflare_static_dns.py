@@ -234,6 +234,16 @@ def load_inventory_details(path, required=False):
     return wanted, companions
 
 
+def load_inventory_aliases(path):
+    """Read declared aliases after the main inventory has been validated."""
+    if not path.is_file():
+        return set()
+    # Reject malformed or colliding aliases instead of accidentally hiding drift.
+    load_inventory_details(path, required=True)
+    entries = json.loads(path.read_text(encoding="utf-8"))["hosts"]
+    return {alias for entry in entries for alias in entry.get("aliases", [])}
+
+
 def load_inventory(path, required=False):
     """Retain the original primary-only inventory interface for callers."""
     wanted, _ = load_inventory_details(path, required=required)

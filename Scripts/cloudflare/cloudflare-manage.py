@@ -90,6 +90,24 @@ def require_auto_opt_in():
         raise UnsafePlan("Unattended Cloudflare writes require CF_AUTO_APPLY=true")
 
 
+def print_unaccounted_summary(report):
+    """Show review-only DNS leftovers without proposing any deletion."""
+    summary = report.get("unaccounted_ygg_dns", {})
+    if not summary.get("enabled"):
+        return
+    counts = summary["counts"]
+    print(
+        f"Unaccounted ygg.nu DNS: {counts['records']} records across "
+        f"{counts['hostnames']} hostnames (review only; no deletions)"
+    )
+    for finding in summary["findings"]:
+        destination = f" -> {finding['content']}" if "content" in finding else ""
+        print(
+            f"  ? REVIEW {finding['category']} {finding['type']} "
+            f"{finding['hostname']}{destination}"
+        )
+
+
 def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     """Preview operations or execute exactly one revalidated approval."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -166,6 +184,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
             )
             for finding in report["static_dns"]["findings"]:
                 print(f"  ! STATIC {finding['status']}: {finding['hostname']}")
+        print_unaccounted_summary(report)
         for action in actions:
             print(f"  {action['kind']}: {action['hostname']}")
         if actions:
@@ -188,6 +207,7 @@ def main():  # pylint: disable=too-many-locals,too-many-branches,too-many-statem
         )
         if args.auto:
             print_static_summary(report)
+            print_unaccounted_summary(report)
         if not actions:
             if args.auto:
                 print("Cloudflare auto reconciliation: no changes required.")

@@ -50,12 +50,13 @@ def compose_inventory(root):  # pylint: disable=too-many-locals,too-many-branche
                     labels[key] = value
             else:
                 raise TypeError(f"Invalid Compose labels for {service}: {path}")
-            containers.append(
-                {
-                    "Name": f"{path.relative_to(root)}/{service}",
-                    "Config": {"Labels": labels},
-                }
-            )
+            entry = {
+                "Name": f"{path.relative_to(root)}/{service}",
+                "Config": {"Labels": labels},
+            }
+            if isinstance(config.get("container_name"), str):
+                entry["ContainerName"] = config["container_name"]
+            containers.append(entry)
     return containers
 
 
