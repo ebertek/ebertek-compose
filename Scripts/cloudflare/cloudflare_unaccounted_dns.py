@@ -100,9 +100,7 @@ def print_unaccounted_summary(report):
             f"{declared['declared']} matching (review only; no writes)"
         )
         for expected in declared["missing"]:
-            destination = (
-                f" -> {expected['content']}" if "content" in expected else ""
-            )
+            destination = f" -> {expected['content']}" if "content" in expected else ""
             print(
                 f"  ! RETAINED missing {expected['type']} "
                 f"{expected['hostname']}{destination}"

@@ -266,9 +266,7 @@ class LiveIntegrationTests(unittest.TestCase):
                 report["unaccounted_ygg_dns"]["findings"][0]["hostname"],
                 "leftover.ygg.nu",
             )
-            self.assertEqual(
-                report["unaccounted_ygg_dns"]["retained"]["present"], 1
-            )
+            self.assertEqual(report["unaccounted_ygg_dns"]["retained"]["present"], 1)
             self.assertEqual(report["actions"], [])
 
             with (

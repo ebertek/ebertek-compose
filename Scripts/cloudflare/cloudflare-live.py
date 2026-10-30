@@ -146,9 +146,7 @@ def run_audit(
         compose_services,
         docker_addresses or {},
         retained=(
-            load_retained_dns(root / RETAINED)
-            if static_hosts is not None
-            else []
+            load_retained_dns(root / RETAINED) if static_hosts is not None else []
         ),
     )
     report["counts"]["unaccounted_ygg_dns_records"] = report["unaccounted_ygg_dns"][

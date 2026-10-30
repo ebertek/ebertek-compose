@@ -104,9 +104,8 @@ def matches_retained(expected, actual):
     if not isinstance(live_content, str):
         return False
     if expected["type"] in DOMAIN_TARGETS:
-        return (
-            live_content.lower().rstrip(".")
-            == expected["content"].lower().rstrip(".")
+        return live_content.lower().rstrip(".") == expected["content"].lower().rstrip(
+            "."
         )
     return live_content == expected["content"]
 
