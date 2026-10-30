@@ -19,6 +19,7 @@ MAC = re.compile(r"^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}$")
 INVENTORY = "Scripts/cloudflare/static-hosts.json"
 MAX_HOSTS = 256
 MAX_ADDITIONAL = 4
+MAX_ALIASES = 16
 
 
 def validate_metadata(entry, hostname):
@@ -44,18 +45,65 @@ def validate_metadata(entry, hostname):
         except ValueError as error:
             raise ValueError(f"{hostname}: invalid optional purchase_date") from error
 
-    ports = entry.get("open_ports")
-    if ports is not None and (
-        not isinstance(ports, list)
-        or any(
-            not isinstance(port, int)
-            or isinstance(port, bool)
-            or not 1 <= port <= 65535
-            for port in ports
-        )
-        or len(set(ports)) != len(ports)
+    validate_ports(entry, hostname)
+
+
+def validate_ports(entry, hostname):
+    """Validate protocol-aware port metadata; accept legacy integers only."""
+    if "ports" in entry and "open_ports" in entry:
+        raise ValueError(f"{hostname}: cannot combine ports with legacy open_ports")
+
+    if "ports" in entry:
+        ports = entry["ports"]
+        if not isinstance(ports, list):
+            raise ValueError(f"{hostname}: ports must be a list")
+        seen = set()
+        for item in ports:
+            if (
+                not isinstance(item, dict)
+                or "port" not in item
+                or set(item) - {"port", "protocol"}
+            ):
+                raise ValueError(f"{hostname}: invalid ports entry")
+            port = item["port"]
+            if type(port) is not int or not 1 <= port <= 65535:
+                raise ValueError(f"{hostname}: invalid port number")
+            protocol = item.get("protocol")
+            if "protocol" in item and protocol not in {"tcp", "udp"}:
+                raise ValueError(f"{hostname}: invalid port protocol")
+            key = (protocol, port)
+            if key in seen:
+                raise ValueError(f"{hostname}: duplicate port/protocol pair")
+            seen.add(key)
+        return
+
+    old = entry.get("open_ports")
+    if old is not None and (
+        not isinstance(old, list)
+        or any(type(port) is not int or not 1 <= port <= 65535 for port in old)
+        or len(set(old)) != len(old)
     ):
-        raise ValueError(f"{hostname}: invalid optional open_ports")
+        raise ValueError(f"{hostname}: invalid legacy open_ports")
+
+
+def validate_aliases(entry, hostname):
+    """Validate future CNAME aliases without creating or auditing them."""
+    if "aliases" not in entry:
+        return []
+    aliases = entry["aliases"]
+    if not isinstance(aliases, list) or len(aliases) > MAX_ALIASES:
+        raise ValueError(f"{hostname}: invalid aliases list")
+    seen = set()
+    for alias in aliases:
+        if (
+            not isinstance(alias, str)
+            or not HOST.fullmatch(alias)
+            or alias == hostname
+            or alias in seen
+        ):
+            raise ValueError(f"{hostname}: invalid or duplicate alias")
+        seen.add(alias)
+    return aliases
 
 
 def validate_additional_ipv4(hostname, value):
@@ -96,7 +144,9 @@ def validated_entry(entry, index):
         "description",
         "serial_number",
         "purchase_date",
-        "open_ports",
+        "open_ports",  # Deprecated; accepted until the private source migrates.
+        "ports",
+        "aliases",
         "additional_ipv4",
     }:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
@@ -123,6 +173,7 @@ def validated_entry(entry, index):
     if mac is not None and (not isinstance(mac, str) or not MAC.fullmatch(mac)):
         raise ValueError(f"{hostname}: invalid optional MAC address")
     validate_metadata(entry, hostname)
+    validate_aliases(entry, hostname)
     additional = validate_additional_ipv4(hostname, entry.get("additional_ipv4", []))
     return hostname, value, additional
 
@@ -147,13 +198,20 @@ def load_inventory_details(path, required=False):
         raise ValueError("Static DNS inventory must contain 1-256 host entries")
     wanted = {}
     companions = {}
+    alias_names = set()
+    alias_count = 0
     for index, entry in enumerate(entries, 1):
         hostname, value, additional = validated_entry(entry, index)
         if hostname in wanted:
             raise ValueError(f"Duplicate static DNS hostname: {hostname}")
         wanted[hostname] = value
+        aliases = entry.get("aliases", [])
+        alias_count += len(aliases)
+        alias_names.update(aliases)
         if additional:
             companions[hostname] = additional
+    if len(alias_names) != alias_count or alias_names.intersection(wanted):
+        raise ValueError("Static DNS aliases conflict with inventory hostnames")
     return wanted, companions
 
 
