@@ -73,7 +73,9 @@ def validate_ports(entry, hostname):
             ):
                 raise ValueError(f"{hostname}: invalid port number")
             protocol = item.get("protocol")
-            if "protocol" in item and (not isinstance(protocol, str) or protocol not in ("tcp", "udp")):
+            if "protocol" in item and (
+                not isinstance(protocol, str) or protocol not in ("tcp", "udp")
+            ):
                 raise ValueError(f"{hostname}: invalid port protocol")
             key = (protocol, port)
             if key in seen:
