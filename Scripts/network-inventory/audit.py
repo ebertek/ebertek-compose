@@ -17,7 +17,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 NETWORK = ipaddress.ip_network("10.4.20.0/23")
-DEFAULT_PORTS = "21,22,23,53,80,81,139,443,445,554,1883,3000,5000,6053,6444,7000,8008,8009,8080,8443,8888,9000,9100,1400"
+DEFAULT_PORTS = (
+    "21,22,23,53,80,81,139,443,445,554,1883,3000,5000,"
+    "6053,6444,7000,8008,8009,8080,8443,8888,9000,9100,1400"
+)
 DEFAULT_STATE = Path("/home/docker/cloudflare/network-inventory")
 DEFAULT_INVENTORY = Path(
     "/home/docker/ygg-compose/Scripts/cloudflare/static-hosts.json"
@@ -182,6 +185,9 @@ def scan(inventory, timeout, do_dns_sd=True):
     return hosts, advertised, do_dns_sd and bool(advertised)
 
 
+# The event reducer intentionally combines host identity, ports, and DNS-SD.
+# pylint: disable=too-many-arguments,too-many-positional-arguments
+# pylint: disable=too-many-locals,too-many-branches
 def calculate_events(
     inventory, hosts, advertised, previous, ignored, dns_sd_complete=True
 ):
@@ -215,7 +221,10 @@ def calculate_events(
             entry = known_mac
         elif entry["mac"] and observed["mac"] and entry["mac"] != observed["mac"]:
             event = f"identity:{ip}:{observed['mac']}"
-            message = f"CHANGED MAC {entry['name']} {ip}: {observed['mac']} (expected {entry['mac']})"
+            message = (
+                f"CHANGED MAC {entry['name']} {ip}: {observed['mac']} "
+                f"(expected {entry['mac']})"
+            )
             new_reported[event] = message
         if entry:
             for service in observed["ports"]:
@@ -267,6 +276,7 @@ def notify_discord(webhook, messages):
             raise RuntimeError("Discord notification rejected")
 
 
+# pylint: disable=too-many-locals
 def main():
     """Run one bounded audit, or analyze pre-collected XML in offline mode."""
     parser = argparse.ArgumentParser(description=__doc__)
