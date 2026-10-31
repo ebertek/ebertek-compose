@@ -4,7 +4,9 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-SPEC = importlib.util.spec_from_file_location("network_audit", Path(__file__).with_name("audit.py"))
+SPEC = importlib.util.spec_from_file_location(
+    "network_audit", Path(__file__).with_name("audit.py")
+)
 if SPEC is None or SPEC.loader is None:
     raise ImportError("Cannot load audit.py")
 audit = importlib.util.module_from_spec(SPEC)
@@ -49,7 +51,9 @@ class NetworkAuditTests(unittest.TestCase):
             }
         }
         hosts = audit.parse_nmap_xml(XML)
-        events, reported, services = audit.calculate_events(inventory, hosts, [], {}, set())
+        events, reported, services = audit.calculate_events(
+            inventory, hosts, [], {}, set()
+        )
         self.assertEqual(len(events), 1)
         self.assertIn("tcp/6444", events[0])
         previous = {
