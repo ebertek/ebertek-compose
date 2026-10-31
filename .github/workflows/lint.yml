@@ -79,6 +79,27 @@ jobs:
             -s Scripts/cloudflare \
             -p "test_cloudflare_*.py"
 
+  network-inventory-tests:
+    name: Network inventory Python tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+
+      - name: Run network inventory unit tests
+        run: |
+          python -m unittest discover \
+            -s Scripts/network-inventory \
+            -p "test_*.py"
+
   compose-config:
     name: compose.yaml - docker compose config
     runs-on: ubuntu-latest
