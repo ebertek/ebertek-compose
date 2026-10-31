@@ -86,8 +86,7 @@ class NetworkAuditTests(unittest.TestCase):
         self.assertTrue(any("NEW DEVICE" in event for event in events))
 
     def test_known_mac_on_new_ip_is_address_change(self):
-        """Verify known mac on new ip is address change."""
-        """An appliance moving to another LAN address is not an unknown device."""
+        """Recognize a known appliance at a new IP without mislabeling it unknown."""
         inventory = {
             "10.4.20.33": {
                 "name": "aircon-sunroom.ygg.nu",
