@@ -139,6 +139,7 @@ def load_inventory(path):
             known[str(additional)] = known[ip]
     return known
 
+
 def scan(inventory, timeout, do_dns_sd=True):
     """Discover the LAN first, then TCP scan responsive and inventory addresses."""
     discovery = run_command(
