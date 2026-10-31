@@ -59,7 +59,7 @@ services:
         ]
       timeout: 5s
     hostname: gramps
-    image: "ghcr.io/gramps-project/grampsweb:26.10.2"
+    image: "ghcr.io/gramps-project/grampsweb:26.11.0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.gramps.entrypoints: "websecure"
@@ -119,7 +119,7 @@ services:
         ]
       timeout: 10s
     hostname: grampsweb-celery
-    image: "ghcr.io/gramps-project/grampsweb:26.10.2"
+    image: "ghcr.io/gramps-project/grampsweb:26.11.0"
     mac_address: "0e:be:00:da:00:88"
     networks:
       macvlan1:
