@@ -294,6 +294,41 @@ if (exitCode !== 0) {
 ##
 
 [[action]]
+name = "Network inventory audit"
+description = "Daily read-only Nmap and DNS-SD inventory drift audit on Pleiades."
+[action.config]
+schedule_format = "Cron"
+schedule = "0 15 5 * * *"
+file_contents = """
+let exitCode: number | undefined;
+
+await komodo.execute_server_terminal(
+  {
+    server: "pleiades.ygg.nu",
+    terminal: "action-network-inventory",
+    command:
+      "bash /home/docker/ygg-compose/Scripts/network-inventory/run.sh",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      exitCode = Number(code);
+      console.log("Exit code:", exitCode);
+    },
+  },
+);
+
+if (exitCode !== 0) {
+  throw new Error("Network inventory audit failed: " + (exitCode ?? "unknown"));
+}
+"""
+
+##
+
+[[action]]
 name = "Mirror websites"
 [action.config]
 schedule_format = "Cron"
