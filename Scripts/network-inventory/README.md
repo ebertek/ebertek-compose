@@ -2,7 +2,7 @@
 
 A bounded **read-only** LAN inventory check running on Pleiades. It reads the
 private `Scripts/cloudflare/static-hosts.json` and records observations under
-`/var/lib/ygg-network-inventory/state.json`. It never writes to either GitOps
+`/home/docker/cloudflare/network-inventory/state.json`. It never writes to either GitOps
 repository, Cloudflare DNS, Home Assistant, DHCP, or the inventory file.
 
 ## Requirements
