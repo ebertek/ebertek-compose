@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 root="/home/docker/ygg-compose"
-state="/var/lib/ygg-network-inventory"
+state="/home/docker/cloudflare/network-inventory"
 private_env="${root}/Scripts/network-inventory/network-inventory.env"
 
 for executable in nmap avahi-browse python3 flock; do
