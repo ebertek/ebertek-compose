@@ -107,29 +107,37 @@ def docker_ips():
 
 
 def load_inventory(path):
-    """Validate expected private inventory and build address/port indexes."""
+    """Validate private inventory, normalize addresses and listed TCP/UDP ports."""
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("version") != 1 or not isinstance(data.get("hosts"), list):
         raise ValueError("Invalid static-hosts.json schema")
     known = {}
     for entry in data["hosts"]:
-        ip = str(ipaddress.ip_address(entry["ipv4"]))
-        if ip not in NETWORK:
+        address = ipaddress.ip_address(entry["ipv4"])
+        if address not in NETWORK:
             raise ValueError("Static inventory address outside LAN")
-        ports = {
-            f"{port['protocol']}/{port['port']}"
-            for port in entry.get("ports", [])
-            if port.get("protocol") in {"tcp", "udp"}
-        }
+        ip = str(address)
+        ports = set()
+        for port in entry.get("ports", []):
+            protocol = port.get("protocol")
+            if protocol in {"tcp", "udp"}:
+                ports.add(f"{protocol}/{port['port']}")
+            elif protocol is None:
+                # Legacy protocol-unspecified entries denote TCP candidates.
+                ports.add(f"tcp/{port['port']}")
+        for port in entry.get("open_ports", []):
+            ports.add(f"tcp/{port}")
         known[ip] = {
             "name": entry["hostname"],
-            "mac": entry.get("mac", "").lower(),
+            "mac": (entry.get("mac") or "").lower(),
             "ports": ports,
         }
-        for second in entry.get("additional_ipv4", []):
-            known[second] = known[ip]
+        for raw in entry.get("additional_ipv4", []):
+            additional = ipaddress.ip_address(raw)
+            if additional not in NETWORK:
+                raise ValueError("Companion inventory address outside LAN")
+            known[str(additional)] = known[ip]
     return known
-
 
 def scan(inventory, timeout, do_dns_sd=True):
     """Discover the LAN first, then TCP scan responsive and inventory addresses."""
