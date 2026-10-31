@@ -81,6 +81,26 @@ class NetworkAuditTests(unittest.TestCase):
         self.assertTrue(any("CHANGED MAC" in event for event in events))
         self.assertTrue(any("NEW DEVICE" in event for event in events))
 
+    def test_known_mac_on_new_ip_is_address_change(self):
+        """An appliance moving to another LAN address is not an unknown device."""
+        inventory = {
+            "10.4.20.33": {
+                "name": "aircon-sunroom.ygg.nu",
+                "mac": "84:7c:9b:24:5d:9a",
+                "ports": set(),
+            }
+        }
+        hosts = {
+            "10.4.21.242": {
+                "mac": "84:7c:9b:24:5d:9a",
+                "ports": ["tcp/6444"],
+            }
+        }
+        events, _, _ = audit.calculate_events(inventory, hosts, [], {}, set())
+        self.assertTrue(any("CHANGED IP" in item for item in events))
+        self.assertTrue(any("NEW PORT" in item for item in events))
+        self.assertFalse(any("NEW DEVICE" in item for item in events))
+
     def test_unavailable_dns_sd_does_not_clear_history(self):
         previous = {
             "initialized": True,
