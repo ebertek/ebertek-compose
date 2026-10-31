@@ -114,20 +114,27 @@ def scan(inventory, timeout, do_dns_sd=True):
         ["nmap", "-sn", "-PR", "-n", "-oX", "-", str(NETWORK)], timeout
     )
     hosts = parse_nmap_xml(discovery)
-    # Scan live hosts only: a sleeping device is not proof its ports closed.
-    targets = sorted(hosts, key=ipaddress.ip_address)
+    # Scan live hosts only; exclude observed Docker containers but not the
+    # entire .21 allocation (real appliances may have addresses there).
+    ignored = docker_ips()
+    targets = sorted(set(hosts) - ignored, key=ipaddress.ip_address)
     if targets:
+        recorded_tcp = {
+            int(item.split("/")[1])
+            for entry in inventory.values()
+            for item in entry["ports"]
+            if item.startswith("tcp/")
+        }
+        ports = sorted(set(map(int, DEFAULT_PORTS.split(","))) | recorded_tcp)
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as targets_file:
             targets_file.write("\n".join(targets) + "\n")
             targets_file.flush()
             args = [
                 "nmap", "-sS", "-Pn", "-n", "-T3", "--max-retries", "1",
-                "--host-timeout", "90s", "--open", "--top-ports", "100",
-                "-p", DEFAULT_PORTS, "-iL", targets_file.name, "-oX", "-",
+                "--host-timeout", "90s", "--open",
+                "-p", ",".join(map(str, ports)),
+                "-iL", targets_file.name, "-oX", "-",
             ]
-            # Explicit port list takes precedence over --top-ports.
-            args.remove("--top-ports")
-            args.remove("100")
             checked = parse_nmap_xml(run_command(args, timeout))
         for ip, info in checked.items():
             hosts[ip]["ports"] = info["ports"]
@@ -140,10 +147,10 @@ def scan(inventory, timeout, do_dns_sd=True):
         except (FileNotFoundError, subprocess.TimeoutExpired, RuntimeError):
             # Absence of Avahi must not imply that a service was withdrawn.
             advertised = []
-    return hosts, advertised
+    return hosts, advertised, do_dns_sd and bool(advertised)
 
 
-def calculate_events(inventory, hosts, advertised, previous, ignored):
+def calculate_events(inventory, hosts, advertised, previous, ignored, dns_sd_complete=True):
     """Report new identity/ports, and suppress repeatedly reported observations."""
     prior = previous.get("reported", {})
     new_reported = {}
@@ -171,8 +178,12 @@ def calculate_events(inventory, hosts, advertised, previous, ignored):
             events.append(message)
     # DNS-SD is an independent evidence channel; it does not prove a port is open.
     previous_ads = set(previous.get("advertisements", []))
-    current_ads = {f"{item['host']}|{item['service']}|{item['port']}" for item in advertised}
-    if previous.get("initialized"):
+    current_ads = (
+        {f"{item['host']}|{item['service']}|{item['port']}" for item in advertised}
+        if dns_sd_complete
+        else previous_ads
+    )
+    if previous.get("initialized") and dns_sd_complete:
         for item in sorted(current_ads - previous_ads):
             events.append(f"NEW DNS-SD {item}")
     return events, new_reported, sorted(current_ads)
@@ -222,13 +233,21 @@ def main():
     inventory = load_inventory(args.inventory)
     if args.discovery_xml:
         hosts = parse_nmap_xml(args.discovery_xml.read_text(encoding="utf-8"))
-        advertised = parse_avahi(args.dns_sd_file.read_text(encoding="utf-8")) if args.dns_sd_file else []
+        advertised = (
+            parse_avahi(args.dns_sd_file.read_text(encoding="utf-8"))
+            if args.dns_sd_file else []
+        )
+        dns_sd_complete = bool(args.dns_sd_file)
     else:
-        hosts, advertised = scan(inventory, args.timeout, not args.no_dns_sd)
+        hosts, advertised, dns_sd_complete = scan(
+            inventory, args.timeout, not args.no_dns_sd
+        )
     ignored = docker_ips() if not args.discovery_xml else set()
     state_file = args.state_dir / "state.json"
     previous = json.loads(state_file.read_text(encoding="utf-8")) if state_file.exists() else {}
-    events, reported, advertisements = calculate_events(inventory, hosts, advertised, previous, ignored)
+    events, reported, advertisements = calculate_events(
+        inventory, hosts, advertised, previous, ignored, dns_sd_complete
+    )
 
     now = datetime.now(timezone.utc).isoformat()
     # First run is a reviewable baseline, but will not generate Discord spam.
@@ -243,9 +262,9 @@ def main():
         print("  ! " + event)
     if bootstrap:
         print("First observation saved; suppressing initial Discord notification.")
-    save_state(args.state_dir, snapshot)
     if not bootstrap:
         notify_discord(os.environ.get("YGG_NETWORK_DISCORD_WEBHOOK_URL", ""), events)
+    save_state(args.state_dir, snapshot)
     print(f"New observations: {len(events)}; inventory and Cloudflare unchanged.")
 
 
