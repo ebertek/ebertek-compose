@@ -56,7 +56,7 @@ services:
       - "44"
       - "991"
     hostname: birdnet
-    image: "ghcr.io/tphakala/birdnet-go:20261014"
+    image: "ghcr.io/tphakala/birdnet-go:20261031"
     labels:
       traefik.enable: "true"
       traefik.http.routers.birdnet.entrypoints: "websecure"
