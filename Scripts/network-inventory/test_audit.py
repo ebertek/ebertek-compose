@@ -1,8 +1,10 @@
 """Offline fixtures for network discovery and repeat-alert suppression."""
 
 import importlib.util
+import json
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 SPEC = importlib.util.spec_from_file_location(
     "network_audit", Path(__file__).with_name("audit.py")
@@ -28,6 +30,65 @@ XML = """<?xml version="1.0"?>
 
 class NetworkAuditTests(unittest.TestCase):
     """Scanners must not infer open services from uncertainty."""
+
+    def test_realistic_private_inventory_loads_without_ip_type_error(self):
+        """Load canonical IPv4, companion addresses and mixed port metadata."""
+        fixture = {
+            "version": 1,
+            "hosts": [
+                {
+                    "hostname": "aircon-sunroom.ygg.nu",
+                    "ipv4": "10.4.20.242",
+                    "mac": "84:7c:9b:24:5d:9a",
+                    "ports": [
+                        {"port": 6444, "protocol": "tcp"},
+                        {"port": 5353, "protocol": "udp"},
+                    ],
+                    "additional_ipv4": ["10.4.21.242"],
+                },
+                {
+                    "hostname": "older-device.ygg.nu",
+                    "ipv4": "10.4.20.25",
+                    "open_ports": [80, 443],
+                },
+                {
+                    "hostname": "unspecified-port.ygg.nu",
+                    "ipv4": "10.4.20.26",
+                    "ports": [{"port": 8080}],
+                },
+            ],
+        }
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "static-hosts.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            inventory = audit.load_inventory(path)
+        self.assertEqual(inventory["10.4.20.242"]["ports"], {"tcp/6444", "udp/5353"})
+        self.assertIs(
+            inventory["10.4.20.242"],
+            inventory["10.4.21.242"],
+        )
+        self.assertEqual(inventory["10.4.20.25"]["ports"], {"tcp/80", "tcp/443"})
+        self.assertEqual(inventory["10.4.20.26"]["ports"], {"tcp/8080"})
+        self.assertEqual(inventory["10.4.20.25"]["mac"], "")
+
+    def test_rejects_inventory_address_outside_scanning_network(self):
+        """Reject unscannable primary or companion IPs before network probing."""
+        for record in (
+            {"hostname": "bad.ygg.nu", "ipv4": "192.0.2.1"},
+            {
+                "hostname": "bad.ygg.nu",
+                "ipv4": "10.4.20.10",
+                "additional_ipv4": ["192.0.2.1"],
+            },
+        ):
+            with self.subTest(record=record), TemporaryDirectory() as directory:
+                path = Path(directory) / "static-hosts.json"
+                path.write_text(
+                    json.dumps({"version": 1, "hosts": [record]}),
+                    encoding="utf-8",
+                )
+                with self.assertRaises(ValueError):
+                    audit.load_inventory(path)
 
     def test_xml_only_counts_confirmed_open(self):
         """Verify xml only counts confirmed open."""
