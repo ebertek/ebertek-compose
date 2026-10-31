@@ -189,16 +189,30 @@ def calculate_events(
     prior = previous.get("reported", {})
     new_reported = {}
     events = []
+    by_mac = {}
+    for entry in inventory.values():
+        if entry["mac"]:
+            by_mac.setdefault(entry["mac"], entry)
     for ip, observed in sorted(
         hosts.items(), key=lambda item: ipaddress.ip_address(item[0])
     ):
         if ip in ignored:
             continue
         entry = inventory.get(ip)
+        known_mac = by_mac.get(observed["mac"]) if observed["mac"] else None
         if entry is None:
-            event = f"unknown-device:{ip}:{observed['mac']}"
-            message = f"NEW DEVICE {ip} MAC {observed['mac'] or 'unknown'}"
+            if known_mac:
+                event = f"moved-device:{ip}:{observed['mac']}"
+                message = (
+                    f"CHANGED IP {known_mac['name']} now responds at {ip} "
+                    f"(MAC {observed['mac']})"
+                )
+            else:
+                event = f"unknown-device:{ip}:{observed['mac']}"
+                message = f"NEW DEVICE {ip} MAC {observed['mac'] or 'unknown'}"
             new_reported[event] = message
+            # A recognized MAC can identify services even after an IP change.
+            entry = known_mac
         elif entry["mac"] and observed["mac"] and entry["mac"] != observed["mac"]:
             event = f"identity:{ip}:{observed['mac']}"
             message = f"CHANGED MAC {entry['name']} {ip}: {observed['mac']} (expected {entry['mac']})"
