@@ -446,7 +446,7 @@ services:
         ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080 >/dev/null || exit 1"]
       timeout: 5s
     hostname: traefik
-    image: "docker.io/library/traefik:v3.7.16"
+    image: "docker.io/library/traefik:v3.7.17"
     logging:
       options:
         max-file: "2"
