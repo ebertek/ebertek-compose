@@ -1,0 +1,257 @@
+"""Read-only LAN discovery and inventory drift detection.
+
+This tool reads private static-hosts.json and writes observations only to
+--state-dir, outside the deployed GitOps checkout. It never edits DNS/inventory.
+"""
+
+import argparse
+import ipaddress
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import urllib.request
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from pathlib import Path
+
+NETWORK = ipaddress.ip_network("10.4.20.0/23")
+DEFAULT_PORTS = "21,22,23,53,80,81,139,443,445,554,1883,3000,5000,6053,6444,7000,8008,8009,8080,8443,8888,9000,9100,1400"
+DEFAULT_STATE = Path("/var/lib/ygg-network-inventory")
+DEFAULT_INVENTORY = Path("/home/docker/ygg-compose/Scripts/cloudflare/static-hosts.json")
+
+
+def run_command(args, seconds):
+    """Require a successful bounded command, never silently accept partial scans."""
+    result = subprocess.run(args, capture_output=True, text=True, timeout=seconds, check=False)
+    if result.returncode:
+        raise RuntimeError(f"{args[0]} failed (exit {result.returncode}): {result.stderr[-350:]}")
+    return result.stdout
+
+
+def parse_nmap_xml(xml):
+    """Read live IPv4, ARP MACs, and confirmed open TCP/UDP ports."""
+    result = {}
+    root = ET.fromstring(xml)
+    for host in root.findall("host"):
+        status = host.find("status")
+        if status is None or status.get("state") != "up":
+            continue
+        addresses = {entry.get("addrtype"): entry.get("addr") for entry in host.findall("address")}
+        ip = addresses.get("ipv4")
+        if not ip or ipaddress.ip_address(ip) not in NETWORK:
+            continue
+        services = set()
+        for port in host.findall("./ports/port"):
+            state = port.find("state")
+            if state is not None and state.get("state") == "open":
+                services.add(f"{port.get('protocol')}/{int(port.get('portid'))}")
+        result[ip] = {"mac": (addresses.get("mac") or "").lower(), "ports": sorted(services)}
+    return result
+
+
+def parse_avahi(output):
+    """Deduplicate resolved DNS-SD lines across interfaces and address families."""
+    found = set()
+    for raw in output.splitlines():
+        fields = raw.split(";")
+        if len(fields) < 10 or fields[0] != "=":
+            continue
+        service = fields[4]
+        name = fields[3]
+        host = fields[6]
+        port = fields[8]
+        if not port.isdecimal() or not 1 <= int(port) <= 65535:
+            continue
+        # Keep advertised type, device and port; IPv4/IPv6 duplicate sightings collapse.
+        found.add((host, service, name, int(port)))
+    return [dict(zip(("host", "service", "name", "port"), entry)) for entry in sorted(found)]
+
+
+def docker_ips():
+    """Filter only actually running container addresses, not the entire .21 subnet."""
+    try:
+        ids = run_command(["docker", "ps", "-q"], 20).split()
+        if not ids:
+            return set()
+        containers = json.loads(run_command(["docker", "inspect", *ids], 30))
+        return {
+            value.get("IPAddress")
+            for item in containers
+            for value in (item.get("NetworkSettings", {}).get("Networks") or {}).values()
+            if isinstance(value.get("IPAddress"), str)
+        }
+    except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
+        # Do not silently classify unknown .21 hosts as Docker-owned.
+        return set()
+
+
+def load_inventory(path):
+    """Validate expected private inventory and build address/port indexes."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("version") != 1 or not isinstance(data.get("hosts"), list):
+        raise ValueError("Invalid static-hosts.json schema")
+    known = {}
+    for entry in data["hosts"]:
+        ip = str(ipaddress.ip_address(entry["ipv4"]))
+        if ip not in NETWORK:
+            raise ValueError("Static inventory address outside LAN")
+        ports = {
+            f"{port['protocol']}/{port['port']}"
+            for port in entry.get("ports", [])
+            if port.get("protocol") in {"tcp", "udp"}
+        }
+        known[ip] = {"name": entry["hostname"], "mac": entry.get("mac", "").lower(), "ports": ports}
+        for second in entry.get("additional_ipv4", []):
+            known[second] = known[ip]
+    return known
+
+
+def scan(inventory, timeout, do_dns_sd=True):
+    """Discover the LAN first, then TCP scan responsive and inventory addresses."""
+    discovery = run_command(
+        ["nmap", "-sn", "-PR", "-n", "-oX", "-", str(NETWORK)], timeout
+    )
+    hosts = parse_nmap_xml(discovery)
+    # Scan live hosts only: a sleeping device is not proof its ports closed.
+    targets = sorted(hosts, key=ipaddress.ip_address)
+    if targets:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as targets_file:
+            targets_file.write("\n".join(targets) + "\n")
+            targets_file.flush()
+            args = [
+                "nmap", "-sS", "-Pn", "-n", "-T3", "--max-retries", "1",
+                "--host-timeout", "90s", "--open", "--top-ports", "100",
+                "-p", DEFAULT_PORTS, "-iL", targets_file.name, "-oX", "-",
+            ]
+            # Explicit port list takes precedence over --top-ports.
+            args.remove("--top-ports")
+            args.remove("100")
+            checked = parse_nmap_xml(run_command(args, timeout))
+        for ip, info in checked.items():
+            hosts[ip]["ports"] = info["ports"]
+    advertised = []
+    if do_dns_sd:
+        try:
+            advertised = parse_avahi(
+                run_command(["avahi-browse", "-a", "-r", "-p", "-l", "-t"], 90)
+            )
+        except (FileNotFoundError, subprocess.TimeoutExpired, RuntimeError):
+            # Absence of Avahi must not imply that a service was withdrawn.
+            advertised = []
+    return hosts, advertised
+
+
+def calculate_events(inventory, hosts, advertised, previous, ignored):
+    """Report new identity/ports, and suppress repeatedly reported observations."""
+    prior = previous.get("reported", {})
+    new_reported = {}
+    events = []
+    for ip, observed in sorted(hosts.items(), key=lambda item: ipaddress.ip_address(item[0])):
+        if ip in ignored:
+            continue
+        entry = inventory.get(ip)
+        if entry is None:
+            event = f"unknown-device:{ip}:{observed['mac']}"
+            message = f"NEW DEVICE {ip} MAC {observed['mac'] or 'unknown'}"
+            new_reported[event] = message
+        elif entry["mac"] and observed["mac"] and entry["mac"] != observed["mac"]:
+            event = f"identity:{ip}:{observed['mac']}"
+            message = f"CHANGED MAC {entry['name']} {ip}: {observed['mac']} (expected {entry['mac']})"
+            new_reported[event] = message
+        if entry:
+            for service in observed["ports"]:
+                if service not in entry["ports"]:
+                    event = f"new-port:{ip}:{service}"
+                    new_reported[event] = f"NEW PORT {entry['name']} {ip}: {service}"
+    # An event is sent once until it disappears from observations and reappears.
+    for key, message in new_reported.items():
+        if key not in prior:
+            events.append(message)
+    # DNS-SD is an independent evidence channel; it does not prove a port is open.
+    previous_ads = set(previous.get("advertisements", []))
+    current_ads = {f"{item['host']}|{item['service']}|{item['port']}" for item in advertised}
+    if previous.get("initialized"):
+        for item in sorted(current_ads - previous_ads):
+            events.append(f"NEW DNS-SD {item}")
+    return events, new_reported, sorted(current_ads)
+
+
+def save_state(state_dir, state):
+    """Atomically publish observations outside the GitOps source checkout."""
+    state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=state_dir, delete=False
+    ) as tmp:
+        json.dump(state, tmp, indent=2, sort_keys=True)
+        tmp.write("\n")
+        temp_name = tmp.name
+    os.replace(temp_name, state_dir / "state.json")
+
+
+def notify_discord(webhook, messages):
+    """Post only summarized events; never include credentials."""
+    if not webhook or not messages:
+        return
+    text = "**Ygg network inventory drift**\n" + "\n".join(messages[:35])
+    if len(messages) > 35:
+        text += f"\n... and {len(messages) - 35} more"
+    body = json.dumps({"content": text[:1900]}).encode("utf-8")
+    request = urllib.request.Request(
+        webhook, data=body, headers={"Content-Type": "application/json"}, method="POST"
+    )
+    with urllib.request.urlopen(request, timeout=15) as response:
+        if response.status not in {200, 204}:
+            raise RuntimeError("Discord notification rejected")
+
+
+def main():
+    """Run one bounded audit, or analyze pre-collected XML in offline mode."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)
+    parser.add_argument("--state-dir", type=Path, default=DEFAULT_STATE)
+    parser.add_argument("--discovery-xml", type=Path, help="Offline test: use Nmap XML")
+    parser.add_argument("--dns-sd-file", type=Path, help="Offline test: resolved Avahi output")
+    parser.add_argument("--no-dns-sd", action="store_true")
+    parser.add_argument("--timeout", type=int, default=900)
+    args = parser.parse_args()
+
+    if not 30 <= args.timeout <= 3600:
+        parser.error("--timeout must be between 30 and 3600")
+    inventory = load_inventory(args.inventory)
+    if args.discovery_xml:
+        hosts = parse_nmap_xml(args.discovery_xml.read_text(encoding="utf-8"))
+        advertised = parse_avahi(args.dns_sd_file.read_text(encoding="utf-8")) if args.dns_sd_file else []
+    else:
+        hosts, advertised = scan(inventory, args.timeout, not args.no_dns_sd)
+    ignored = docker_ips() if not args.discovery_xml else set()
+    state_file = args.state_dir / "state.json"
+    previous = json.loads(state_file.read_text(encoding="utf-8")) if state_file.exists() else {}
+    events, reported, advertisements = calculate_events(inventory, hosts, advertised, previous, ignored)
+
+    now = datetime.now(timezone.utc).isoformat()
+    # First run is a reviewable baseline, but will not generate Discord spam.
+    bootstrap = not previous.get("initialized")
+    snapshot = {
+        "version": 1, "initialized": True, "scanned_at": now,
+        "reported": reported, "advertisements": advertisements,
+        "hosts": hosts, "discovered_hosts": len(hosts),
+    }
+    print(f"Network inventory: {len(hosts)} responsive IPv4 hosts; {len(advertised)} DNS-SD services")
+    for event in events:
+        print("  ! " + event)
+    if bootstrap:
+        print("First observation saved; suppressing initial Discord notification.")
+    save_state(args.state_dir, snapshot)
+    if not bootstrap:
+        notify_discord(os.environ.get("YGG_NETWORK_DISCORD_WEBHOOK_URL", ""), events)
+    print(f"New observations: {len(events)}; inventory and Cloudflare unchanged.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, RuntimeError, ET.ParseError, subprocess.TimeoutExpired) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        sys.exit(2)
