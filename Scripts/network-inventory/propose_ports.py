@@ -22,7 +22,7 @@ DISCOVERED = {
 def propose(document):
     """Return an independent inventory with missing confirmed TCP ports added."""
     if not isinstance(document, dict) or not isinstance(document.get("hosts"), list):
-        raise ValueError("Expected private static-hosts.json with a hosts array")
+        raise TypeError("Expected private static-hosts.json with a hosts array")
     result = json.loads(json.dumps(document))
     changed = []
     names = set()
