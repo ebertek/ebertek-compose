@@ -33,11 +33,17 @@ class ServiceDiscoveryTests(unittest.TestCase):
         <state state="filtered"/></port></ports></host></nmaprun>"""
         self.assertEqual(
             PROBE.parse_services(xml),
-            [{
-                "ip": "10.4.20.33", "protocol": "tcp", "port": 6444,
-                "name": "unknown", "product": "Midea",
-                "method": "probed", "conf": "8",
-            }],
+            [
+                {
+                    "ip": "10.4.20.33",
+                    "protocol": "tcp",
+                    "port": 6444,
+                    "name": "unknown",
+                    "product": "Midea",
+                    "method": "probed",
+                    "conf": "8",
+                }
+            ],
         )
 
     def test_port_proposal_is_repeatable_and_preserves_mac(self):
@@ -62,9 +68,7 @@ class ServiceDiscoveryTests(unittest.TestCase):
         second, again, _ = PROPOSAL.propose(proposed)
         self.assertEqual(again, [])
         self.assertEqual(second, proposed)
-        self.assertEqual(
-            proposed["hosts"][0]["mac"], "84:7c:9b:24:5d:9a"
-        )
+        self.assertEqual(proposed["hosts"][0]["mac"], "84:7c:9b:24:5d:9a")
 
 
 if __name__ == "__main__":

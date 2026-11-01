@@ -30,21 +30,45 @@ def parse_services(xml):
             if state is None or state.get("state") != "open":
                 continue
             service = port.find("service")
-            details = {"ip": ip, "protocol": port.get("protocol"), "port": int(port.get("portid"))}
+            details = {
+                "ip": ip,
+                "protocol": port.get("protocol"),
+                "port": int(port.get("portid")),
+            }
             if service is not None:
-                for name in ("name", "product", "version", "extrainfo", "method", "conf"):
+                for name in (
+                    "name",
+                    "product",
+                    "version",
+                    "extrainfo",
+                    "method",
+                    "conf",
+                ):
                     value = service.get(name)
                     if value:
                         details[name] = value[:200]
             records.append(details)
-    return sorted(records, key=lambda item: (ipaddress.ip_address(item["ip"]), item["port"]))
+    return sorted(
+        records, key=lambda item: (ipaddress.ip_address(item["ip"]), item["port"])
+    )
 
 
 def probe(targets, top_ports, timeout, fingerprints):
     """Bound active probes to explicitly selected RFC1918 LAN addresses."""
     args = [
-        "nmap", "-sS", "-Pn", "-n", "-T3", "--max-retries", "1",
-        "--host-timeout", "120s", "--top-ports", str(top_ports), "-oX", "-",
+        "nmap",
+        "-sS",
+        "-Pn",
+        "-n",
+        "-T3",
+        "--max-retries",
+        "1",
+        "--host-timeout",
+        "120s",
+        "--top-ports",
+        str(top_ports),
+        "-oX",
+        "-",
     ]
     if fingerprints:
         args.extend(["-sV", "--version-light"])
@@ -53,9 +77,7 @@ def probe(targets, top_ports, timeout, fingerprints):
         args, capture_output=True, text=True, timeout=timeout, check=False
     )
     if result.returncode:
-        raise RuntimeError(
-            f"Nmap failed ({result.returncode}): {result.stderr[-400:]}"
-        )
+        raise RuntimeError(f"Nmap failed ({result.returncode}): {result.stderr[-400:]}")
     return parse_services(result.stdout)
 
 
@@ -65,7 +87,8 @@ def main():
     parser.add_argument("targets", nargs="+", help="One or more LAN IPv4 addresses")
     parser.add_argument("--top-ports", type=int, default=1000)
     parser.add_argument(
-        "--fingerprint", action="store_true",
+        "--fingerprint",
+        action="store_true",
         help="Send additional service probes (-sV --version-light), use cautiously",
     )
     parser.add_argument("--timeout", type=int, default=900)
@@ -85,7 +108,9 @@ def main():
                 "targets": options.targets,
                 "fingerprinted": options.fingerprint,
                 "services": probe(
-                    options.targets, options.top_ports, options.timeout,
+                    options.targets,
+                    options.top_ports,
+                    options.timeout,
                     options.fingerprint,
                 ),
             },

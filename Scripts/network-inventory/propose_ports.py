@@ -43,9 +43,7 @@ def propose(document):
                     changed.append(f"{hostname}: tcp/{number} (legacy format)")
         else:
             ports = host.setdefault("ports", [])
-            existing = {
-                (item.get("protocol", "tcp"), item["port"]) for item in ports
-            }
+            existing = {(item.get("protocol", "tcp"), item["port"]) for item in ports}
             for number, description in proposals:
                 if ("tcp", number) not in existing:
                     ports.append(

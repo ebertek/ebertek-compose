@@ -185,9 +185,21 @@ def scan(inventory, timeout, do_dns_sd=True):
             broad = parse_nmap_xml(
                 run_command(
                     [
-                        "nmap", "-sS", "-Pn", "-n", "-T3", "--max-retries",
-                        "1", "--host-timeout", "90s", "--top-ports", "100",
-                        "-iL", targets_file.name, "-oX", "-",
+                        "nmap",
+                        "-sS",
+                        "-Pn",
+                        "-n",
+                        "-T3",
+                        "--max-retries",
+                        "1",
+                        "--host-timeout",
+                        "90s",
+                        "--top-ports",
+                        "100",
+                        "-iL",
+                        targets_file.name,
+                        "-oX",
+                        "-",
                     ],
                     timeout,
                 )
