@@ -180,6 +180,22 @@ def scan(inventory, timeout, do_dns_sd=True):
                 "-",
             ]
             checked = parse_nmap_xml(run_command(args, timeout))
+            # A second bounded pass includes popular ports the static inventory
+            # and hand-picked IoT list do not yet know about.
+            broad = parse_nmap_xml(
+                run_command(
+                    [
+                        "nmap", "-sS", "-Pn", "-n", "-T3", "--max-retries",
+                        "1", "--host-timeout", "90s", "--top-ports", "100",
+                        "-iL", targets_file.name, "-oX", "-",
+                    ],
+                    timeout,
+                )
+            )
+            for ip, info in broad.items():
+                hosts[ip]["ports"] = sorted(
+                    set(hosts[ip]["ports"]) | set(info["ports"])
+                )
         for ip, info in checked.items():
             hosts[ip]["ports"] = info["ports"]
     advertised = []
