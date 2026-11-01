@@ -44,12 +44,12 @@ testing simply omit this file; the action logs findings to Komodo.
   disappearance produces another event.
 
 The scanner discovers `10.4.20.0/23`, then scans the union of common TCP
-ports and **every inventoried TCP port** on discovered hosts. It limits retries,
+ports and **every inventoried TCP port** on discovered hosts, plus a second\npass through Nmap's top 100 TCP ports. Both passes are combined; the second\nnever discards services found in the first. It limits retries,
 uses a per-host timeout, and parses Nmap XML, **not grepped output**.
 It excludes currently observed Docker container IP addresses from active port
 tests and alerts, rather than ignoring the entire `10.4.21.0/24` subnet.
 
-Avahi DNS-SD observations are deduplicated across interface/address family.
+Avahi DNS-SD observations include locally advertised services and are\ndeduplicated across interface/address family.
 They are **advertisements, not verified listening services**. UDP is not
 actively scanned in this initial implementation.
 
@@ -71,3 +71,65 @@ actively scanned in this initial implementation.
 Later phases can add bounded UDP probes, UniFi client correlation, time-series
 retention and persistence-based missing-service warnings. Do not auto-update
 the source-of-truth inventory from ephemeral observations.
+
+## Deeper service discovery (on demand)
+
+For an explicit device, the standalone `probe_services.py` performs a
+bounded top-1000 TCP scan. Use `--fingerprint` to enable Nmap's active
+`-sV --version-light` probes and collect the protocol, product, version and
+confidence that Nmap can identify. These are heuristic observations, not proof
+of installed firmware versions. Some embedded devices may react badly to
+unexpected probes, so do **not** enable fingerprinting automatically on all
+devices. The default scanner remains less intrusive.
+
+```bash
+sudo python3 /home/docker/ygg-compose/Scripts/network-inventory/probe_services.py \
+  --top-ports 1000 10.4.20.101 10.4.20.110
+
+# More intrusive: inspect the service fingerprints for a selected device.
+sudo python3 /home/docker/ygg-compose/Scripts/network-inventory/probe_services.py \
+  --fingerprint 10.4.20.33
+```
+
+To inventory advertised service types independently of the TCP probes:
+
+```bash
+avahi-browse -a -r -p -t
+# An additional read-only broadcast DNS-SD query:
+sudo nmap --script=broadcast-dns-service-discovery
+```
+
+mDNS/DNS-SD tells you that a host **advertises** a service. An advertised
+port can be UDP, TCP, firewalled or unreachable; do not automatically treat
+it as a verified open port.
+
+## Propose confirmed port additions to private inventory
+
+`propose_ports.py` is a **manual, idempotent proposal helper** containing
+the five observed services from the initial audit (aircon, Alexa, doorbell,
+Sonos Sub, Fire TV). It preserves all other fields and the older
+`open_ports` format, refuses in-place mutation, and produces a separate
+review file. Do not apply unverified descriptions or changing iPhone ephemeral
+ports as canonical expectations.
+
+Run from a checkout of the **private source repository**, not the deployed
+read-only merged checkout:
+
+```bash
+python3 /path/to/ebertek-compose/Scripts/network-inventory/propose_ports.py \
+  Scripts/cloudflare/static-hosts.json \
+  --output /tmp/proposed-static-hosts.json
+diff -u Scripts/cloudflare/static-hosts.json /tmp/proposed-static-hosts.json
+```
+
+This helper does not change DHCP, Cloudflare or the deployed inventory.
+
+## MAC discrepancy investigation
+
+Nmap's observed MACs come from link-layer responses, not the device label.
+Compare them with UniFi's live client identity and ARP neighbors before
+changing canonical MAC values. For LG TVs, independently check the wired
+and Wi-Fi MACs on the TV and the UniFi switch port for the wired interface.
+For Sonos, identify the MAC of other Sonos devices and the Sub's connection
+type. A stale neighbor entry, proxy ARP, bridge or alternate interface can
+produce misleading IP-to-MAC correlations.
