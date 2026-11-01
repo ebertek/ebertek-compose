@@ -112,16 +112,20 @@ Sonos Sub, Fire TV). It preserves all other fields and the older
 review file. Do not apply unverified descriptions or changing iPhone ephemeral
 ports as canonical expectations.
 
-Run from a checkout of the **private source repository**, not the deployed
-read-only merged checkout:
+Run the helper **on Pleiades from the merged `ygg-compose` runtime checkout**.
+It reads the deployed inventory but writes its proposal outside that checkout:
 
 ```bash
-python3 /path/to/ebertek-compose/Scripts/network-inventory/propose_ports.py \
+cd /home/docker/ygg-compose
+python3 Scripts/network-inventory/propose_ports.py \
   Scripts/cloudflare/static-hosts.json \
   --output /tmp/proposed-static-hosts.json
 diff -u Scripts/cloudflare/static-hosts.json /tmp/proposed-static-hosts.json
 ```
 
+Review the proposed JSON, then commit any accepted inventory changes to
+`ebertek-compose-secrets` through the normal source-repository workflow.
+Do **not** copy the proposal into tracked files under `ygg-compose`.
 This helper does not change DHCP, Cloudflare or the deployed inventory.
 
 ## MAC discrepancy investigation
