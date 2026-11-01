@@ -192,17 +192,16 @@ def scan(inventory, timeout, do_dns_sd=True):
                     timeout,
                 )
             )
-            for ip, info in broad.items():
-                hosts[ip]["ports"] = sorted(
-                    set(hosts[ip]["ports"]) | set(info["ports"])
-                )
-        for ip, info in checked.items():
-            hosts[ip]["ports"] = info["ports"]
+        for ip in targets:
+            hosts[ip]["ports"] = sorted(
+                set(checked.get(ip, {}).get("ports", []))
+                | set(broad.get(ip, {}).get("ports", []))
+            )
     advertised = []
     if do_dns_sd:
         try:
             advertised = parse_avahi(
-                run_command(["avahi-browse", "-a", "-r", "-p", "-l", "-t"], 90)
+                run_command(["avahi-browse", "-a", "-r", "-p", "-t"], 90)
             )
         except (FileNotFoundError, subprocess.TimeoutExpired, RuntimeError):
             # Absence of Avahi must not imply that a service was withdrawn.
