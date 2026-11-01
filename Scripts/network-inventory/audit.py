@@ -27,6 +27,21 @@ DEFAULT_INVENTORY = Path(
 )
 
 
+def syn_scan_options(host_timeout="90s"):
+    """Build conservative shared Nmap SYN scan options."""
+    return [
+        "nmap",
+        "-sS",
+        "-Pn",
+        "-n",
+        "-T3",
+        "--max-retries",
+        "1",
+        "--host-timeout",
+        host_timeout,
+    ]
+
+
 def run_command(args, seconds):
     """Require a successful bounded command, never silently accept partial scans."""
     result = subprocess.run(
@@ -162,15 +177,7 @@ def scan(inventory, timeout, do_dns_sd=True):
             targets_file.write("\n".join(targets) + "\n")
             targets_file.flush()
             args = [
-                "nmap",
-                "-sS",
-                "-Pn",
-                "-n",
-                "-T3",
-                "--max-retries",
-                "1",
-                "--host-timeout",
-                "90s",
+                *syn_scan_options(),
                 "--open",
                 "-p",
                 ",".join(map(str, ports)),
@@ -185,15 +192,7 @@ def scan(inventory, timeout, do_dns_sd=True):
             broad = parse_nmap_xml(
                 run_command(
                     [
-                        "nmap",
-                        "-sS",
-                        "-Pn",
-                        "-n",
-                        "-T3",
-                        "--max-retries",
-                        "1",
-                        "--host-timeout",
-                        "90s",
+                        *syn_scan_options(),
                         "--top-ports",
                         "100",
                         "-iL",
