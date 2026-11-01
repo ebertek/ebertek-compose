@@ -11,7 +11,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-NETWORK = ipaddress.ip_network("10.4.20.0/23")
+from audit import NETWORK, syn_scan_options
 
 
 def parse_services(xml):
@@ -56,15 +56,7 @@ def parse_services(xml):
 def probe(targets, top_ports, timeout, fingerprints):
     """Bound active probes to explicitly selected RFC1918 LAN addresses."""
     args = [
-        "nmap",
-        "-sS",
-        "-Pn",
-        "-n",
-        "-T3",
-        "--max-retries",
-        "1",
-        "--host-timeout",
-        "120s",
+        *syn_scan_options("120s"),
         "--top-ports",
         str(top_ports),
         "-oX",
