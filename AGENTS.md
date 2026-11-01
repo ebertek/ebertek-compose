@@ -18,6 +18,11 @@ infrastructure operations. For security reporting, also read [SECURITY.md](SECUR
   `/home/docker/ygg-compose`. **It is not an editable source checkout.**
   Never edit tracked files in it, generate commits there, or assume separate
   public/private source clones exist on Pleiades.
+- **Runtime commands on Pleiades must use `/home/docker/ygg-compose`**, not
+  `/home/docker/ebertek-compose` or a presumed source-repository checkout.
+  Scripts run against the merged public/private configuration. Commit code
+  changes to `ebertek-compose`, and private inventory/secret changes to
+  `ebertek-compose-secrets`; let GitOps merge them before runtime use.
 - Komodo manages stacks across `pleiades.ygg.nu`, `ygg.ebi.nu`, and
   `hc.ebi.nu`. Stack ownership, servers, run directories, schedules, and
   GitOps actions are defined in [`komodo/resources.toml`](komodo/resources.toml).
