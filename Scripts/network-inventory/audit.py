@@ -27,6 +27,21 @@ DEFAULT_INVENTORY = Path(
 )
 
 
+def syn_scan_options(host_timeout="90s"):
+    """Build conservative shared Nmap SYN scan options."""
+    return [
+        "nmap",
+        "-sS",
+        "-Pn",
+        "-n",
+        "-T3",
+        "--max-retries",
+        "1",
+        "--host-timeout",
+        host_timeout,
+    ]
+
+
 def run_command(args, seconds):
     """Require a successful bounded command, never silently accept partial scans."""
     result = subprocess.run(
@@ -162,15 +177,7 @@ def scan(inventory, timeout, do_dns_sd=True):
             targets_file.write("\n".join(targets) + "\n")
             targets_file.flush()
             args = [
-                "nmap",
-                "-sS",
-                "-Pn",
-                "-n",
-                "-T3",
-                "--max-retries",
-                "1",
-                "--host-timeout",
-                "90s",
+                *syn_scan_options(),
                 "--open",
                 "-p",
                 ",".join(map(str, ports)),
@@ -180,13 +187,32 @@ def scan(inventory, timeout, do_dns_sd=True):
                 "-",
             ]
             checked = parse_nmap_xml(run_command(args, timeout))
-        for ip, info in checked.items():
-            hosts[ip]["ports"] = info["ports"]
+            # A second bounded pass includes popular ports the static inventory
+            # and hand-picked IoT list do not yet know about.
+            broad = parse_nmap_xml(
+                run_command(
+                    [
+                        *syn_scan_options(),
+                        "--top-ports",
+                        "100",
+                        "-iL",
+                        targets_file.name,
+                        "-oX",
+                        "-",
+                    ],
+                    timeout,
+                )
+            )
+        for ip in targets:
+            hosts[ip]["ports"] = sorted(
+                set(checked.get(ip, {}).get("ports", []))
+                | set(broad.get(ip, {}).get("ports", []))
+            )
     advertised = []
     if do_dns_sd:
         try:
             advertised = parse_avahi(
-                run_command(["avahi-browse", "-a", "-r", "-p", "-l", "-t"], 90)
+                run_command(["avahi-browse", "-a", "-r", "-p", "-t"], 90)
             )
         except (FileNotFoundError, subprocess.TimeoutExpired, RuntimeError):
             # Absence of Avahi must not imply that a service was withdrawn.
