@@ -202,7 +202,6 @@ Main areas:
 For legacy Synology deployments:
 
 - Synology Container Manager may ship an older Docker version; [synology-docker](https://github.com/markdumay/synology-docker) can be used to update it.
-- Older DSM/kernel versions may require the legacy [yggdrasil-final](../../tree/yggdrasil-final) branch.
 
 ## Usage
 
