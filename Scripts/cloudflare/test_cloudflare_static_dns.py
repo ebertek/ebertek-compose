@@ -66,9 +66,8 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
         }
         self.assertEqual(self.load(inventory([host])), {HOST: ADDRESS})
         for bad in ({"br0": "not-a-mac"}, {"invalid name!": MAC}, [MAC]):
-            with self.subTest(bad=bad):
-                with self.assertRaises(ValueError):
-                    self.load(inventory([{**host, "interface_macs": bad}]))
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                self.load(inventory([{**host, "interface_macs": bad}]))
 
     def test_valid_file_does_not_publish_mac(self):
         """MAC metadata is permitted but absent from DNS comparison data."""
