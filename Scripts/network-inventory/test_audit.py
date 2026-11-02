@@ -170,12 +170,14 @@ class NetworkAuditTests(unittest.TestCase):
         """Approved proxy MAC suppresses drift; unexpected MAC still alerts."""
         record = {
             "version": 1,
-            "hosts": [{
-                "hostname": "sub.ygg.nu",
-                "ipv4": "10.4.20.101",
-                "mac": "c4:38:75:d1:66:9a",
-                "observed_macs": ["C4:38:75:B2:8D:F7"],
-            }],
+            "hosts": [
+                {
+                    "hostname": "sub.ygg.nu",
+                    "ipv4": "10.4.20.101",
+                    "mac": "c4:38:75:d1:66:9a",
+                    "observed_macs": ["C4:38:75:B2:8D:F7"],
+                }
+            ],
         }
         with TemporaryDirectory() as directory:
             path = Path(directory) / "static-hosts.json"
@@ -187,13 +189,17 @@ class NetworkAuditTests(unittest.TestCase):
         events, _, _ = audit.calculate_events(
             inventory,
             {"10.4.20.101": {"mac": "c4:38:75:b2:8d:f7", "ports": []}},
-            [], {}, set(),
+            [],
+            {},
+            set(),
         )
         self.assertEqual(events, [])
         events, _, _ = audit.calculate_events(
             inventory,
             {"10.4.20.101": {"mac": "00:11:22:33:44:55", "ports": []}},
-            [], {}, set(),
+            [],
+            {},
+            set(),
         )
         self.assertEqual(len(events), 1)
         self.assertIn("CHANGED MAC", events[0])
@@ -203,14 +209,21 @@ class NetworkAuditTests(unittest.TestCase):
         for value in ("c4:38:75:b2:8d:f7", ["not-a-mac"], [42]):
             with self.subTest(value=value), TemporaryDirectory() as directory:
                 path = Path(directory) / "static-hosts.json"
-                path.write_text(json.dumps({
-                    "version": 1,
-                    "hosts": [{
-                        "hostname": "sub.ygg.nu",
-                        "ipv4": "10.4.20.101",
-                        "observed_macs": value,
-                    }],
-                }), encoding="utf-8")
+                path.write_text(
+                    json.dumps(
+                        {
+                            "version": 1,
+                            "hosts": [
+                                {
+                                    "hostname": "sub.ygg.nu",
+                                    "ipv4": "10.4.20.101",
+                                    "observed_macs": value,
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
                 with self.assertRaises(ValueError):
                     audit.load_inventory(path)
 
