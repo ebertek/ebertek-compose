@@ -206,7 +206,11 @@ class NetworkAuditTests(unittest.TestCase):
 
     def test_invalid_observed_macs_rejected(self):
         """Malformed or non-list alternate MACs must fail validation."""
-        for value in ("c4:38:75:b2:8d:f7", ["not-a-mac"], [42]):
+        for value, error_type in (
+            ("c4:38:75:b2:8d:f7", TypeError),
+            (["not-a-mac"], ValueError),
+            ([42], ValueError),
+        ):
             with self.subTest(value=value), TemporaryDirectory() as directory:
                 path = Path(directory) / "static-hosts.json"
                 path.write_text(
@@ -224,7 +228,7 @@ class NetworkAuditTests(unittest.TestCase):
                     ),
                     encoding="utf-8",
                 )
-                with self.assertRaises(ValueError):
+                with self.assertRaises(error_type):
                     audit.load_inventory(path)
 
     def test_unavailable_dns_sd_does_not_clear_history(self):
