@@ -14,7 +14,7 @@ import sys
 import tempfile
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 NETWORK = ipaddress.ip_network("10.4.20.0/23")
@@ -368,7 +368,7 @@ def main():
         inventory, hosts, advertised, previous, ignored, dns_sd_complete
     )
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     # First run is a reviewable baseline, but will not generate Discord spam.
     bootstrap = not previous.get("initialized")
     snapshot = {
