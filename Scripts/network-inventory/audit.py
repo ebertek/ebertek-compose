@@ -146,7 +146,7 @@ def load_inventory(path):
         canonical_mac = (entry.get("mac") or "").lower()
         observed_macs = entry.get("observed_macs", [])
         if not isinstance(observed_macs, list):
-            raise ValueError(f"{entry['hostname']}: observed_macs must be a list")
+            raise TypeError(f"{entry['hostname']}: observed_macs must be a list")
         allowed_macs = {canonical_mac} if canonical_mac else set()
         for mac in observed_macs:
             if not isinstance(mac, str) or not re.fullmatch(
