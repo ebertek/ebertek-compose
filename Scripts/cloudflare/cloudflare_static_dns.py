@@ -168,6 +168,7 @@ def validated_entry(entry, index):
         "aliases",
         "additional_ipv4",
         "observed_macs",
+        "interface_macs",
     }:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
     hostname = entry["hostname"]
@@ -200,6 +201,17 @@ def validated_entry(entry, index):
         for value in observed_macs
     ) or len({value.lower() for value in observed_macs}) != len(observed_macs):
         raise ValueError(f"{hostname}: invalid or duplicate observed MAC")
+    interface_macs = entry.get("interface_macs", {})
+    if not isinstance(interface_macs, dict) or len(interface_macs) > 32:
+        raise ValueError(f"{hostname}: invalid interface_macs mapping")
+    if any(
+        not isinstance(name, str)
+        or not re.fullmatch(r"[a-zA-Z0-9_.@-]{1,64}", name)
+        or not isinstance(value, str)
+        or not MAC.fullmatch(value)
+        for name, value in interface_macs.items()
+    ):
+        raise ValueError(f"{hostname}: invalid interface MAC")
     validate_metadata(entry, hostname)
     validate_aliases(entry, hostname)
     additional = validate_additional_ipv4(hostname, entry.get("additional_ipv4", []))
