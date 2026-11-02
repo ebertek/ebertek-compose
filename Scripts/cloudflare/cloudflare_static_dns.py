@@ -167,6 +167,7 @@ def validated_entry(entry, index):
         "ports",
         "aliases",
         "additional_ipv4",
+        "observed_macs",
     }:
         raise ValueError(f"Static DNS entry {index} has unknown fields")
     hostname = entry["hostname"]
@@ -191,6 +192,14 @@ def validated_entry(entry, index):
     mac = entry.get("mac")
     if mac is not None and (not isinstance(mac, str) or not MAC.fullmatch(mac)):
         raise ValueError(f"{hostname}: invalid optional MAC address")
+    observed_macs = entry.get("observed_macs", [])
+    if not isinstance(observed_macs, list) or len(observed_macs) > 16:
+        raise ValueError(f"{hostname}: invalid observed_macs list")
+    if any(
+        not isinstance(value, str) or not MAC.fullmatch(value)
+        for value in observed_macs
+    ) or len({value.lower() for value in observed_macs}) != len(observed_macs):
+        raise ValueError(f"{hostname}: invalid or duplicate observed MAC")
     validate_metadata(entry, hostname)
     validate_aliases(entry, hostname)
     additional = validate_additional_ipv4(hostname, entry.get("additional_ipv4", []))
