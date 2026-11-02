@@ -347,7 +347,7 @@ services:
       traefik.http.routers.yggflare-test.tls: "true"
       traefik.http.services.yggflare-test.loadbalancer.server.port: "80"
       cf.access: "true"
-      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
+      cf.access.policies: '["3-Whitelist","2-Home","5-Keycloak","Block"]'
     mac_address: "0e:be:00:da:01:02"
     networks:
       macvlan1:
