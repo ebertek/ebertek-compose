@@ -29,6 +29,10 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 secrets:
   cloudflare_api_token:
     file: cloudflare_api_token.txt
+  yggflare_cloudflare_api_token:
+    file: /volume2/docker/yggflare/secrets/cloudflare_api_token
+  yggflare_network_discord_webhook:
+    file: /volume2/docker/yggflare/secrets/network_discord_webhook
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
@@ -461,3 +465,58 @@ services:
       - "/volume2/docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
       - "/volume2/docker/acmesh:/certs:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  yggflare:
+    <<: *common
+    container_name: yggflare
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"
+        reservations:
+          cpus: "0.05"
+          memory: "64M"
+    environment:
+      <<: *env
+      CF_AUTO_APPLY: "true"
+      CLOUDFLARE_ACCOUNT_ID: "bbe7e7cd88aa3e9d775379a230d15953"
+      CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
+      CLOUDFLARE_STATIC_DNS_REQUIRED: "true"
+      CLOUDFLARE_STATIC_DNS_SYNC: "true"
+      CLOUDFLARE_TUNNEL_NAME: "pleiades"
+      PYTHONPATH: "/app/cloudflare"
+      YGG_DEVICES_CIDR: "10.4.20.0/24"
+      YGG_DOCKER_CIDR: "10.4.21.0/25"
+      YGG_EXTERNAL_DOMAIN: "ebi.nu"
+      YGG_INTERNAL_DOMAIN: "ygg.nu"
+      YGG_LAN_CIDR: "10.4.20.0/23"
+      YGG_LOG_FORMAT: "text"
+      YGG_NETWORK_DISCORD_WEBHOOK_FILE: "/run/secrets/network_discord_webhook"
+      YGG_WATCH_COMPOSE: "true"
+      YGG_WATCH_DOCKER: "true"
+      YGG_WATCH_POLL_SECONDS: "15"
+      YGG_WATCH_DEBOUNCE_SECONDS: "20"
+      YGG_WATCH_COOLDOWN_SECONDS: "60"
+      YGGFLARE_CONTAINER_NAME: "yggflare"
+      YGGFLARE_BACKUP: "/backup"
+      YGGFLARE_CONFIG: "/config"
+      YGGFLARE_DATA: "/data"
+      YGGFLARE_SOURCE: "/compose-source"
+    hostname: yggflare
+    image: "ghcr.io/ebertek/yggflare:main"
+    network_mode: host
+    pull_policy: always
+    secrets:
+      - source: yggflare_cloudflare_api_token
+        target: cloudflare_api_token
+      - source: yggflare_network_discord_webhook
+        target: network_discord_webhook
+    volumes:
+      - "/volume2/docker/yggflare/config:/config:ro"
+      - "/volume2/docker/yggflare/data:/data"
+      - "/volume2/docker/yggflare/backup:/backup"
+      - "/home/docker/ygg-compose:/compose-source:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro"
+
