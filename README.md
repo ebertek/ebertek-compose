@@ -199,11 +199,6 @@ Main areas:
 - Host-specific external networks, bind-mount paths, and secrets referenced by the relevant Compose stacks.
 - NFS mounts are required by selected Pleiades services using the `nfs` Compose profile.
 
-For legacy Synology deployments:
-
-- Synology Container Manager may ship an older Docker version; [synology-docker](https://github.com/markdumay/synology-docker) can be used to update it.
-- Older DSM/kernel versions may require the legacy [yggdrasil-final](../../tree/yggdrasil-final) branch.
-
 ## Usage
 
 1. Update the following elements in `compose.yaml` to work with your environment:
