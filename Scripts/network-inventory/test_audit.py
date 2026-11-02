@@ -166,6 +166,54 @@ class NetworkAuditTests(unittest.TestCase):
         self.assertTrue(any("NEW PORT" in item for item in events))
         self.assertFalse(any("NEW DEVICE" in item for item in events))
 
+    def test_approved_observed_mac_and_unapproved_mac(self):
+        """Approved proxy MAC suppresses drift; unexpected MAC still alerts."""
+        record = {
+            "version": 1,
+            "hosts": [{
+                "hostname": "sub.ygg.nu",
+                "ipv4": "10.4.20.101",
+                "mac": "c4:38:75:d1:66:9a",
+                "observed_macs": ["C4:38:75:B2:8D:F7"],
+            }],
+        }
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "static-hosts.json"
+            path.write_text(json.dumps(record), encoding="utf-8")
+            inventory = audit.load_inventory(path)
+        entry = inventory["10.4.20.101"]
+        self.assertEqual(entry["mac"], "c4:38:75:d1:66:9a")
+        self.assertIn("c4:38:75:b2:8d:f7", entry["allowed_macs"])
+        events, _, _ = audit.calculate_events(
+            inventory,
+            {"10.4.20.101": {"mac": "c4:38:75:b2:8d:f7", "ports": []}},
+            [], {}, set(),
+        )
+        self.assertEqual(events, [])
+        events, _, _ = audit.calculate_events(
+            inventory,
+            {"10.4.20.101": {"mac": "00:11:22:33:44:55", "ports": []}},
+            [], {}, set(),
+        )
+        self.assertEqual(len(events), 1)
+        self.assertIn("CHANGED MAC", events[0])
+
+    def test_invalid_observed_macs_rejected(self):
+        """Malformed or non-list alternate MACs must fail validation."""
+        for value in ("c4:38:75:b2:8d:f7", ["not-a-mac"], [42]):
+            with self.subTest(value=value), TemporaryDirectory() as directory:
+                path = Path(directory) / "static-hosts.json"
+                path.write_text(json.dumps({
+                    "version": 1,
+                    "hosts": [{
+                        "hostname": "sub.ygg.nu",
+                        "ipv4": "10.4.20.101",
+                        "observed_macs": value,
+                    }],
+                }), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    audit.load_inventory(path)
+
     def test_unavailable_dns_sd_does_not_clear_history(self):
         """Verify unavailable dns sd does not clear history."""
         previous = {
