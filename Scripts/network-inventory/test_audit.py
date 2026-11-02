@@ -264,14 +264,10 @@ class NetworkAuditTests(unittest.TestCase):
         )
         self.assertEqual(events, ["NEW DNS-SD device.local|_other._tcp|10000"])
         previous["advertisements"] = saved
-        events, _, _ = audit.calculate_events(
-            {}, {}, advertisements, previous, set()
-        )
+        events, _, _ = audit.calculate_events({}, {}, advertisements, previous, set())
         self.assertEqual(events, [])
         previous["advertisements"] = []
-        events, _, _ = audit.calculate_events(
-            {}, {}, advertisements, previous, set()
-        )
+        events, _, _ = audit.calculate_events({}, {}, advertisements, previous, set())
         self.assertEqual(len(events), 2)
 
     def test_unavailable_dns_sd_does_not_clear_history(self):
