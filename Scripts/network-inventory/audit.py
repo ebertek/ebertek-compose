@@ -295,8 +295,13 @@ def calculate_events(
         else previous_ads
     )
     if previous.get("initialized") and dns_sd_complete:
-        for item in sorted(current_ads - previous_ads):
-            events.append(f"NEW DNS-SD {item}")
+        # Keep the advertised ports for diagnostics, but compare service
+        # identities without ports (which may be reassigned dynamically).
+        # This also understands existing host|service|port state files.
+        prior_services = {item.rsplit("|", 1)[0] for item in previous_ads}
+        for item in sorted(current_ads):
+            if item.rsplit("|", 1)[0] not in prior_services:
+                events.append(f"NEW DNS-SD {item}")
     return events, new_reported, sorted(current_ads)
 
 
