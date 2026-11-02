@@ -8,12 +8,13 @@ import argparse
 import ipaddress
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 NETWORK = ipaddress.ip_network("10.4.20.0/23")
@@ -142,9 +143,21 @@ def load_inventory(path):
                 ports.add(f"tcp/{port['port']}")
         for port in entry.get("open_ports", []):
             ports.add(f"tcp/{port}")
+        canonical_mac = (entry.get("mac") or "").lower()
+        observed_macs = entry.get("observed_macs", [])
+        if not isinstance(observed_macs, list):
+            raise TypeError(f"{entry['hostname']}: observed_macs must be a list")
+        allowed_macs = {canonical_mac} if canonical_mac else set()
+        for mac in observed_macs:
+            if not isinstance(mac, str) or not re.fullmatch(
+                r"(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}", mac
+            ):
+                raise ValueError(f"{entry['hostname']}: invalid observed MAC")
+            allowed_macs.add(mac.lower())
         known[ip] = {
+            "allowed_macs": allowed_macs,
             "name": entry["hostname"],
-            "mac": (entry.get("mac") or "").lower(),
+            "mac": canonical_mac,
             "ports": ports,
         }
         for raw in entry.get("additional_ipv4", []):
@@ -254,7 +267,11 @@ def calculate_events(
             new_reported[event] = message
             # A recognized MAC can identify services even after an IP change.
             entry = known_mac
-        elif entry["mac"] and observed["mac"] and entry["mac"] != observed["mac"]:
+        elif (
+            entry["mac"]
+            and observed["mac"]
+            and observed["mac"] not in entry.get("allowed_macs", {entry["mac"]})
+        ):
             event = f"identity:{ip}:{observed['mac']}"
             message = (
                 f"CHANGED MAC {entry['name']} {ip}: {observed['mac']} "
@@ -351,7 +368,7 @@ def main():
         inventory, hosts, advertised, previous, ignored, dns_sd_complete
     )
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     # First run is a reviewable baseline, but will not generate Discord spam.
     bootstrap = not previous.get("initialized")
     snapshot = {

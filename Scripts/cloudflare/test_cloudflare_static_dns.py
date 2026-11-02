@@ -52,6 +52,23 @@ class InventoryTests(unittest.TestCase):  # pylint: disable=too-many-public-meth
             path.write_text(json.dumps(contents))
             return load_inventory(path, required=required)
 
+    def test_interface_mac_metadata_is_validated_and_not_published(self):
+        """Per-interface MACs are inventory-only, not DNS targets."""
+        host = {
+            "hostname": HOST,
+            "ipv4": ADDRESS,
+            "mac": "2a:70:4e:72:c5:d8",
+            "interface_macs": {
+                "eth4": "28:70:4e:72:c5:db",
+                "br0": "2a:70:4e:72:c5:d8",
+                "eth0@switch0": "28:70:4e:72:c5:d7",
+            },
+        }
+        self.assertEqual(self.load(inventory([host])), {HOST: ADDRESS})
+        for bad in ({"br0": "not-a-mac"}, {"invalid name!": MAC}, [MAC]):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                self.load(inventory([{**host, "interface_macs": bad}]))
+
     def test_valid_file_does_not_publish_mac(self):
         """MAC metadata is permitted but absent from DNS comparison data."""
         self.assertEqual(self.load(inventory()), {HOST: ADDRESS})

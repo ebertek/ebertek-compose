@@ -38,6 +38,8 @@ testing simply omit this file; the action logs findings to Komodo.
 
 - New responsive IPv4 addresses and MACs not in the static inventory.
 - Changed MACs for known IPv4 addresses (potentially noisy on bridged devices).
+- Accepts explicitly listed `observed_macs` as alternative ARP responders for a
+  specific host without replacing its canonical `mac`. Unexpected values still alert.
 - Confirmed open TCP ports not listed in the current static inventory.
 - New resolved DNS-SD advertisements, compared with the last observation.
 - Events only notify once while continuously observed; a recurrence after
@@ -127,6 +129,22 @@ Review the proposed JSON, then commit any accepted inventory changes to
 `ebertek-compose-secrets` through the normal source-repository workflow.
 Do **not** copy the proposal into tracked files under `ygg-compose`.
 This helper does not change DHCP, Cloudflare or the deployed inventory.
+
+## Approved alternate observed MACs
+
+Some bonded Sonos devices and dual-interface TVs may respond with another
+interface's MAC. The **private** `static-hosts.json` can record explicitly
+verified alternatives per host:
+
+```json
+"mac": "c4:38:75:d1:66:9a",
+"observed_macs": ["c4:38:75:b2:8d:f7"]
+```
+
+`interface_macs` may also record individual interface names and their MACs\n(e.g. `eth4`, `br0`, `eth0@switch0`) for hardware documentation. These\nvalues are metadata only and do not authorize additional observed MACs.\n\n`mac` remains the canonical device identity. `observed_macs` only suppresses
+known ARP identity drift for the matching IP; alternate MACs do not establish
+device ownership for IP-move detection. Do not whitelist unexplained gateway
+MACs or copy private inventory data into this public repository.
 
 ## MAC discrepancy investigation
 
