@@ -504,7 +504,7 @@ services:
       YGGFLARE_DATA: "/data"
       YGGFLARE_SOURCE: "/compose-source"
     hostname: yggflare
-    image: "ghcr.io/ebertek/yggflare:main@sha256:b01ab2ed491a83c3a1ce5c674c2dc0916bfd0d94a31b7645c6e6aa6500b702ce"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:088c4bcca9aad372ac175103bd5d2ec51b7e71ea108f10c372c65419b2b777cf"
     network_mode: host
     pull_policy: always
     secrets:
