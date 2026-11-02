@@ -299,9 +299,12 @@ def calculate_events(
         # identities without ports (which may be reassigned dynamically).
         # This also understands existing host|service|port state files.
         prior_services = {item.rsplit("|", 1)[0] for item in previous_ads}
+        newly_seen = set()
         for item in sorted(current_ads):
-            if item.rsplit("|", 1)[0] not in prior_services:
+            identity = item.rsplit("|", 1)[0]
+            if identity not in prior_services and identity not in newly_seen:
                 events.append(f"NEW DNS-SD {item}")
+                newly_seen.add(identity)
     return events, new_reported, sorted(current_ads)
 
 
