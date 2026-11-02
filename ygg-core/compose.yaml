@@ -515,7 +515,7 @@ services:
       traefik.http.routers.yggflare.rule: "Host(`yggflare.ebi.nu`)"
       traefik.http.routers.yggflare.service: "yggflare"
       traefik.http.routers.yggflare.tls: "true"
-      traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.20.20:8787"
+      traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     image: "ghcr.io/ebertek/yggflare:main@sha256:e7c1204e00d2f3f52691cbd8a38166dc534a33bb448e62d6a0202266b178fdfa"
