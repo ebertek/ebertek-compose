@@ -41,7 +41,9 @@ testing simply omit this file; the action logs findings to Komodo.
 - Accepts explicitly listed `observed_macs` as alternative ARP responders for a
   specific host without replacing its canonical `mac`. Unexpected values still alert.
 - Confirmed open TCP ports not listed in the current static inventory.
-- New resolved DNS-SD advertisements, compared with the last observation.
+- New resolved DNS-SD host/service identities, compared with the last observation.
+  Dynamic port changes for an existing host/service do not trigger alerts;
+  the actual advertised ports remain in saved state for diagnostics.
 - Events only notify once while continuously observed; a recurrence after
   disappearance produces another event.
 
