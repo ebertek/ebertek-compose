@@ -1,6 +1,6 @@
 # ebertek-compose
 
-A collection of Docker Compose files and shell scripts.
+Public source repository for Docker Compose stacks, Komodo resources, scripts, and supporting configuration in the Ygg GitOps deployment.
 
 ## Overview
 
@@ -15,6 +15,25 @@ Main areas:
 - GitOps and container management (Komodo, Renovate)
 - Remote web hosting (WordPress, MariaDB, nginx)
 - Utility services, backups, and host startup/maintenance scripts
+
+## GitOps architecture
+
+Deployment is assembled from two source repositories:
+
+- **[ebertek-compose](https://github.com/ebertek/ebertek-compose)** (this repository): public Compose stacks, scripts, Komodo resources, and nonsecret configuration.
+- **ebertek-compose-secrets**: private source for credentials and private configuration, including the active device inventory.
+
+Both sources are merged into **ygg-compose**. On Pleiades, the merged runtime checkout is **`/home/docker/ygg-compose`**. Run scripts and Docker Compose/Komodo operations from that merged checkout; do **not** assume either source repository is checked out on Pleiades, and do **not** edit tracked files in `ygg-compose`. Commit persistent public changes here and private changes in the private source repository, then synchronize through GitOps.
+
+A repository merge, a runtime checkout pull, Komodo resource synchronization, and container recreation are separate operations. A successful source PR does not by itself update a running service.
+
+## Operations and automation
+
+- **[Komodo](komodo/resources.toml)** manages stacks, servers, and scheduled actions. Check the current resource definitions for execution order and schedules.
+- **[Cloudflare reconciliation](Scripts/cloudflare/README.md)** compares Compose-derived applications with Cloudflare Access, Tunnel ingress, and DNS. `cloudflare-live.py` is GET-only; `cloudflare-manage.py` plans changes and supports reviewed or explicitly enabled guarded writes. The private `cloudflare.env` controls unattended mode.
+- **[Static DNS inventory](Scripts/cloudflare/README.md#static-non-docker-dns-inventory-guarded-synchronization)** lives in the private `Scripts/cloudflare/static-hosts.json` source and is merged into the runtime checkout. The controller can safely create/update eligible non-Docker `ygg.nu` A records but never deletes undeclared resources. Private device MACs, interface MAC metadata, and ports stay out of this public repository.
+- **[Network inventory audit](Scripts/network-inventory/README.md)** performs bounded LAN discovery with Nmap and DNS-SD, detects unexpected hosts, MACs, and confirmed TCP listeners, and writes state outside the merged checkout. Known alternate ARP responders can be approved in private inventory metadata. DNS-SD alerts track host/service identity instead of noisy changes to dynamically advertised ports; actual ports remain in observations.
+- **[Python formatting and validation](.github/workflows/python-black-autofix.yml)** runs Ruff safe fixes followed by Black on Python PR changes. The [Lint workflow](.github/workflows/lint.yml) and unit tests remain the validation gates; autofix does not guarantee all diagnostics are resolved.
 
 ## Docker Compose
 
@@ -199,23 +218,20 @@ Main areas:
 - Host-specific external networks, bind-mount paths, and secrets referenced by the relevant Compose stacks.
 - NFS mounts are required by selected Pleiades services using the `nfs` Compose profile.
 
-## Usage
+## Runtime usage
 
-1. Update the following elements in `compose.yaml` to work with your environment:
+Run commands against the **merged** checkout on the relevant host, not against a source repository. For example, on Pleiades after the source merge and checkout sync:
 
-- `dns`
-- `dns_search`
-- `environment`
-- `extra_hosts`
-- `mac_address`
-- `networks`
-- `user`
-- `volumes`
+```bash
+cd /home/docker/ygg-compose
 
-2. Update the `.env` and `.txt` files with your own secrets.
-3. Deploy:
+# Read-only network audit (requires the merged private inventory).
+sudo bash Scripts/network-inventory/run.sh
 
-```sh
-cd <folder-name>
-docker compose up -d
+# Cloudflare controller documentation explains required credentials and
+# distinguishes read-only audit, review, and guarded apply operations.
 ```
+
+For normal deployments, use the existing Komodo actions and stacks defined in [`komodo/resources.toml`](komodo/resources.toml). Avoid editing deployed tracked files or creating local `.env` secrets there; make changes in the appropriate source repository and merge/sync first.
+
+For implementation details, see [Cloudflare reconciliation](Scripts/cloudflare/README.md), [network inventory](Scripts/network-inventory/README.md), and [repository contributor rules](AGENTS.md).
