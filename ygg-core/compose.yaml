@@ -480,6 +480,8 @@ services:
     environment:
       <<: *env
       CF_AUTO_APPLY: "true"
+      CF_AUTO_CLEANUP: "true"
+      CF_ORPHAN_GRACE_HOURS: "24"
       CLOUDFLARE_ACCOUNT_ID: "bbe7e7cd88aa3e9d775379a230d15953"
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
       CLOUDFLARE_STATIC_DNS_REQUIRED: "true"
@@ -503,7 +505,19 @@ services:
       YGGFLARE_CONFIG: "/config"
       YGGFLARE_DATA: "/data"
       YGGFLARE_SOURCE: "/compose-source"
+      YGGFLARE_WEB_ENABLED: "true"
+      YGGFLARE_WEB_BIND: "0.0.0.0"
+      YGGFLARE_WEB_PORT: "8787"
     hostname: yggflare
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.yggflare.entrypoints: "websecure"
+      traefik.http.routers.yggflare.rule: "Host(`yggflare.ebi.nu`)"
+      traefik.http.routers.yggflare.service: "yggflare"
+      traefik.http.routers.yggflare.tls: "true"
+      traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
+      cf.access: "true"
+      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
     image: "ghcr.io/ebertek/yggflare:main@sha256:e7c1204e00d2f3f52691cbd8a38166dc534a33bb448e62d6a0202266b178fdfa"
     network_mode: host
     pull_policy: always
