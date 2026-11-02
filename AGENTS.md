@@ -34,8 +34,7 @@ infrastructure operations. For security reporting, also read [SECURITY.md](SECUR
   not reach a running container until that service is redeployed.
 
 Use explicit paths, users, and hosts in instructions. `~` changes meaning
-under `sudo -s`: `/root` is not `/home/docker`. Run the Pleiades
-Cloudflare scripts with the `docker` user's virtual environment and checkout.
+under `sudo -s`: `/root` is not `/home/docker`. The Yggflare service is deployed independently from this repository.
 
 ## Change discipline
 
@@ -72,68 +71,25 @@ Cloudflare scripts with the `docker` user's virtual environment and checkout.
   never infer that a named `bypass` policy is safe without inspecting its
   match conditions.
 
-## Cloudflare controller: current source of truth
+## Cloudflare and network inventory ownership
 
-Read [`Scripts/cloudflare/README.md`](Scripts/cloudflare/README.md) and the
-current implementation before modifying controller behavior.
+The standalone [Yggflare](https://github.com/ebertek/yggflare) project owns
+Cloudflare API reconciliation, Access policy updates, DNS/Tunnel inspection,
+LAN device discovery, and inventory monitoring. This repository only supplies
+Compose labels and other deployment source; it does **not** run a Cloudflare
+controller or network-audit service.
 
-- For Compose-managed applications, desired state comes from merged Compose
-  labels; observed state comes from Cloudflare's APIs. Do not regenerate live
-  desired state from Cloudflare alone.
-- The direct API reconciler manages Access applications/policy references,
-  `ebi.nu` Tunnel CNAMEs and ingress, and existing Docker-subnet `ygg.nu`
-  A-record addresses. It must preserve unrelated and unmanaged resources.
-- `cloudflare-live.py` is GET-only. `cloudflare-manage.py` defaults to
-  planning, with `--preflight` for GET-only compatibility checks,
-  `--apply <fingerprint>` for a reviewed manual write, and `--auto` for
-  explicitly opted-in, bounded unattended operations.
-- The scheduled Komodo action `Cloudflare audit` uses
-  `Scripts/cloudflare/cloudflare-audit.sh`. **Do not infer its effects from
-  its name:** the private `Scripts/cloudflare/cloudflare.env` controls
-  its mode via `CF_AUTO_APPLY=true` (guarded unattended writes). If unset
-  or `false`, it runs a GET-only audit; invalid values abort.
-  Check this setting before describing a run as read-only.
-- Unattended mutations are restricted to a small allowlist and at most three
-  operations per run. New Access applications and existing policy updates
-  require at least one verified allow policy and exactly one final deny
-  policy. Updates additionally require an unchanged live application and
-  validated full-application PUT.
-- A new app must be verified protected by Access before its Tunnel route and
-  public DNS are published. Preserve the complete existing Tunnel
-  configuration (`ingress`, `originRequest`, and `warp-routing` where
-  present), including the terminal fallback. Treat unknown live fields and
-  conflicting resources as blockers, not attributes to discard.
-- Existing Access application changes use a full application PUT, not a
-  policies-only PATCH. Verify the current API shape and all writable versus
-  response-only fields; preserve app settings and require a controlled live
-  validation before claiming this path safe for automation.
-- Never automatically delete Cloudflare resources merely because a container
-  or Compose hostname is absent.
-- Static non-Docker `ygg.nu` A records are reconciled only from the required
-  private active-host `Scripts/cloudflare/static-hosts.json` inventory
-  (source owner: `ebertek-compose-secrets`). `static_dns_required` and
-  `static_dns_sync` must be explicitly enabled. Create missing unproxied A
-  records and PATCH only IP content of uniquely identified, unproxied A
-  records, after fresh live checks and read-back. Never overwrite CNAMEs,
-  undeclared extra/duplicate records, proxied A records, or Docker-owned
-  addresses. An explicitly declared `additional_ipv4` companion A is
-  protected and must retain its identity through primary changes.
-  No automatic deletion of absent, reserved or retired devices; keep real
-  MACs, serials, port observations and private topology out of this repo.
-- The legacy public Terraform HCL and Terraform-only helper scripts have been
-  retired from active source. Their prior contents remain in Git history.
-  Never run Terraform alongside the API writer; preserve sensitive offline
-  Terraform state and private recovery exports until separately reviewed.
-- The Komodo audit reads the private
-  `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env` merged file,
-  owned by the private `ebertek-compose-secrets` source. There is no Terraform
-  credential-path fallback. Never commit the token to this public repository
-  or edit the deployed `ygg-compose` checkout as a persistent source.
-- Runtime Python dependencies are declared in
-  `Scripts/cloudflare/requirements.txt`; the virtual environment belongs
-  outside the merged checkout, presently at
-  `/home/docker/cloudflare/.venv`. Do not use `pip --break-system-packages`
-  or require extra local source repositories.
+- Desired Access state is declared by Traefik Host rules with `cf.access` and
+  ordered `cf.access.policies` labels. Preserve policy order and final denial
+  when editing these labels.
+- Do not assume a changed Compose file has reached the deployed read-only
+  source mount until GitOps merge/pull is complete.
+- Yggflare reads the merged Compose definitions without modifying them.
+  The device inventory and Cloudflare token are maintained separately.
+- Never enable competing Cloudflare writers; follow Yggflare's own
+  documentation for dry-run verification, guarded apply, and recovery.
+- Removing a service or a label does not authorize deleting live Access, DNS
+  or Tunnel resources. Review deletion manually.
 
 ## Komodo, GitOps and shell scripts
 
@@ -183,7 +139,6 @@ versions/settings rather than guessing at defaults. At minimum, run relevant
 commands such as:
 
 ```bash
-python -m unittest discover -s Scripts/cloudflare -p 'test_cloudflare_*.py'
 docker compose -f ygg-arr/compose.yaml config --quiet
 npx prettier --check AGENTS.md SECURITY.md
 git diff --check

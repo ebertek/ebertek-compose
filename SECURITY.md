@@ -83,63 +83,30 @@ contain it. Deleting a file in a later commit does not erase it from history.
 
 ## Deployment and Cloudflare safety
 
-Cloudflare API reconciliation is the intended controller for new
-Compose-managed service hostnames. Desired application state comes from
-Compose labels; live DNS, Access and Tunnel configuration is read from
-Cloudflare. Legacy public Terraform HCL and Terraform-specific tooling have been removed
-from active source; historical revisions remain in Git history. **Do not have
-Terraform and the API reconciler write to the same resources concurrently.**
+Cloudflare reconciliation and LAN inventory auditing are implemented in the
+standalone [Yggflare](https://github.com/ebertek/yggflare) project. This
+repository supplies declarative Compose labels and other service definitions.
 
-The following boundaries must be preserved:
+Changes to Traefik Host rules, `cf.access` and `cf.access.policies` can affect
+public exposure and authorization. Keep the desired Access policy order,
+security middleware, and TLS behavior intact; never bypass authentication for
+test convenience.
 
-- A new public hostname must have its intended Access application and
-  ordered policies configured and verified before Tunnel ingress or public
-  DNS make it reachable.
-- Preserve existing Tunnel routes, origin options (including
-  `warp-routing`), terminal fallback, and all unmanaged Cloudflare resources.
-- Unknown live API fields or conflicting DNS/Access records must block writes.
-  Never silently discard application settings when updating policies.
-- Existing Access policy updates require a fresh-state check and validated
-  full-application PUT. Unattended creation and policy updates additionally
-  require at least one allow policy and exactly one final deny policy;
-  unsafe changes are refused.
-- The automated reconciler is **not** an automatic deletion mechanism.
-  Disappearance from Compose does not authorize deletion from Cloudflare.
-- Static non-Docker `ygg.nu` A record writes require the explicitly enabled,
-  version-controlled private active-host inventory. The controller validates
-  the planned /27 address boundaries, refuses proxied/CNAME/undeclared-extra
-  conflicts, re-reads current record identity before writing, and verifies
-  results. Only explicitly declared `additional_ipv4` companion A records
-  may coexist with the primary; they are never written or removed. Updates modify only the IPv4 content; creation uses unproxied A
-  records. A blocked static hostname does not authorize overwriting it.
-  Unmanaged, reserved, and retired devices must never be changed or deleted
-  automatically. Keep MACs, serials, device descriptions, purchase dates and
-  port inventories private; no such metadata enters Cloudflare writes.
-- `Scripts/cloudflare/cloudflare-live.py` and
-  `cloudflare-manage.py --preflight` are GET-only. The manual
-  `cloudflare-manage.py --apply` path performs reviewed writes; the
-  `--auto` path can perform bounded, allowlisted writes if explicitly
-  enabled.
-- The Komodo action named **Cloudflare audit** does **not** always mean
-  read-only: its deployed entrypoint switches to `--auto` only when
-  `CF_AUTO_APPLY=true` is explicitly set in the **private**
-  `Scripts/cloudflare/cloudflare.env`. Unset or `false` is GET-only;
-  invalid values abort. Restrict access to that file and audit logs; set
-  `CF_AUTO_APPLY=false` to disable unattended writes.
-- Preserve encryption and recoverability of any retained private Terraform
-  state and Cloudflare recovery exports. Do not treat live API configuration
-  as a complete backup: it may not recover unretrievable secrets after loss
-  of the Cloudflare account. The scheduled action reads the merged private
-  `/home/docker/ygg-compose/Scripts/cloudflare/cloudflare.env` (sourced from
-  `ebertek-compose-secrets`); the public repository must never contain it.
+Production Cloudflare API credentials and private static-device inventories
+must not be committed to this public repository. Yggflare's write safety,
+backup/recovery controls, and audit logging are reviewed and tested in its
+own source repository. Never run multiple automatic Cloudflare reconcilers
+against the same resources.
 
-For implementation details and validation commands, see
-[`Scripts/cloudflare/README.md`](Scripts/cloudflare/README.md).
+The deployed merged `ygg-compose` checkout remains an immutable GitOps output;
+all persistent source changes belong in their respective source repositories.
+Deleting a Compose service does not authorize deletion of live DNS, Access or
+Tunnel resources.
 
 ## CI and dependency scanning
 
 GitHub's `Lint` workflow checks formatting, Compose parsing,
-Cloudflare Python tests, and Renovate configuration. The separate `Security`
+and Renovate configuration. The separate `Security`
 workflow performs scheduled or manually initiated Trivy repository and image
 scans. At present the Trivy jobs use `exit-code: "0"`: scan findings
 require human review and do not necessarily fail the workflow.
