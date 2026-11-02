@@ -141,7 +141,7 @@ verified alternatives per host:
 "observed_macs": ["c4:38:75:b2:8d:f7"]
 ```
 
-`mac` remains the canonical device identity. `observed_macs` only suppresses
+`interface_macs` may also record individual interface names and their MACs\n(e.g. `eth4`, `br0`, `eth0@switch0`) for hardware documentation. These\nvalues are metadata only and do not authorize additional observed MACs.\n\n`mac` remains the canonical device identity. `observed_macs` only suppresses
 known ARP identity drift for the matching IP; alternate MACs do not establish
 device ownership for IP-move detection. Do not whitelist unexplained gateway
 MACs or copy private inventory data into this public repository.
