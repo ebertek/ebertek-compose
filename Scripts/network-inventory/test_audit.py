@@ -231,6 +231,49 @@ class NetworkAuditTests(unittest.TestCase):
                 with self.assertRaises(error_type):
                     audit.load_inventory(path)
 
+    def test_dns_sd_port_change_keeps_observation_without_alert(self):
+        """Dynamic advertised ports should not be classified as new services."""
+        previous = {
+            "initialized": True,
+            "reported": {},
+            "advertisements": ["LGwebOSTV.local|_hap._tcp|45857"],
+        }
+        advertisements = [
+            {"host": "LGwebOSTV.local", "service": "_hap._tcp", "port": 42963}
+        ]
+        events, _, saved = audit.calculate_events(
+            {}, {}, advertisements, previous, set()
+        )
+        self.assertEqual(events, [])
+        self.assertEqual(saved, ["LGwebOSTV.local|_hap._tcp|42963"])
+
+    def test_dns_sd_new_service_and_reappearance(self):
+        """New service types alert once and alert again after withdrawal."""
+        previous = {
+            "initialized": True,
+            "reported": {},
+            "advertisements": ["device.local|_hap._tcp|12345"],
+        }
+        advertisements = [
+            {"host": "device.local", "service": "_hap._tcp", "port": 54321},
+            {"host": "device.local", "service": "_other._tcp", "port": 10000},
+            {"host": "device.local", "service": "_other._tcp", "port": 10001},
+        ]
+        events, _, saved = audit.calculate_events(
+            {}, {}, advertisements, previous, set()
+        )
+        self.assertEqual(events, ["NEW DNS-SD device.local|_other._tcp|10000"])
+        previous["advertisements"] = saved
+        events, _, _ = audit.calculate_events(
+            {}, {}, advertisements, previous, set()
+        )
+        self.assertEqual(events, [])
+        previous["advertisements"] = []
+        events, _, _ = audit.calculate_events(
+            {}, {}, advertisements, previous, set()
+        )
+        self.assertEqual(len(events), 2)
+
     def test_unavailable_dns_sd_does_not_clear_history(self):
         """Verify unavailable dns sd does not clear history."""
         previous = {
