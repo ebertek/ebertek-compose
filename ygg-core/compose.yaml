@@ -519,4 +519,3 @@ services:
       - "/home/docker/ygg-compose:/compose-source:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro"
-
