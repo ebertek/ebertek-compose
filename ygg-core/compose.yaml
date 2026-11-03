@@ -30,9 +30,9 @@ secrets:
   cloudflare_api_token:
     file: cloudflare_api_token.txt
   yggflare_cloudflare_api_token:
-    file: /volume2/docker/yggflare/secrets/cloudflare_api_token
+    file: yggflare_cloudflare_api_token.txt
   yggflare_network_discord_webhook:
-    file: /volume2/docker/yggflare/secrets/network_discord_webhook
+    file: yggflare_network_discord_webhook.txt
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
