@@ -506,6 +506,7 @@ services:
       YGGFLARE_DATA: "/data"
       YGGFLARE_SOURCE: "/compose-source"
       YGGFLARE_WEB_ENABLED: "true"
+      YGGFLARE_WEB_SHOW_SECRETS: "true"
       YGGFLARE_WEB_BIND: "0.0.0.0"
       YGGFLARE_WEB_PORT: "8787"
     hostname: yggflare
