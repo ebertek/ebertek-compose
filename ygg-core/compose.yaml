@@ -526,7 +526,7 @@ services:
       traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    image: "ghcr.io/ebertek/yggflare:main@sha256:749172d56009a93713b23bc10fed3a020f7c105c"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:9e76584658908bc807ac89286862361453a4bf833641979a704953366ad40ebd"
     network_mode: host
     pull_policy: always
     secrets:
