@@ -469,6 +469,8 @@ services:
   yggflare:
     <<: *common
     container_name: yggflare
+    # Docker init forwards SIGTERM to Python and reaps watcher subprocesses.
+    init: true
     deploy:
       resources:
         limits:
