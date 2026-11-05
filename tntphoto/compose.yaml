@@ -127,7 +127,7 @@ services:
       PGID: "82"
       WORDPRESS_DB_HOST: "mariadb:3306"
     hostname: wordpress
-    image: "ghcr.io/ebertek/ebertek-wordpress:7.1.4-php8.5-fpm-alpine@sha256:61502a0847569b1d608947a5c839e1e17020ca88d9d74e3c7ee3dea218e4ae95"
+    image: "ghcr.io/ebertek/ebertek-wordpress:7.1.4-php8.5-fpm-alpine@sha256:cfcee5be7c58cec9230c0511d0d77e6a663af83ad82e28a0a82b8e4ffacc8e73"
     networks:
       - wp_net
     volumes:
