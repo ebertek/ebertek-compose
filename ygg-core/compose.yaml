@@ -497,6 +497,8 @@ services:
       YGGFLARE_DISCOVERY_MAX_TARGETS: "512"
       YGGFLARE_DISCOVERY_ARP_SCAN: "true"
       YGGFLARE_DISCOVERY_NDP_PROBE: "true"
+      # Router advertisements are collected as read-only, scoped topology evidence.
+      YGGFLARE_DISCOVERY_RA: "true"
       YGGFLARE_DISCOVERY_IPV6_SCAN: "true"
       YGGFLARE_DISCOVERY_OS_DETECTION: "true"
       YGGFLARE_DISCOVERY_SSDP: "true"
