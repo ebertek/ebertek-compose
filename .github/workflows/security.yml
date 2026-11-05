@@ -31,7 +31,7 @@ jobs:
           TRIVY_NO_PROGRESS: "true"
           TRIVY_TIMEOUT: 15m
         with:
-          version: v0.76.1
+          version: v0.76.2
           scan-type: fs
           scan-ref: .
           scanners: secret,misconfig
@@ -146,7 +146,7 @@ jobs:
           TRIVY_NO_PROGRESS: "true"
           TRIVY_TIMEOUT: 15m
         with:
-          version: v0.76.1
+          version: v0.76.2
           scan-type: image
           image-ref: ${{ matrix.image }}
           scanners: vuln,secret,misconfig,license
