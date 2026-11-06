@@ -327,7 +327,7 @@ services:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:4180/ready"]
       timeout: 10s
     hostname: oauth2-proxy
-    image: "quay.io/oauth2-proxy/oauth2-proxy:v7.15.5-alpine" # gitleaks:allow
+    image: "quay.io/oauth2-proxy/oauth2-proxy:v7.15.6-alpine" # gitleaks:allow
     label_file: oauth2-proxy.labels
     labels:
       traefik.enable: "true"
