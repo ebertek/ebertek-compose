@@ -47,8 +47,19 @@ services:
     env_file: bjornify.env
     environment:
       <<: *env
+      SPOTIFY_AUTH_CALLBACK_PORT: "8765"
     hostname: bjornify
-    image: "ghcr.io/ebertek/bjornify:1.0.123"
+    labels:
+      # Restrict the callback with existing Home/Whitelist Access policies.
+      # This callback is browser-driven, not a server-to-server Spotify webhook.
+      cf.access: "true"
+      cf.access.policies: '["2-Home","3-Whitelist","Block"]'
+      traefik.enable: "true"
+      traefik.http.routers.bjornify-spotify.entrypoints: "websecure"
+      traefik.http.routers.bjornify-spotify.rule: "Host(`bjornify.ebi.nu`) && Path(`/spotify/callback`)"
+      traefik.http.routers.bjornify-spotify.tls: "true"
+      traefik.http.services.bjornify-spotify.loadbalancer.server.port: "8765"
+    image: "ghcr.io/ebertek/bjornify:1.0.145"
     mac_address: "0e:be:00:da:00:52"
     networks:
       macvlan1:
