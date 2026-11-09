@@ -59,7 +59,7 @@ services:
       traefik.http.routers.bjornify-spotify.rule: "Host(`bjornify.ebi.nu`) && Path(`/spotify/callback`)"
       traefik.http.routers.bjornify-spotify.tls: "true"
       traefik.http.services.bjornify-spotify.loadbalancer.server.port: "8765"
-    image: "ghcr.io/ebertek/bjornify:1.1.180"
+    image: "ghcr.io/ebertek/bjornify:1.1.308"
     mac_address: "0e:be:00:da:00:52"
     networks:
       macvlan1:
