@@ -544,9 +544,9 @@ services:
       HA_BASE_URL: "http://hass:8123"
       LOG_LEVEL: "debug"
       REDACT_LOGS: "false"
-      VALIDATE_VONAGE_SMS_SIGNATURE: "true"
+      VALIDATE_VONAGE_WEBHOOK_SIGNATURE: "true"
     hostname: vonage
-    image: "ghcr.io/ebertek/vonage-ha-bridge:2.3.53"
+    image: "ghcr.io/ebertek/vonage-ha-bridge:3.0.61"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vonage.entrypoints: "websecure"
