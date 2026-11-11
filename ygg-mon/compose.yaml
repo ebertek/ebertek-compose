@@ -177,7 +177,7 @@ services:
         ]
       timeout: 5s
     hostname: grafana
-    image: "docker.io/grafana/grafana:13.3.0"
+    image: "docker.io/grafana/grafana:13.3.1"
     labels:
       autoheal: "true"
       traefik.enable: "true"
