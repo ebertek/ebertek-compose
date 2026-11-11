@@ -141,7 +141,7 @@ services:
         ]
       timeout: 5s
     hostname: mongo
-    image: "docker.io/library/mongo:9.0.4"
+    image: "docker.io/library/mongo:9.0.8"
     labels:
       komodo.skip: ""
     mac_address: "0e:be:00:da:00:98"
