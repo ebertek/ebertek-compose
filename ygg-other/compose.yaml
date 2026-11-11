@@ -133,7 +133,7 @@ services:
         ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/ >/dev/null || exit 1"]
       timeout: 5s
     hostname: browser
-    image: "lscr.io/linuxserver/chromium:latest@sha256:59d1bfa98a6ab759fce078e5a714de3920f4c618b8939a0df6e1dec7d25c7aba"
+    image: "lscr.io/linuxserver/chromium:latest@sha256:ff1b8235e20367c3b660d31892e14428687df75e2d62e274b7d8d40cf5537108"
     environment:
       <<: *env
       PUID: "1028"
