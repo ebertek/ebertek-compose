@@ -548,7 +548,7 @@ services:
       VOICE_TTS_LEAD_IN_MS: "500"
       VOICE_TTS_LEAD_OUT_MS: "500"
     hostname: vonage
-    image: "ghcr.io/ebertek/vonage-ha-bridge:3.0.64"
+    image: "ghcr.io/ebertek/vonage-ha-bridge:3.0.72"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vonage.entrypoints: "websecure"
