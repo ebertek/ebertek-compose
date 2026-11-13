@@ -5,6 +5,7 @@
     ":automergeStableNonMajor",
     ":approveMajorUpdates"
   ],
+  "platformAutomerge": false,
   "packageRules": [
     {
       "description": "Pin WordPress image to a SHA-256 digest",
