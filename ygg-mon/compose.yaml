@@ -259,7 +259,7 @@ services:
       test: ["CMD", "/usr/bin/loki", "-health"]
       timeout: 5s
     hostname: loki
-    image: "docker.io/grafana/loki:3.7.9"
+    image: "docker.io/grafana/loki:3.7.10"
     labels:
       traefik.enable: "true"
       traefik.http.routers.loki.entrypoints: "websecure"
