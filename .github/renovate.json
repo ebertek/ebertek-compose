@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":automergeStableNonMajor"],
+  "extends": [
+    "config:recommended",
+    ":automergeStableNonMajor",
+    ":approveMajorUpdates"
+  ],
   "packageRules": [
     {
       "description": "Pin WordPress image to a SHA-256 digest",
