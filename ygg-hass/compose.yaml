@@ -550,7 +550,7 @@ services:
       VOICE_WAIT_FOR_RESULT: "true"
       VOICE_WAIT_FOR_RESULT_TIMEOUT_S: "30"
     hostname: vonage
-    image: "ghcr.io/ebertek/vonage-ha-bridge:3.0.72"
+    image: "ghcr.io/ebertek/vonage-ha-bridge:3.0.110"
     labels:
       traefik.enable: "true"
       traefik.http.routers.vonage.entrypoints: "websecure"
