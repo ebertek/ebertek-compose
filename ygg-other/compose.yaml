@@ -342,7 +342,7 @@ services:
       <<: *env
       PORT: "3000"
       STATUS_TTL_SECONDS: "180"
-      UPDATE_TOKEN_FILE: "/run/secrets/visit_update_token"
+      UPDATE_TOKEN_FILE: "/run/visit/update-token.txt"
     hostname: visit
     image: "visit:local"
     labels:
@@ -359,10 +359,9 @@ services:
         ipv4_address: 10.4.21.102
         ipv6_address: fd0e:be00:da00:20:421::102
     pull_policy: build
-    secrets:
-      - visit_update_token
     volumes:
       - "visit-data:/data"
+      - "/volume2/docker/visit:/run/visit:ro"
 
   vw:
     <<: *common
@@ -425,6 +424,3 @@ services:
 volumes:
   visit-data:
 
-secrets:
-  visit_update_token:
-    file: "/volume2/docker/visit/update-token.txt"
