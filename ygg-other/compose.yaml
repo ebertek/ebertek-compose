@@ -423,4 +423,3 @@ services:
 
 volumes:
   visit-data:
-
