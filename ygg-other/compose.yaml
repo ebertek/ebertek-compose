@@ -360,7 +360,6 @@ services:
         ipv6_address: fd0e:be00:da00:20:421::102
     pull_policy: build
     volumes:
-      - "visit-data:/data"
       - "/volume2/docker/visit:/run/visit:ro"
 
   vw:
@@ -420,6 +419,3 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/vw:/data"
-
-volumes:
-  visit-data:
