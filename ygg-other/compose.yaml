@@ -328,7 +328,7 @@ services:
   visit:
     <<: *common
     build:
-      context: "https://github.com/ebertek/visit.ebi.nu.git#main"
+      context: "https://github.com/ebertek/may-i-come.git#main"
     container_name: visit
     deploy:
       resources:
