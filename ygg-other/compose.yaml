@@ -325,6 +325,45 @@ services:
       - "/volume2/docker/smtp/spool:/var/spool/postfix"
       - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro"
 
+  visit:
+    <<: *common
+    build:
+      context: "https://github.com/ebertek/visit.ebi.nu.git#main"
+    container_name: visit
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
+        reservations:
+          cpus: "0.01"
+          memory: "32M"
+    environment:
+      <<: *env
+      PORT: "3000"
+      STATUS_TTL_SECONDS: "180"
+      UPDATE_TOKEN_FILE: "/run/secrets/visit_update_token"
+    hostname: visit
+    image: "visit:local"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.visit.entrypoints: "websecure"
+      traefik.http.routers.visit.rule: "Host(`visit.ebi.nu`)"
+      traefik.http.routers.visit.tls: "true"
+      traefik.http.services.visit.loadbalancer.server.port: "3000"
+      cf.access: "true"
+      cf.access.policies: '["1-Public bypass","2-Home","3-Whitelist","5-Keycloak","Block"]'
+    mac_address: "0e:be:00:da:01:02"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.102
+        ipv6_address: fd0e:be00:da00:20:421::102
+    pull_policy: build
+    secrets:
+      - visit_update_token
+    volumes:
+      - "visit-data:/data"
+
   vw:
     <<: *common
     cap_add:
@@ -382,3 +421,10 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/vw:/data"
+
+volumes:
+  visit-data:
+
+secrets:
+  visit_update_token:
+    file: "/volume2/docker/visit/update-token.txt"
