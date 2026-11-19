@@ -356,7 +356,6 @@ services:
       macvlan1:
         ipv4_address: 10.4.21.102
         ipv6_address: fd0e:be00:da00:20:421::102
-    pull_policy: build
     volumes:
       - "/volume2/docker/visit:/run/visit:ro"
 
