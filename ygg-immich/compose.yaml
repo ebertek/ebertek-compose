@@ -62,7 +62,7 @@ services:
       - "44"
       - "991"
     hostname: immich
-    image: "ghcr.io/immich-app/immich-server:v3.4.1"
+    image: "ghcr.io/immich-app/immich-server:v3.4.2"
     labels:
       autoheal: "true"
       traefik.enable: "true"
