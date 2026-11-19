@@ -57,7 +57,7 @@ services:
       AUTOHEAL_ONLY_MONITOR_RUNNING: "true"
       AUTOHEAL_START_PERIOD: "300"
       CURL_TIMEOUT: "30"
-    image: "docker.io/willfarrell/autoheal:latest@sha256:a029aab14d60d492109f50c423d0c37cbc558e92ee2a149d68b7c6f1e89e4968"
+    image: "docker.io/willfarrell/autoheal:latest@sha256:47cac8b9c7cdf05114065d453fecc4e1c0eeab1dc06a635ea2764b6302e206ad"
     network_mode: none
     restart: always
     volumes:
