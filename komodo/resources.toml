@@ -270,6 +270,7 @@ const shellQuote = (value: string): string =>
 // Runs inside the temporary Alpine container.
 const crawler = [
   "set -eu",
+  "set -o pipefail",
   "apk add --no-cache wget ca-certificates >/dev/null",
   'domain="$1"',
   'dest="$2"',
@@ -284,7 +285,8 @@ const crawler = [
     '--domains="$domain,www.$domain" ' +
     '--timeout=20 --tries=2 ' +
     '--directory-prefix="$dest" ' +
-    '--output-file=/tmp/wget.log "$url"',
+    '--no-verbose --output-file=/dev/stdout "$url" | ' +
+    "tee /tmp/wget.log",
 
   "status=$?",
   "set -e",
