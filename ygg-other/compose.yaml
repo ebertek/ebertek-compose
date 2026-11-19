@@ -327,8 +327,6 @@ services:
 
   visit:
     <<: *common
-    build:
-      context: "https://github.com/ebertek/may-i-come.git#main"
     container_name: visit
     deploy:
       resources:
@@ -344,7 +342,7 @@ services:
       STATUS_TTL_SECONDS: "180"
       UPDATE_TOKEN_FILE: "/run/visit/update-token.txt"
     hostname: visit
-    image: "visit:local"
+    image: "ghcr.io/ebertek/may-i-come:1.0.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.visit.entrypoints: "websecure"
