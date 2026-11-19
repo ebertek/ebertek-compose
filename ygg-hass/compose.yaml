@@ -213,7 +213,7 @@ services:
         ]
       timeout: 10s
     hostname: influxdb
-    image: "docker.io/library/influxdb:2.9.1"
+    image: "docker.io/library/influxdb:2.10.1"
     labels:
       traefik.enable: "true"
       traefik.http.routers.influxdb.entrypoints: "websecure"
