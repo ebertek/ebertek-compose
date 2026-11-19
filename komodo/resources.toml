@@ -259,6 +259,7 @@ executions = [
 
 [[action]]
 name = "Mirror websites"
+description = "Capture and publish bounded snapshots of the three websites."
 [action.config]
 schedule_format = "Cron"
 schedule = "0 0 */6 * * *"
@@ -269,6 +270,7 @@ const shellQuote = (value: string): string =>
 // Runs inside the temporary Alpine container.
 const crawler = [
   "set -eu",
+  "set -o pipefail",
   "apk add --no-cache wget ca-certificates >/dev/null",
   'domain="$1"',
   'dest="$2"',
@@ -283,7 +285,8 @@ const crawler = [
     '--domains="$domain,www.$domain" ' +
     '--timeout=20 --tries=2 ' +
     '--directory-prefix="$dest" ' +
-    '--output-file=/tmp/wget.log "$url"',
+    '--no-verbose --output-file=/dev/stdout "$url" | ' +
+    "tee /tmp/wget.log",
 
   "status=$?",
   "set -e",
@@ -335,6 +338,7 @@ const script = [
   "set -Eeuo pipefail",
   'base="/volume2/docker/nginx/data"',
   "failed=0",
+  'job_started="$(date +%s)"',
 
   'mkdir -p "$base"',
   'chown 101:101 "$base"',
@@ -352,12 +356,15 @@ const script = [
   '  stamp="$(date -u +%Y%m%d-%H%M%S)"',
   '  site="$base/$domain"',
   '  release="$site/releases/$stamp"',
+  '  container="komodo-mirror-${domain//./-}-$stamp"',
+  '  site_started="$(date +%s)"',
 
   '  mkdir -p "$release"',
   '  chown 101:101 "$site" "$site/releases"',
 
   // Execute the crawler in an ephemeral container.
-  "  if timeout -k 10s 900s docker run --rm " +
+  "  if timeout -k 10s 300s docker run --rm " +
+    '--name "$container" ' +
     '--network bridge ' +
     '-v "$base:/mirror" ' +
     "alpine:3.22 sh -c " +
@@ -373,7 +380,7 @@ const script = [
   '    mv -Tf "$site/.next-$stamp" "$site/current"',
   '    chown -h 101:101 "$site/current"',
 
-  '    echo "SUCCESS: $domain"',
+  '    echo "SUCCESS: $domain (elapsed: $(( $(date +%s) - site_started ))s)"',
 
   // Keep the three newest snapshots.
   '    find "$site/releases" ' +
@@ -385,7 +392,9 @@ const script = [
     "done",
 
   "  else",
-  '    echo "FAILED: $domain"',
+  '    status=$?',
+  '    echo "FAILED: $domain (exit code $status, elapsed: $(( $(date +%s) - site_started ))s)"',
+  '    docker rm -f "$container" >/dev/null 2>&1 || true',
   '    echo "Previous snapshot preserved"',
   '    rm -rf -- "$release"',
   "    failed=1",
@@ -393,32 +402,48 @@ const script = [
 
   "done",
 
-  'echo "===== Mirror job finished ====="',
+  'echo "===== Mirror job finished (elapsed: $(( $(date +%s) - job_started ))s) ====="',
   'test "$failed" -eq 0',
 ].join("\n");
 
-// Keep the Komodo terminal alive while the subprocess exits.
-const command = "bash -c " + shellQuote(script);
+// Cap all host-side operations, including snapshot promotion and cleanup.
+// The shorter 300s timeout above bounds each individual Docker crawl.
+const command = "timeout -k 10s 900s bash -c " + shellQuote(script);
+
+// Komodo 2.3.x can leave an execute_server_terminal stream pending even
+// after the shell command finishes. A Deno process-level watchdog is needed:
+// Promise.race alone does not cancel the stalled response stream.
+const watchdog = setTimeout(() => {
+  console.error(
+    "ERROR: Mirror websites exceeded 16 minutes; aborting the stuck Komodo Action."
+  );
+  Deno.exit(124);
+}, 16 * 60 * 1000);
 
 let exitCode: string | undefined;
 
-await komodo.execute_server_terminal(
-  {
-    server: "pleiades.ygg.nu",
-    terminal: "mirror-websites",
-    command,
-    init: {
-      command: "bash",
+try {
+  await komodo.execute_server_terminal(
+    {
+      server: "pleiades.ygg.nu",
+      terminal: "mirror-websites",
+      command,
+      init: {
+        command: "bash",
+        recreate: Types.TerminalRecreateMode.Always,
+      },
     },
-  },
-  {
-    onLine: (line) => console.log(line),
-    onFinish: (code) => {
-      exitCode = code;
-      console.log("Exit code:", code);
-    },
-  }
-);
+    {
+      onLine: (line) => console.log(line),
+      onFinish: (code) => {
+        exitCode = code;
+        console.log("Exit code:", code);
+      },
+    }
+  );
+} finally {
+  clearTimeout(watchdog);
+}
 
 if (exitCode !== "0") {
   throw new Error(
