@@ -7,6 +7,17 @@
   ],
   "packageRules": [
     {
+      "description": "Reserve PostgreSQL major upgrades for migration pull requests",
+      "enabled": false,
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "postgres",
+        "library/postgres",
+        "docker.io/library/postgres"
+      ],
+      "matchUpdateTypes": ["major"]
+    },
+    {
       "description": "Pin WordPress image to a SHA-256 digest",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["ghcr.io/ebertek/ebertek-wordpress"],
