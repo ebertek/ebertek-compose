@@ -18,6 +18,7 @@ groups:
           or absent_over_time(up{job="alloy"}[15m])
           or absent_over_time(up{job="birdnet"}[15m])
           or absent_over_time(up{job="cloudflared"}[15m])
+          or absent_over_time(up{job="frigate"}[15m])
           or absent_over_time(up{job="hass"}[15m])
           or absent_over_time(up{job="immich_api"}[15m])
           or absent_over_time(up{job="immich_microservices"}[15m])

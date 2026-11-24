@@ -31,6 +31,11 @@ scrape_configs:
     static_configs:
       - targets: ["pleiades.ygg.nu:60123"]
 
+  - job_name: "frigate"
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ["frigate.ygg.nu:5000"]
+
   - job_name: "hass"
     authorization:
       credentials_file: /run/secrets/hass-bearer-token
