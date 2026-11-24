@@ -228,7 +228,7 @@ services:
       GRAFANA_URL: "http://grafana:3000"
       GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE: "/run/secrets/grafana-mcp-token"
     hostname: mcp-grafana
-    image: "docker.io/grafana/mcp-grafana:2.3.0"
+    image: "docker.io/grafana/mcp-grafana:2.4.0"
     labels:
       traefik.enable: "false"
     mac_address: "0e:be:00:da:01:03"
