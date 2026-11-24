@@ -127,7 +127,7 @@ services:
       - "/var/lib/docker/:/var/lib/docker:ro"
       - "/var/log/journal:/var/log/journal:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/volume2/docker/loki/config.alloy:/etc/alloy/config.alloy:ro"
+      - "../_persistent/loki:/etc/alloy:ro"
 
   grafana:
     <<: *common

@@ -1,0 +1,38 @@
+---
+rule_files:
+  - rules_alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    input_series:
+      - series: 'loki_process_custom_nfs_server_not_responding_total{job="alloy",instance="example:12345",boot_id="first"}'
+        values: "_ 1 1 stale"
+      - series: 'loki_process_custom_nfs_server_not_responding_total{job="alloy",instance="example:12345",boot_id="second"}'
+        values: "_ _ 2 stale"
+    alert_rule_test:
+      - eval_time: 0s
+        alertname: YggNFSTimeoutObserved
+        exp_alerts: []
+      - eval_time: 30s
+        alertname: YggNFSTimeoutObserved
+        exp_alerts:
+          - exp_labels:
+              instance: "example:12345"
+              severity: warning
+            exp_annotations:
+              summary: "Kernel reported an NFS server timeout"
+              description: "Check the kernel journal for the affected server and its recovery messages."
+      - eval_time: 1m
+        alertname: YggNFSTimeoutObserved
+        exp_alerts:
+          - exp_labels:
+              instance: "example:12345"
+              severity: warning
+            exp_annotations:
+              summary: "Kernel reported an NFS server timeout"
+              description: "Check the kernel journal for the affected server and its recovery messages."
+      - eval_time: 1m30s
+        alertname: YggNFSTimeoutObserved
+        exp_alerts: []
