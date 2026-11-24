@@ -145,6 +145,7 @@ Main areas:
 
 - **[alloy](https://hub.docker.com/r/grafana/alloy)**: Vendor-agnostic OpenTelemetry Collector distribution with programmable pipelines.
 - **[grafana](https://hub.docker.com/r/grafana/grafana)**: Analytics & monitoring solution.
+- **[grafana-mcp](https://github.com/grafana/mcp-grafana)**: Read-only Model Context Protocol server for Grafana, Prometheus metrics, and Loki logs.
 - **[kuma](https://github.com/louislam/uptime-kuma)**: Self-hosted uptime monitoring and status dashboard.
 - **[loki](https://hub.docker.com/r/grafana/loki)**: Cloud Native Log Aggregation.
 - **[prometheus](https://hub.docker.com/r/prom/prometheus)**: Systems and service monitoring system.
