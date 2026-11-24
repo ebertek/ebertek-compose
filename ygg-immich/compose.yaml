@@ -56,6 +56,8 @@ services:
     env_file: db.env
     environment:
       <<: *env
+      # Work around the v3.4.2 exporter IPv6 URL bug (Immich #33466).
+      IMMICH_HOST: "0.0.0.0"
       IMMICH_TELEMETRY_INCLUDE: "all"
       NO_COLOR: "true"
     group_add:
