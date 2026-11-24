@@ -245,7 +245,7 @@ description = "Deploy changed Docker Compose stacks from ebertek/ygg-compose."
 name = "Deploy changed stacks"
 enabled = true
 executions = [
-  { execution.type = "BatchDeployStackIfChanged", execution.params.pattern = "ygg-arr, ygg-birdnet, ygg-core, ygg-download, ygg-gramps, ygg-hass, ygg-home, ygg-immich, ygg-mon, ygg-other", execution.params.tags = [], enabled = true }
+  { execution.type = "BatchDeployStackIfChanged", execution.params.pattern = "ebertek, tntphoto, ygg, ygg-arr, ygg-birdnet, ygg-core, ygg-download, ygg-gramps, ygg-hass, ygg-home, ygg-immich, ygg-mon, ygg-other", execution.params.tags = [], enabled = true }
 ]
 
 [[procedure.config.stage]]
@@ -507,8 +507,6 @@ await run(
   "action-git-pull-ygg",
   "su -s /bin/sh docker -c 'git -C /volume2/docker/ygg-compose pull --ff-only'",
 );
-
-
 """
 
 ##
