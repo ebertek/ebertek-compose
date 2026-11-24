@@ -25,7 +25,7 @@ scrape_configs:
     authorization:
       credentials_file: /run/secrets/hass-bearer-token
     metrics_path: /api/prometheus
-    scheme: https
+    scheme: http
     static_configs:
       - targets: ["hass.ygg.nu:8123"]
 
