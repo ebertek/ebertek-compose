@@ -1,0 +1,85 @@
+---
+groups:
+  - name: ygg_telemetry
+    rules:
+      - alert: YggScrapeTargetDown
+        expr: up == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sustained scrape failure for {{ $labels.job }} on {{ $labels.instance }}"
+
+      # Direct jobs each have one static target. Remote-write jobs share their
+      # job names, so check each expected host separately.
+      - alert: YggScrapeTelemetryMissing
+        expr: >-
+          absent_over_time(up{job="alertmanager"}[15m])
+          or absent_over_time(up{job="alloy"}[15m])
+          or absent_over_time(up{job="birdnet"}[15m])
+          or absent_over_time(up{job="cloudflared"}[15m])
+          or absent_over_time(up{job="hass"}[15m])
+          or absent_over_time(up{job="immich_api"}[15m])
+          or absent_over_time(up{job="immich_microservices"}[15m])
+          or absent_over_time(up{job="influxdb"}[15m])
+          or absent_over_time(up{job="keycloak"}[15m])
+          or absent_over_time(up{job="loki"}[15m])
+          or absent_over_time(up{job="prometheus"}[15m])
+          or absent_over_time(up{job="traefik"}[15m])
+          or absent_over_time(up{job="yggflare"}[15m])
+          or absent_over_time(up{job="unpackerr"}[15m])
+          or absent_over_time(up{job="integrations/docker",instance="pleiades:38080"}[15m])
+          or absent_over_time(up{job="integrations/docker",instance="hc:38080"}[15m])
+          or absent_over_time(up{job="integrations/node_exporter",namespace="pleiades"}[15m])
+          or absent_over_time(up{job="integrations/node_exporter",namespace="hc"}[15m])
+          or absent_over_time(up{job="integrations/windows_exporter",agent_hostname="head"}[15m])
+        labels:
+          severity: warning
+        annotations:
+          summary: "No scrape status for {{ $labels.job }} for 15 minutes"
+          description: "Inspect target configuration or the expected telemetry sender identified by this alert's labels."
+
+      - alert: YggPrometheusRuleEvaluationFailing
+        expr: increase(prometheus_rule_evaluation_failures_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus has recorded rule evaluation failures"
+
+  - name: ygg_nas
+    rules:
+      # The video, photo and Downloads mounts share one NAS backing volume.
+      - record: ygg:nas_volume1_available_bytes
+        expr: >-
+          node_filesystem_avail_bytes{namespace="pleiades",mountpoint="/volume1/video",fstype=~"nfs.*"}
+          and on (instance, device, mountpoint)
+          (node_filesystem_device_error{namespace="pleiades",mountpoint="/volume1/video",fstype=~"nfs.*"} == 0)
+
+      - alert: YggNASVolume1SpaceCritical
+        expr: ygg:nas_volume1_available_bytes < 200 * 1024^3
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Yggdrasil volume1 has less than 200 GiB available"
+
+      - alert: YggNASVolume1SpaceForecast
+        expr: >-
+          (predict_linear(ygg:nas_volume1_available_bytes[24h], 14 * 24 * 3600) < 0)
+          and (ygg:nas_volume1_available_bytes >= 200 * 1024^3)
+          and (count_over_time(ygg:nas_volume1_available_bytes[24h]) >= 2160)
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Yggdrasil volume1 is projected to run out of space within 14 days"
+          description: "Projection uses the preceding 24 hours of free-space measurements."
+
+      - alert: YggNASVolume1TelemetryMissing
+        expr: absent_over_time(ygg:nas_volume1_available_bytes[15m])
+        labels:
+          severity: warning
+        annotations:
+          summary: "Yggdrasil volume1 free-space telemetry has been unavailable for 15 minutes"
+          description: "Check the Pleiades NFS mount and its node exporter."

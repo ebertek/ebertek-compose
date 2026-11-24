@@ -7,6 +7,10 @@ name: ygg-mon
 networks:
   macvlan1:
     external: true
+  monitoring: {}
+
+volumes:
+  alertmanager-data: {}
 
 x-common: &common
   dns:
@@ -27,6 +31,8 @@ x-env: &env
 x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 secrets:
+  alertmanager-discord-webhook:
+    file: alertmanager-discord-webhook.txt
   grafana-mcp-token:
     file: grafana-mcp-token.txt
   hass-bearer-token:
@@ -35,6 +41,27 @@ secrets:
     file: ../ygg-arr/unpackerr-metrics-key.txt
 
 services:
+  alertmanager:
+    <<: *common
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--cluster.listen-address="
+    container_name: alertmanager
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "128M"
+    image: "docker.io/prom/alertmanager:v0.35.0"
+    networks:
+      - monitoring
+    secrets:
+      - alertmanager-discord-webhook
+    volumes:
+      - alertmanager-data:/alertmanager
+      - "../_persistent/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro"
+
   alloy:
     <<: *common
     cap_add:
@@ -368,8 +395,10 @@ services:
     mac_address: "0e:be:00:da:00:83"
     networks:
       macvlan1:
+        gw_priority: 1
         ipv4_address: 10.4.21.83
         ipv6_address: fd0e:be00:da00:20:421::83
+      monitoring: {}
     secrets:
       - hass-bearer-token
       - unpackerr-metrics-key
