@@ -33,10 +33,16 @@ groups:
           or absent_over_time(up{job="integrations/node_exporter",namespace="pleiades"}[15m])
           or absent_over_time(up{job="integrations/node_exporter",namespace="hc"}[15m])
           or absent_over_time(up{job="integrations/windows_exporter",agent_hostname="head"}[15m])
+        for: 2m
         labels:
           severity: warning
         annotations:
-          summary: "No scrape status for {{ $labels.job }} for 15 minutes"
+          summary: >-
+            No scrape status for {{ $labels.job }}
+            {{- if $labels.instance }} on {{ $labels.instance }}
+            {{- else if $labels.namespace }} on {{ $labels.namespace }}
+            {{- else if $labels.agent_hostname }} on {{ $labels.agent_hostname }}
+            {{- end }}
           description: "Inspect target configuration or the expected telemetry sender identified by this alert's labels."
 
       - alert: YggPrometheusRuleEvaluationFailing
