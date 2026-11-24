@@ -10,7 +10,11 @@
       "description": "Reserve PostgreSQL major upgrades for migration pull requests",
       "enabled": false,
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["postgres", "library/postgres", "docker.io/library/postgres"],
+      "matchPackageNames": [
+        "postgres",
+        "library/postgres",
+        "docker.io/library/postgres"
+      ],
       "matchUpdateTypes": ["major"]
     },
     {
