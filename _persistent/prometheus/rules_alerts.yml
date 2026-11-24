@@ -31,8 +31,10 @@ groups:
           or absent_over_time(up{job="unpackerr"}[15m])
           or absent_over_time(up{job="integrations/docker",instance="pleiades:38080"}[15m])
           or absent_over_time(up{job="integrations/docker",instance="hc:38080"}[15m])
+          or absent_over_time(up{job="integrations/docker",instance="yggdrasil:38080"}[15m])
           or absent_over_time(up{job="integrations/node_exporter",namespace="pleiades"}[15m])
           or absent_over_time(up{job="integrations/node_exporter",namespace="hc"}[15m])
+          or absent_over_time(up{job="integrations/node_exporter",namespace="yggdrasil"}[15m])
           or absent_over_time(up{job="integrations/windows_exporter",agent_hostname="head"}[15m])
         for: 2m
         labels:

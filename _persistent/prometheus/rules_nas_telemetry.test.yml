@@ -1,0 +1,27 @@
+---
+rule_files:
+  - rules_alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    input_series:
+      - series: 'up{job="integrations/docker",instance="yggdrasil:38080"}'
+        values: "1 1 _x36 1"
+      - series: 'up{job="integrations/node_exporter",namespace="yggdrasil",instance="yggdrasil:38080"}'
+        values: "1 1 _x36 1"
+    promql_expr_test:
+      - expr: 'ALERTS{alertname="YggScrapeTelemetryMissing",instance="yggdrasil:38080",alertstate="firing"} or ALERTS{alertname="YggScrapeTelemetryMissing",namespace="yggdrasil",alertstate="firing"}'
+        eval_time: 15m
+        exp_samples: []
+      - expr: 'ALERTS{alertname="YggScrapeTelemetryMissing",instance="yggdrasil:38080",alertstate="firing"} or ALERTS{alertname="YggScrapeTelemetryMissing",namespace="yggdrasil",alertstate="firing"}'
+        eval_time: 18m
+        exp_samples:
+          - labels: 'ALERTS{alertname="YggScrapeTelemetryMissing",alertstate="firing",instance="yggdrasil:38080",job="integrations/docker",severity="warning"}'
+            value: 1
+          - labels: 'ALERTS{alertname="YggScrapeTelemetryMissing",alertstate="firing",job="integrations/node_exporter",namespace="yggdrasil",severity="warning"}'
+            value: 1
+      - expr: 'ALERTS{alertname="YggScrapeTelemetryMissing",instance="yggdrasil:38080",alertstate="firing"} or ALERTS{alertname="YggScrapeTelemetryMissing",namespace="yggdrasil",alertstate="firing"}'
+        eval_time: 19m
+        exp_samples: []
