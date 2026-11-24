@@ -167,7 +167,7 @@ services:
         ]
       timeout: 5s
     hostname: pg-arr
-    image: "docker.io/library/postgres:18"
+    image: "docker.io/library/postgres:19"
     mac_address: "0e:be:00:da:00:42"
     networks:
       macvlan1:
