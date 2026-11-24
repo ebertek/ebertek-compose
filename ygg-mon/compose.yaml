@@ -27,6 +27,8 @@ x-env: &env
 x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
 secrets:
+  grafana-mcp-token:
+    file: grafana-mcp-token.txt
   hass-bearer-token:
     file: hass-bearer-token.txt
   unpackerr-metrics-key:
@@ -196,6 +198,46 @@ services:
     volumes:
       - *tz
       - "/volume2/docker/grafana:/var/lib/grafana"
+
+  mcp-grafana:
+    <<: *common
+    command:
+      - "-t"
+      - "streamable-http"
+      - "--address=:8000"
+      - "--disable-write"
+      - "--enabled-tools=search,datasource,prometheus,loki,dashboard,alerting"
+      - "--allowed-hosts=localhost:8000,127.0.0.1:8000,[::1]:8000"
+      - "--usage-stats=disabled"
+      - "--log-tool-calls"
+    container_name: mcp-grafana
+    depends_on:
+      grafana:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
+        reservations:
+          cpus: "0.05"
+          memory: "64M"
+    env_file: grafana-mcp.env
+    environment:
+      <<: *env
+      GRAFANA_URL: "http://grafana:3000"
+      GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE: "/run/secrets/grafana-mcp-token"
+    hostname: mcp-grafana
+    image: "docker.io/grafana/mcp-grafana:2.3.0"
+    labels:
+      traefik.enable: "false"
+    mac_address: "0e:be:00:da:01:03"
+    networks:
+      macvlan1:
+        ipv4_address: 10.4.21.103
+        ipv6_address: fd0e:be00:da00:20:421::103
+    secrets:
+      - grafana-mcp-token
 
   kuma:
     <<: *common
