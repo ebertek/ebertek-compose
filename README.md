@@ -56,9 +56,11 @@ Main areas:
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
 - **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
+- **[nginx](https://hub.docker.com/_/nginx)**: Web server for public websites.
 - **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
 - **[pg-keycloak](https://hub.docker.com/_/postgres)**: Object-relational database system for Keycloak.
 - **[traefik](https://hub.docker.com/_/traefik)**: HTTP reverse proxy.
+- **[yggflare](https://github.com/ebertek/yggflare)**: Cloudflare management, network discovery, and infrastructure inventory.
 
 ### [ygg-download/](ygg-download/)
 
@@ -119,11 +121,13 @@ Main areas:
 
 - **[bjornify](https://github.com/ebertek/bjornify)**: Discord bot based on discord.py that adds requested tracks to your Spotify playback queue.
 - **[books](https://github.com/new-usemame/calibre-web-nextgen)**: Community continuation of Calibre-Web-Automated.
+- **[picard](https://github.com/jlesage/docker-musicbrainz-picard)**: MusicBrainz Picard music metadata tag editor.
 - **[plex](https://hub.docker.com/r/plexinc/pms-docker/)**: Media server.
 - **[plextraktsync](https://github.com/Taxel/PlexTraktSync)**: A python script that syncs the movies, shows and ratings between trakt and Plex.
 - **[scheduler](https://github.com/mcuadros/ofelia)**: A docker job scheduler.
 - **[tautulli](https://github.com/Tautulli/Tautulli)**: Monitoring and tracking tool for Plex.
 - **[tmm](https://hub.docker.com/r/tinymediamanager/tinymediamanager)**: Media management tool.
+- **[wolf](https://github.com/games-on-whales/wolf)**: Containerized game streaming server.
 
 ### [ygg-immich/](ygg-immich/)
 
@@ -136,12 +140,12 @@ Main areas:
 
 - **[komodo](https://github.com/moghtech/komodo)**: A tool to build and deploy software on many server.
 - **[mongo](https://hub.docker.com/_/mongo)**: MongoDB document database used by Komodo.
-- **[periphery](https://github.com/moghtech/komodo)**: Komodo agent.
 
 ### [ygg-mon/](ygg-mon/)
 
 - **[alloy](https://hub.docker.com/r/grafana/alloy)**: Vendor-agnostic OpenTelemetry Collector distribution with programmable pipelines.
 - **[grafana](https://hub.docker.com/r/grafana/grafana)**: Analytics & monitoring solution.
+- **[kuma](https://github.com/louislam/uptime-kuma)**: Self-hosted uptime monitoring and status dashboard.
 - **[loki](https://hub.docker.com/r/grafana/loki)**: Cloud Native Log Aggregation.
 - **[prometheus](https://hub.docker.com/r/prom/prometheus)**: Systems and service monitoring system.
 
@@ -154,6 +158,7 @@ Main areas:
 - **[irc](https://github.com/thelounge/thelounge-docker)**: Web IRC client.
 - **[pg-atuin](https://hub.docker.com/_/postgres)**: PostgreSQL database used by Atuin.
 - **[smtp](https://hub.docker.com/r/turgon37/smtp-relay)**: Postfix SMTP server configured as an SMTP relay.
+- **[visit](https://github.com/ebertek/may-i-come)**: Home Assistant-backed visitor status service.
 - **[vw](https://github.com/dani-garcia/vaultwarden)**: Password management service.
 
 ## Scripts
