@@ -520,6 +520,11 @@ services:
       YGGFLARE_WATCH_POLL_SECONDS: "15"
       YGGFLARE_WATCH_DEBOUNCE_SECONDS: "20"
       YGGFLARE_WATCH_COOLDOWN_SECONDS: "60"
+      # Enable only after deploying an MCP HTTP-capable image and provisioning the token.
+      YGGFLARE_MCP_ENABLED: "false"
+      YGGFLARE_MCP_BIND: "127.0.0.1"
+      YGGFLARE_MCP_PORT: "8788"
+      YGGFLARE_MCP_TOKEN_FILE: "/config/mcp-token.txt"
       YGGFLARE_METRICS_ENABLED: "true"
       YGGFLARE_WEB_ENABLED: "true"
       YGGFLARE_WEB_BIND: "0.0.0.0"
