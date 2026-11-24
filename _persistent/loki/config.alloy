@@ -152,9 +152,27 @@ loki.relabel "journal" {
   }
 }
 
+loki.process "journal" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.match {
+    selector = "{transport=\"kernel\"} |~ \"^nfs: server [^ ]+ not responding, still trying$\""
+
+    stage.metrics {
+      metric.counter {
+        name              = "nfs_server_not_responding_total"
+        description       = "Kernel NFS server timeout messages seen by Alloy"
+        match_all         = true
+        action            = "inc"
+        max_idle_duration = "1h"
+      }
+    }
+  }
+}
+
 loki.source.journal "read" {
   forward_to = [
-    loki.write.local.receiver,
+    loki.process.journal.receiver,
   ]
   relabel_rules = loki.relabel.journal.rules
   labels = {

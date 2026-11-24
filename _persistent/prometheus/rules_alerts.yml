@@ -55,6 +55,16 @@ groups:
 
   - name: ygg_nas
     rules:
+      # Alloy expires an idle series after one hour. A nonzero sample also
+      # catches the first event, which increase() can miss on a new series.
+      - alert: YggNFSTimeoutObserved
+        expr: max by (instance) (loki_process_custom_nfs_server_not_responding_total{job="alloy"}) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kernel reported an NFS server timeout"
+          description: "Check the kernel journal for the affected server and its recovery messages."
+
       # The video, photo and Downloads mounts share one NAS backing volume.
       - record: ygg:nas_volume1_available_bytes
         expr: >-
