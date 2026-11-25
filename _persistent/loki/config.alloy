@@ -10,6 +10,42 @@ loki.write "local" {
   }
 }
 
+prometheus.exporter.redis "gramps" {
+	redis_addr         = "rd-gramps.ygg.nu:6379"
+	config_command     = "-"
+	connection_timeout = "3s"
+}
+
+prometheus.exporter.redis "immich" {
+	redis_addr         = "rd-immich.ygg.nu:6379"
+	config_command     = "-"
+	connection_timeout = "3s"
+}
+
+discovery.relabel "redis" {
+	targets = array.concat(
+		prometheus.exporter.redis.gramps.targets,
+		prometheus.exporter.redis.immich.targets,
+	)
+
+	rule {
+		target_label = "__tmp_alloy_host"
+		replacement  = sys.env("ALLOY_HOST")
+	}
+
+	rule {
+		source_labels = ["__tmp_alloy_host"]
+		regex         = "pleiades"
+		action        = "keep"
+	}
+}
+
+prometheus.scrape "redis" {
+	job_name   = "integrations/redis"
+	targets    = discovery.relabel.redis.output
+	forward_to = [prometheus.remote_write.local.receiver]
+}
+
 discovery.relabel "metrics_integrations_node" {
   targets = prometheus.exporter.unix.node.targets
 
