@@ -112,6 +112,42 @@ services:
       - "/mnt/data/tntphoto_certbot_config/_data:/etc/nginx/ssl:ro"
       - "/mnt/data/tntphoto_certbot_data/_data:/var/www/certbot"
       - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
+      - type: bind
+        source: ./nginx/nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/mime.types
+        target: /etc/nginx/mime.types
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/fastcgi_params
+        target: /etc/nginx/fastcgi_params
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/conf.d/default.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/snippets/php-fpm.conf
+        target: /etc/nginx/snippets/php-fpm.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/snippets/dotfile.conf
+        target: /etc/nginx/snippets/dotfile.conf
+        read_only: true
+        bind:
+          create_host_path: false
 
   healthchecks-watchdog:
     <<: *common
