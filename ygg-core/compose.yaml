@@ -518,6 +518,8 @@ services:
       YGGFLARE_DISCOVERY_P0F: "true"
       # Bounded anonymous share discovery; no file reads or password attempts.
       YGGFLARE_DISCOVERY_SMB: "true"
+      YGGFLARE_DISCOVERY_SMB_MAX_TARGETS: "200"
+      YGGFLARE_DISCOVERY_SMB_WORKERS: "8"
       YGGFLARE_DISCOVERY_SNMP: "false"
       YGGFLARE_DISCOVERY_SNMP_TARGETS: ""
       YGGFLARE_DOCKER_CIDR: "10.4.21.0/25"
