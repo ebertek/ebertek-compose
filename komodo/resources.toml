@@ -222,6 +222,38 @@ executions = [
 
 ##
 
+[[action]]
+name = "Check Core backup freshness"
+description = "Check the newest dated Core backup after the daily backup window."
+tags = ["system"]
+[action.config]
+schedule = "Every day at 02:30"
+failure_alert = true
+file_contents = """
+let exitCode: string | undefined;
+await komodo.execute_server_terminal(
+  {
+    server: "pleiades.ygg.nu",
+    terminal: "check-core-backup-freshness",
+    command: "timeout 30s bash /home/docker/ygg-compose/Scripts/backup/check-komodo-core.sh /volume2/docker/komodo/backups",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      exitCode = code;
+    },
+  },
+);
+if (exitCode !== "0") {
+  throw new Error("Core backup freshness check failed (exit code: " + (exitCode ?? "unknown") + ")");
+}
+"""
+
+##
+
 [[procedure]]
 name = "Global Auto Update"
 description = "Pulls and auto updates Stacks and Deployments using 'poll_for_updates' or 'auto_update'."
