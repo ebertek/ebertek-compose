@@ -547,7 +547,7 @@ services:
       YGGFLARE_KUMA_API_KEY_FILE: "/run/secrets/kuma_api_key"
       YGGFLARE_KUMA_ALLOW_HTTP: "true"
       # Private scoped allowlist mounted as a read-only Compose config.
-      YGGFLARE_PROBES_ENABLED: "false"
+      YGGFLARE_PROBES_ENABLED: "true"
       YGGFLARE_PROBES_CONFIG_FILE: "/yggflare-probes.json"
       YGGFLARE_MCP_BIND: "127.0.0.1"
       YGGFLARE_MCP_PORT: "8788"
@@ -568,7 +568,7 @@ services:
       traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    image: "ghcr.io/ebertek/yggflare:main@sha256:135f2c80e075f486e41f00744ecbe9298a506085fbf5f2420e19c45b373cb235"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:8af2b1201a7453fa95e96c5ff4560a144483a0a81dd1235bbc424219dc8c1ccd"
     network_mode: host
     pull_policy: always
     secrets:
