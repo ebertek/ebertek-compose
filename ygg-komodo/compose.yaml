@@ -35,6 +35,8 @@ secrets:
     file: "komodo-jwt-secret.txt"
   komodo-webhook-secret:
     file: "komodo-webhook-secret.txt"
+  komodo-job-failure-secrets:
+    file: "komodo-job-failure-secrets.toml"
 
 services:
   komodo:
@@ -108,6 +110,8 @@ services:
       - komodo-database-password
       - komodo-jwt-secret
       - komodo-webhook-secret
+      - source: komodo-job-failure-secrets
+        target: /config/config.toml
     volumes:
       - *tz
       - "/volume2/docker/komodo/backups:/backups"
