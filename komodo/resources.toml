@@ -254,6 +254,38 @@ if (exitCode !== "0") {
 
 ##
 
+[[action]]
+name = "Back up Komodo Core offsite"
+description = "Send only the newest validated Core backup set to the encrypted offsite repository."
+tags = ["system"]
+[action.config]
+schedule = "Every day at 05:30"
+failure_alert = true
+file_contents = """
+let exitCode: string | undefined;
+await komodo.execute_server_terminal(
+  {
+    server: "pleiades.ygg.nu",
+    terminal: "komodo-core-offsite-backup",
+    command: "timeout 5m bash /home/docker/ygg-compose/Scripts/backup/komodo-core-offsite.sh /volume2/docker/komodo/backups",
+    init: {
+      command: "bash",
+    },
+  },
+  {
+    onLine: (line) => console.log(line),
+    onFinish: (code) => {
+      exitCode = code;
+    },
+  },
+);
+if (exitCode !== "0") {
+  throw new Error("Core offsite backup failed (exit code: " + (exitCode ?? "unknown") + ")");
+}
+"""
+
+##
+
 [[procedure]]
 name = "Global Auto Update"
 description = "Pulls and auto updates Stacks and Deployments using 'poll_for_updates' or 'auto_update'."

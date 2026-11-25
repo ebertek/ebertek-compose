@@ -30,4 +30,8 @@ for collection in Action Procedure Repo Server Stack Update User Variable; do
 done
 
 gzip -t -- "$latest"/*.gz
-echo "Latest dated Komodo Core backup is fresh and its gzip files passed integrity checks"
+if [[ ${2:-} == --print-path ]]; then
+	printf '%s\n' "$latest"
+else
+	echo "Latest dated Komodo Core backup is fresh and its gzip files passed integrity checks"
+fi
