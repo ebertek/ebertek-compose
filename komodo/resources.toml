@@ -85,8 +85,6 @@ name = "ygg-core"
 server = "pleiades.ygg.nu"
 linked_repo = "ygg-compose"
 run_directory = "ygg-core"
-# Materialize GitOps credentials with private permissions before Compose starts.
-pre_deploy = { path = ".", command = "sh ./prepare-yggflare-credentials.sh" }
 
 ##
 

@@ -33,6 +33,12 @@ secrets:
     file: yggflare_cloudflare_api_token.txt
   yggflare_network_discord_webhook:
     file: yggflare_network_discord_webhook.txt
+  yggflare_komodo_api_key:
+    file: yggflare_komodo_api_key.txt
+  yggflare_komodo_api_secret:
+    file: yggflare_komodo_api_secret.txt
+  yggflare_kuma_api_key:
+    file: yggflare_kuma_api_key.txt
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
@@ -527,11 +533,14 @@ services:
       YGGFLARE_MCP_TOOL_GROUPS: "all"
       # Fixed operation names, outcomes and duration only; no query contents.
       YGGFLARE_MCP_AUDIT_LOG: "true"
-      # Private API credentials are installed by the Komodo pre-deploy hook.
+      # Credentials are file-backed Docker secrets, mounted read-only.
       # Numeric internal endpoints use HTTP; never route credentials publicly.
       YGGFLARE_KOMODO_API_URL: "http://10.4.21.47:9120"
+      YGGFLARE_KOMODO_API_KEY_FILE: "/run/secrets/komodo_api_key"
+      YGGFLARE_KOMODO_API_SECRET_FILE: "/run/secrets/komodo_api_secret"
       YGGFLARE_KOMODO_ALLOW_HTTP: "true"
       YGGFLARE_KUMA_API_URL: "http://10.4.21.86:3001"
+      YGGFLARE_KUMA_API_KEY_FILE: "/run/secrets/kuma_api_key"
       YGGFLARE_KUMA_ALLOW_HTTP: "true"
       # Independent probes still require a private target allowlist.
       YGGFLARE_PROBES_ENABLED: "false"
@@ -562,6 +571,12 @@ services:
         target: cloudflare_api_token
       - source: yggflare_network_discord_webhook
         target: network_discord_webhook
+      - source: yggflare_komodo_api_key
+        target: komodo_api_key
+      - source: yggflare_komodo_api_secret
+        target: komodo_api_secret
+      - source: yggflare_kuma_api_key
+        target: kuma_api_key
     volumes:
       - "/volume2/docker/yggflare/config:/config:ro"
       - "/volume2/docker/yggflare/data:/data"
