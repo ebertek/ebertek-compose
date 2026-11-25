@@ -111,7 +111,7 @@ services:
       - komodo-jwt-secret
       - komodo-webhook-secret
       - source: komodo-job-failure-secrets
-        target: /config/config.toml
+        target: /config/job-failure-alerts.config.toml
     volumes:
       - *tz
       - "/volume2/docker/komodo/backups:/backups"
