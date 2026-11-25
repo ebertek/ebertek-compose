@@ -156,6 +156,9 @@ services:
         mkdir -p /etc/grafana/provisioning/datasources
         cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
         apiVersion: 1
+        deleteDatasources:
+          - name: redis
+            orgId: 1
         datasources:
           - name: Loki
             type: loki
