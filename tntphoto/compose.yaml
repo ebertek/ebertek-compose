@@ -129,7 +129,7 @@ services:
       DEBUG: "False"
       GUNICORN_DISABLE_LOGGING: "1"
       GUNICORN_WORKERS: "2"
-      PING_ENDPOINT: "https://watchdog.hc.ebi.nu/ping/"
+      PING_ENDPOINT: "https://watchdog.ebi.nu/ping/"
       REGISTRATION_OPEN: "False"
       SITE_ROOT: "http://127.0.0.1:18000"
     networks:
