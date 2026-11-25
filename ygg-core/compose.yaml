@@ -504,8 +504,10 @@ services:
       YGGFLARE_DISCOVERY_SSDP: "true"
       YGGFLARE_DISCOVERY_NETBIOS: "true"
       YGGFLARE_DISCOVERY_LLDP: "false"
-      YGGFLARE_DISCOVERY_P0F: "false"
-      YGGFLARE_DISCOVERY_SMB: "false"
+      # Bounded passive TCP fingerprint sampling; no retained packet capture.
+      YGGFLARE_DISCOVERY_P0F: "true"
+      # Bounded anonymous share discovery; no file reads or password attempts.
+      YGGFLARE_DISCOVERY_SMB: "true"
       YGGFLARE_DISCOVERY_SNMP: "false"
       YGGFLARE_DISCOVERY_SNMP_TARGETS: ""
       YGGFLARE_DOCKER_CIDR: "10.4.21.0/25"
@@ -525,6 +527,8 @@ services:
       YGGFLARE_MCP_BIND: "127.0.0.1"
       YGGFLARE_MCP_PORT: "8788"
       YGGFLARE_MCP_TOKEN_FILE: "/config/mcp-token.txt"
+      # Read the existing internal Traefik API; no new listener or published port.
+      YGGFLARE_TRAEFIK_API_URL: "http://10.4.21.44:8080"
       YGGFLARE_METRICS_ENABLED: "true"
       YGGFLARE_WEB_ENABLED: "true"
       YGGFLARE_WEB_BIND: "0.0.0.0"
@@ -539,7 +543,7 @@ services:
       traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    image: "ghcr.io/ebertek/yggflare:main@sha256:e75b303d18c69076773f4ec3a736dd8d90856d7063abd3c09501e2174dfa5ab9"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:3850128d0f6c3f8486fe73779b975a0c43ee40db8f95a7c52c9adaa25667fc69"
     network_mode: host
     pull_policy: always
     secrets:
