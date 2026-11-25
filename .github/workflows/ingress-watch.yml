@@ -1,0 +1,39 @@
+---
+name: Ygg external ingress check
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch: null
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check Home Assistant and Keycloak from outside Ygg
+        shell: bash
+        run: |
+          response=$(mktemp)
+          trap 'rm -f "$response"' EXIT
+
+          status=$(curl --silent --show-error --proto '=https' --max-time 8 \
+            --retry 2 --retry-delay 2 --retry-max-time 25 \
+            --output "$response" --write-out '%{http_code}' https://hass.ebi.nu/api/)
+          if [[ "$status" != 401 || $(cat "$response") != '401: Unauthorized' ]]; then
+            echo "::error::Home Assistant API returned an unexpected response (HTTP $status)"
+            exit 1
+          fi
+
+          issuer=https://keycloak.ebi.nu/realms/ygg
+          curl --fail --silent --show-error --proto '=https' --max-time 8 \
+            --retry 2 --retry-delay 2 --retry-max-time 25 \
+            --output "$response" "$issuer/.well-known/openid-configuration"
+          if ! jq -e --arg issuer "$issuer" '.issuer == $issuer' "$response" >/dev/null; then
+            echo "::error::Keycloak discovery returned an unexpected issuer"
+            exit 1
+          fi
+
+          echo 'Home Assistant API and Keycloak discovery responded as expected'
