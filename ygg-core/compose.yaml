@@ -26,6 +26,10 @@ x-env: &env
 
 x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 
+configs:
+  yggflare_probes:
+    file: yggflare_probes.json
+
 secrets:
   cloudflare_api_token:
     file: cloudflare_api_token.txt
@@ -542,8 +546,9 @@ services:
       YGGFLARE_KUMA_API_URL: "http://10.4.21.86:3001"
       YGGFLARE_KUMA_API_KEY_FILE: "/run/secrets/kuma_api_key"
       YGGFLARE_KUMA_ALLOW_HTTP: "true"
-      # Independent probes still require a private target allowlist.
+      # Private scoped allowlist mounted as a read-only Compose config.
       YGGFLARE_PROBES_ENABLED: "false"
+      YGGFLARE_PROBES_CONFIG_FILE: "/yggflare-probes.json"
       YGGFLARE_MCP_BIND: "127.0.0.1"
       YGGFLARE_MCP_PORT: "8788"
       YGGFLARE_MCP_TOKEN_FILE: "/config/mcp-token.txt"
@@ -577,6 +582,9 @@ services:
         target: komodo_api_secret
       - source: yggflare_kuma_api_key
         target: kuma_api_key
+    configs:
+      - source: yggflare_probes
+        target: /yggflare-probes.json
     volumes:
       - "/volume2/docker/yggflare/config:/config:ro"
       - "/volume2/docker/yggflare/data:/data"
