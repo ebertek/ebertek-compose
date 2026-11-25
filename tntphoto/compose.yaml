@@ -95,49 +95,16 @@ services:
           - tnt.photo
           - www.tnt.photo
           - x.tnt.photo
-      watchdog_net: {}
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - *tz
       - "/mnt/data/tntphoto_nginx_config/_data:/etc/nginx"
-      - type: bind
-        source: ./watchdog.nginx.conf
-        target: /etc/nginx/conf.d/ygg-watchdog.conf
-        read_only: true
-        bind:
-          create_host_path: false
       - "/mnt/data/tntphoto_wordpress_data/_data:/var/www/html"
       - "/mnt/data/tntphoto_certbot_config/_data:/etc/nginx/ssl:ro"
       - "/mnt/data/tntphoto_certbot_data/_data:/var/www/certbot"
       - "/mnt/data/tntphoto_ebertek_data/_data:/var/www/ebertek"
-
-  healthchecks-watchdog:
-    <<: *common
-    image: "docker.io/healthchecks/healthchecks:v5.0.3@sha256:5eb96eb72dc63ac24743f1c0fc4469931155329e05c9781a0809320de0ae479c"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "256M"
-    env_file: watchdog.env
-    environment:
-      <<: *env
-      DB: "sqlite"
-      DB_NAME: "/data/hc.sqlite"
-      DEBUG: "False"
-      GUNICORN_DISABLE_LOGGING: "1"
-      GUNICORN_WORKERS: "2"
-      PING_ENDPOINT: "https://watchdog.ebi.nu/ping/"
-      REGISTRATION_OPEN: "False"
-      SITE_ROOT: "http://127.0.0.1:18000"
-    networks:
-      - watchdog_net
-    ports:
-      - "127.0.0.1:18000:8000"
-    volumes:
-      - healthchecks_data:/data
 
   wordpress:
     <<: *common
@@ -172,7 +139,3 @@ services:
 
 networks:
   wp_net: {}
-  watchdog_net: {}
-
-volumes:
-  healthchecks_data: {}
