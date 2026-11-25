@@ -33,34 +33,36 @@ def snapshot(source: Path) -> bytes:
 def encrypt(data: bytes, recipient: Path, output: Path) -> None:
     """Replace the previous encrypted snapshot only after encryption succeeds."""
     output.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="healthchecks-gpg-") as keyring:
-        with tempfile.NamedTemporaryFile(dir=output.parent, delete=False) as encrypted:
-            temporary = Path(encrypted.name)
-            try:
-                subprocess.run(
-                    [
-                        "gpg",
-                        "--no-options",
-                        "--batch",
-                        "--homedir",
-                        keyring,
-                        "--recipient-file",
-                        str(recipient),
-                        "--encrypt",
-                    ],
-                    input=data,
-                    stdout=encrypted,
-                    stderr=subprocess.DEVNULL,
-                    check=True,
-                    timeout=30,
-                )
-                encrypted.flush()
-                if not encrypted.tell():
-                    raise ValueError("Encryption produced an empty file")
-                os.fsync(encrypted.fileno())
-                temporary.replace(output)
-            finally:
-                temporary.unlink(missing_ok=True)
+    with (
+        tempfile.TemporaryDirectory(prefix="healthchecks-gpg-") as keyring,
+        tempfile.NamedTemporaryFile(dir=output.parent, delete=False) as encrypted,
+    ):
+        temporary = Path(encrypted.name)
+        try:
+            subprocess.run(
+                [
+                    "gpg",
+                    "--no-options",
+                    "--batch",
+                    "--homedir",
+                    keyring,
+                    "--recipient-file",
+                    str(recipient),
+                    "--encrypt",
+                ],
+                input=data,
+                stdout=encrypted,
+                stderr=subprocess.DEVNULL,
+                check=True,
+                timeout=30,
+            )
+            encrypted.flush()
+            if not encrypted.tell():
+                raise ValueError("Encryption produced an empty file")
+            os.fsync(encrypted.fileno())
+            temporary.replace(output)
+        finally:
+            temporary.unlink(missing_ok=True)
 
 
 def main() -> None:

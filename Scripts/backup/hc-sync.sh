@@ -43,7 +43,7 @@ log "Starting hc-sync"
 recipient="$SCRIPT_DIR/healthchecks-backup-recipient.asc"
 if [ -e "$recipient" ]; then
 	if ! database_dir=$(docker volume inspect --format '{{.Mountpoint}}' tntphoto_healthchecks_data) ||
-		! python3 "$SCRIPT_DIR/healthchecks-snapshot.py" \
+		! python3 "$SCRIPT_DIR/healthchecks_snapshot.py" \
 			"$database_dir/hc.sqlite" "$recipient" /mnt/data/healthchecks-backup/latest.sqlite.gpg; then
 		error "Healthchecks snapshot failed; continuing with existing hc backups"
 		healthchecks_failed=1
