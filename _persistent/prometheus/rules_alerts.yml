@@ -102,3 +102,8 @@ groups:
         annotations:
           summary: "Yggdrasil volume1 free-space telemetry has been unavailable for 15 minutes"
           description: "Check the Pleiades NFS mount and its node exporter."
+
+  - name: ygg_monitoring_heartbeat
+    rules:
+      - alert: YggMonitoringHeartbeat
+        expr: vector(1)

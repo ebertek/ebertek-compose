@@ -1,0 +1,14 @@
+---
+rule_files:
+  - rules_alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    alert_rule_test:
+      - eval_time: 30s
+        alertname: YggMonitoringHeartbeat
+        exp_alerts:
+          - exp_labels: {}
+            exp_annotations: {}

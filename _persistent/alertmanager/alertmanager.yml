@@ -5,6 +5,13 @@ route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
+  routes:
+    - receiver: ygg-offsite-heartbeat
+      matchers:
+        - alertname="YggMonitoringHeartbeat"
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 5m
 
 receivers:
   - name: ygg-infrastructure-discord
@@ -16,3 +23,9 @@ receivers:
           {{- range .Alerts }}
           • **{{ .Status | toUpper }}** {{ .Annotations.summary }}
           {{- end }}
+
+  - name: ygg-offsite-heartbeat
+    webhook_configs:
+      - url_file: /run/secrets/alertmanager-heartbeat-url
+        send_resolved: false
+        max_alerts: 1
