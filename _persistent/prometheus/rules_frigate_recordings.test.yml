@@ -1,0 +1,30 @@
+---
+rule_files:
+  - rules_alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    input_series:
+      - series: 'frigate_latest_recording_end_timestamp_seconds{job="frigate_recordings",camera="healthy"}'
+        values: "1+30x14"
+      - series: 'frigate_latest_recording_end_timestamp_seconds{job="frigate_recordings",camera="stalled"}'
+        values: "0+0x12 390"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: YggFrigateRecordingStale
+        exp_alerts: []
+      - eval_time: 5m30s
+        alertname: YggFrigateRecordingStale
+        exp_alerts:
+          - exp_labels:
+              camera: stalled
+              job: frigate_recordings
+              severity: warning
+            exp_annotations:
+              summary: "Frigate continuous recording is stale for stalled"
+              description: "Check the recording input, index and storage for this camera."
+      - eval_time: 6m30s
+        alertname: YggFrigateRecordingStale
+        exp_alerts: []

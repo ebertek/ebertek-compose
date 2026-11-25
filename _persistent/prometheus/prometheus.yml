@@ -36,6 +36,10 @@ scrape_configs:
     static_configs:
       - targets: ["frigate.ygg.nu:5000"]
 
+  - job_name: "frigate_recordings"
+    static_configs:
+      - targets: ["frigate-recordings:9108"]
+
   - job_name: "hass"
     authorization:
       credentials_file: /run/secrets/hass-bearer-token

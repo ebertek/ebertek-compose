@@ -19,6 +19,7 @@ groups:
           or absent_over_time(up{job="birdnet"}[15m])
           or absent_over_time(up{job="cloudflared"}[15m])
           or absent_over_time(up{job="frigate"}[15m])
+          or absent_over_time(up{job="frigate_recordings"}[15m])
           or absent_over_time(up{job="hass"}[15m])
           or absent_over_time(up{job="immich_api"}[15m])
           or absent_over_time(up{job="immich_microservices"}[15m])
@@ -102,3 +103,14 @@ groups:
         annotations:
           summary: "Yggdrasil volume1 free-space telemetry has been unavailable for 15 minutes"
           description: "Check the Pleiades NFS mount and its node exporter."
+
+  - name: ygg_frigate_recordings
+    rules:
+      - alert: YggFrigateRecordingStale
+        expr: time() - frigate_latest_recording_end_timestamp_seconds{job="frigate_recordings"} > 180
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frigate continuous recording is stale for {{ $labels.camera }}"
+          description: "Check the recording input, index and storage for this camera."

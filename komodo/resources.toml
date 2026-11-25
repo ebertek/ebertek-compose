@@ -161,6 +161,7 @@ server = "pleiades.ygg.nu"
 linked_repo = "ygg-compose"
 run_directory = "ygg-mon"
 config_files = [
+  { path = "../_persistent/frigate-monitor/exporter.py", services = ["frigate-recordings"], requires = "Restart" },
   { path = "../_persistent/prometheus/prometheus.yml", services = ["prometheus"], requires = "Restart" },
   { path = "../_persistent/prometheus/rules_compat.yml", services = ["prometheus"], requires = "Restart" },
   { path = "../_persistent/prometheus/rules_alerts.yml", services = ["prometheus"], requires = "Restart" },

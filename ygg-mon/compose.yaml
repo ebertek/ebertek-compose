@@ -129,6 +129,26 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "../_persistent/loki:/etc/alloy:ro"
 
+  frigate-recordings:
+    <<: *common
+    cap_drop:
+      - ALL
+    command: ["python", "-B", "/opt/frigate-monitor/exporter.py"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+    environment:
+      FRIGATE_API_URL: "http://frigate.ygg.nu:5000/api"
+    image: "docker.io/library/python:3.14-alpine"
+    networks:
+      - monitoring
+    read_only: true
+    user: "65534:65534"
+    volumes:
+      - "../_persistent/frigate-monitor:/opt/frigate-monitor:ro"
+
   grafana:
     <<: *common
     cap_add:
