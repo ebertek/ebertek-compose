@@ -9,6 +9,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import quote, urlencode
 from urllib.request import urlopen
 
+LOGGER = logging.getLogger(__name__)
+
 
 def metrics(get, now):
     """Read a bounded recording window and emit one timestamp per eligible camera."""
@@ -28,7 +30,7 @@ def metrics(get, now):
             continue
         segments = get(f"{quote(camera, safe='')}/recordings?{window}")
         if not isinstance(segments, list):
-            raise ValueError("Invalid Frigate recording response")
+            raise TypeError("Invalid Frigate recording response")
         end = max((float(segment["end_time"]) for segment in segments), default=0)
         if not math.isfinite(end):
             raise ValueError("Invalid Frigate recording timestamp")
@@ -57,7 +59,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
         try:
             payload = metrics(get_json, time.time())
         except (OSError, ValueError, KeyError, TypeError) as error:
-            logging.warning("Frigate scrape failed (%s)", type(error).__name__)
+            LOGGER.warning("Frigate scrape failed (%s)", type(error).__name__)
             self.send_error(502)
             return
         self.send_response(200)
