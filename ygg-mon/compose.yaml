@@ -33,6 +33,8 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 secrets:
   alertmanager-discord-webhook:
     file: alertmanager-discord-webhook.txt
+  alertmanager-heartbeat-url:
+    file: alertmanager-heartbeat-url.txt
   grafana-mcp-token:
     file: grafana-mcp-token.txt
   hass-bearer-token:
@@ -58,6 +60,7 @@ services:
       - monitoring
     secrets:
       - alertmanager-discord-webhook
+      - alertmanager-heartbeat-url
     volumes:
       - alertmanager-data:/alertmanager
       - "../_persistent/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro"
