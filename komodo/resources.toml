@@ -197,6 +197,16 @@ repo = "ebertek/ygg-compose"
 
 ##
 
+[[alerter]]
+name = "Komodo job failures"
+[alerter.config]
+enabled = true
+alert_types = ["ActionFailed", "ProcedureFailed"]
+endpoint.type = "Discord"
+endpoint.params.url = "[[KOMODO_JOB_FAILURE_DISCORD_WEBHOOK]]"
+
+##
+
 [[procedure]]
 name = "Backup Core Database"
 description = "Triggers the Core database backup at the scheduled time."
