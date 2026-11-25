@@ -33,6 +33,12 @@ secrets:
     file: yggflare_cloudflare_api_token.txt
   yggflare_network_discord_webhook:
     file: yggflare_network_discord_webhook.txt
+  yggflare_komodo_api_key:
+    file: yggflare_komodo_api_key.txt
+  yggflare_komodo_api_secret:
+    file: yggflare_komodo_api_secret.txt
+  yggflare_kuma_api_key:
+    file: yggflare_kuma_api_key.txt
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
@@ -524,6 +530,20 @@ services:
       YGGFLARE_WATCH_COOLDOWN_SECONDS: "60"
       # MCP requires the private token file and an HTTP-capable Yggflare image.
       YGGFLARE_MCP_ENABLED: "true"
+      YGGFLARE_MCP_TOOL_GROUPS: "all"
+      # Fixed operation names, outcomes and duration only; no query contents.
+      YGGFLARE_MCP_AUDIT_LOG: "true"
+      # Credentials are file-backed Docker secrets, mounted read-only.
+      # Numeric internal endpoints use HTTP; never route credentials publicly.
+      YGGFLARE_KOMODO_API_URL: "http://10.4.21.47:9120"
+      YGGFLARE_KOMODO_API_KEY_FILE: "/run/secrets/komodo_api_key"
+      YGGFLARE_KOMODO_API_SECRET_FILE: "/run/secrets/komodo_api_secret"
+      YGGFLARE_KOMODO_ALLOW_HTTP: "true"
+      YGGFLARE_KUMA_API_URL: "http://10.4.21.86:3001"
+      YGGFLARE_KUMA_API_KEY_FILE: "/run/secrets/kuma_api_key"
+      YGGFLARE_KUMA_ALLOW_HTTP: "true"
+      # Independent probes still require a private target allowlist.
+      YGGFLARE_PROBES_ENABLED: "false"
       YGGFLARE_MCP_BIND: "127.0.0.1"
       YGGFLARE_MCP_PORT: "8788"
       YGGFLARE_MCP_TOKEN_FILE: "/config/mcp-token.txt"
@@ -543,7 +563,7 @@ services:
       traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    image: "ghcr.io/ebertek/yggflare:main@sha256:3850128d0f6c3f8486fe73779b975a0c43ee40db8f95a7c52c9adaa25667fc69"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:956a5500fcb3f1a2a771aa57d5d21edd55c260a79576f697d771c47f8bb61a81"
     network_mode: host
     pull_policy: always
     secrets:
@@ -551,6 +571,12 @@ services:
         target: cloudflare_api_token
       - source: yggflare_network_discord_webhook
         target: network_discord_webhook
+      - source: yggflare_komodo_api_key
+        target: komodo_api_key
+      - source: yggflare_komodo_api_secret
+        target: komodo_api_secret
+      - source: yggflare_kuma_api_key
+        target: kuma_api_key
     volumes:
       - "/volume2/docker/yggflare/config:/config:ro"
       - "/volume2/docker/yggflare/data:/data"
