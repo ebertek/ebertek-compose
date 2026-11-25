@@ -1,0 +1,15 @@
+[Unit]
+Description=Check public Ygg ingress
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/ygg-ingress-probe
+LoadCredential=heartbeat-url:/etc/ygg-monitoring/ingress-heartbeat-url
+TimeoutStartSec=90s
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
