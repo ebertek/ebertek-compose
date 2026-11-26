@@ -29,8 +29,6 @@ x-tz: &tz "/usr/share/zoneinfo/Etc/UTC:/etc/localtime:ro"
 configs:
   yggflare_probes:
     file: yggflare_probes.json
-  yggflare_unifi_auto_hosts:
-    file: yggflare-unifi-auto-hosts.txt
 
 secrets:
   cloudflare_api_token:
@@ -562,7 +560,6 @@ services:
       YGGFLARE_UNIFI_API_KEY_FILE: "/run/secrets/unifi_api_key"
       YGGFLARE_UNIFI_API_URL: "https://10.4.20.1"
       YGGFLARE_UNIFI_AUTO_APPLY: "true"
-      YGGFLARE_UNIFI_AUTO_HOSTS_FILE: "/yggflare-unifi-auto-hosts.txt"
       YGGFLARE_UNIFI_COLLECT_ENABLED: "true"
       YGGFLARE_UNIFI_DISCORD_NOTIFY: "true"
       YGGFLARE_UNIFI_TLS_NAME: "ucg.ebi.nu"
@@ -603,8 +600,6 @@ services:
     configs:
       - source: yggflare_probes
         target: /yggflare-probes.json
-      - source: yggflare_unifi_auto_hosts
-        target: /yggflare-unifi-auto-hosts.txt
     volumes:
       - "/volume2/docker/yggflare/config:/config:ro"
       - "/volume2/docker/yggflare/data:/data"
