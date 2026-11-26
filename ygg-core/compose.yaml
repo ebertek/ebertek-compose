@@ -481,7 +481,6 @@ services:
   yggflare:
     <<: *common
     container_name: yggflare
-    # Docker init forwards SIGTERM to Python and reaps watcher subprocesses.
     init: true
     deploy:
       resources:
@@ -495,7 +494,6 @@ services:
       <<: *env
       CLOUDFLARE_ACCOUNT_ID: "bbe7e7cd88aa3e9d775379a230d15953"
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
-      # Guarded creation requires a Yggflare image containing PR #95.
       CLOUDFLARE_DOCKER_DNS_SYNC: "true"
       CLOUDFLARE_STATIC_DNS_REQUIRED: "true"
       CLOUDFLARE_STATIC_DNS_SYNC: "true"
@@ -516,11 +514,8 @@ services:
       YGGFLARE_DISCOVERY_NDP_PROBE: "true"
       YGGFLARE_DISCOVERY_NETBIOS: "true"
       YGGFLARE_DISCOVERY_OS_DETECTION: "true"
-      # Bounded passive TCP fingerprint sampling; no retained packet capture.
       YGGFLARE_DISCOVERY_P0F: "true"
-      # Router advertisements are collected as read-only, scoped topology evidence.
       YGGFLARE_DISCOVERY_RA: "true"
-      # Bounded anonymous share discovery; no file reads or password attempts.
       YGGFLARE_DISCOVERY_SMB: "true"
       YGGFLARE_DISCOVERY_SMB_MAX_TARGETS: "200"
       YGGFLARE_DISCOVERY_SMB_WORKERS: "8"
@@ -533,18 +528,14 @@ services:
       YGGFLARE_KOMODO_ALLOW_HTTP: "true"
       YGGFLARE_KOMODO_API_KEY_FILE: "/run/secrets/komodo_api_key"
       YGGFLARE_KOMODO_API_SECRET_FILE: "/run/secrets/komodo_api_secret"
-      # Credentials are file-backed Docker secrets, mounted read-only.
-      # Numeric internal endpoints use HTTP; never route credentials publicly.
       YGGFLARE_KOMODO_API_URL: "http://10.4.21.47:9120"
       YGGFLARE_KUMA_ALLOW_HTTP: "true"
       YGGFLARE_KUMA_API_KEY_FILE: "/run/secrets/kuma_api_key"
       YGGFLARE_KUMA_API_URL: "http://10.4.21.86:3001"
       YGGFLARE_LAN_CIDR: "10.4.20.0/23"
       YGGFLARE_LOG_FORMAT: "text"
-      # Fixed operation names, outcomes and duration only; no query contents.
       YGGFLARE_MCP_AUDIT_LOG: "true"
       YGGFLARE_MCP_BIND: "127.0.0.1"
-      # MCP requires the private token file and an HTTP-capable Yggflare image.
       YGGFLARE_MCP_ENABLED: "true"
       YGGFLARE_MCP_PORT: "8788"
       YGGFLARE_MCP_TOKEN_FILE: "/config/mcp-token.txt"
@@ -553,9 +544,7 @@ services:
       YGGFLARE_NETWORK_ALERT_CONFIRM_SCANS: "2"
       YGGFLARE_NETWORK_DISCORD_WEBHOOK_FILE: "/run/secrets/network_discord_webhook"
       YGGFLARE_PROBES_CONFIG_FILE: "/yggflare-probes.json"
-      # Private scoped allowlist mounted as a read-only Compose config.
       YGGFLARE_PROBES_ENABLED: "true"
-      # Read the existing internal Traefik API; no new listener or published port.
       YGGFLARE_TRAEFIK_API_URL: "http://10.4.21.44:8080"
       YGGFLARE_UNIFI_API_KEY_FILE: "/run/secrets/unifi_api_key"
       YGGFLARE_UNIFI_API_URL: "https://10.4.20.1"
@@ -581,7 +570,7 @@ services:
       traefik.http.services.yggflare.loadbalancer.server.url: "http://10.4.21.1:8787"
       cf.access: "true"
       cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    image: "ghcr.io/ebertek/yggflare:main@sha256:6af3cac722c0a83ff4066a6136bd98e14c480598b938de3e116799750f0552dc"
+    image: "ghcr.io/ebertek/yggflare:main@sha256:4f5cf52cc1bde55ca63257f1ab2b97aa7e19173e55fbd5026cda332f400ac154"
     network_mode: host
     pull_policy: always
     secrets:
@@ -601,6 +590,7 @@ services:
       - source: yggflare_probes
         target: /yggflare-probes.json
     volumes:
+      - *tz
       - "/volume2/docker/yggflare/config:/config:ro"
       - "/volume2/docker/yggflare/data:/data"
       - "/volume2/docker/yggflare/backup:/backup"
