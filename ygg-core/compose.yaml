@@ -559,6 +559,8 @@ services:
       YGGFLARE_TRAEFIK_API_URL: "http://10.4.21.44:8080"
       YGGFLARE_UNIFI_API_KEY_FILE: "/run/secrets/unifi_api_key"
       YGGFLARE_UNIFI_API_URL: "https://10.4.20.1"
+      YGGFLARE_UNIFI_AUTO_APPLY: "true"
+      YGGFLARE_UNIFI_AUTO_HOSTS: "bazarr.ygg.nu,radarr.ygg.nu,sonarr.ygg.nu"
       YGGFLARE_UNIFI_COLLECT_ENABLED: "true"
       YGGFLARE_UNIFI_TLS_NAME: "ucg.ebi.nu"
       YGGFLARE_WATCH_COMPOSE: "true"
