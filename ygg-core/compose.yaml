@@ -500,6 +500,9 @@ services:
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
       CLOUDFLARE_STATIC_DNS_REQUIRED: "true"
       CLOUDFLARE_STATIC_DNS_SYNC: "true"
+      # Guarded creation requires a Yggflare image containing PR #95.
+      CLOUDFLARE_DOCKER_DNS_SYNC: "true"
+      YGGFLARE_CLOUDFLARE_DNS_RESERVE: "10"
       CLOUDFLARE_TUNNEL_NAME: "pleiades"
       YGGFLARE_DEVICES_CIDR: "10.4.20.0/24"
       YGGFLARE_DISCOVERY_INTERFACES: "enp86s0,macvlan1-host"
