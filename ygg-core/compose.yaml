@@ -563,6 +563,7 @@ services:
       YGGFLARE_WEB_ENABLED: "true"
       YGGFLARE_WEB_BIND: "0.0.0.0"
       YGGFLARE_WEB_PORT: "8787"
+      YGGFLARE_UNIFI_COLLECT_ENABLED: "true"
     hostname: yggflare
     labels:
       traefik.enable: "true"
