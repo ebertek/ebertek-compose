@@ -131,6 +131,34 @@ and [`.github/workflows/lint.yml`](.github/workflows/lint.yml).
 YAML/JSON/JavaScript/Markdown use two spaces; shell uses tabs (width four).
 Do not suppress linters without a documented reason.
 
+### YAML style
+
+- Keep YAML mappings alphabetically ordered by key as the normal convention,
+  including Compose service names, top-level sections, service properties,
+  environment variables, labels, networks, volumes, secrets, configs, and nested
+  mappings. Apply the same convention to other YAML configuration where safe.
+- Keep shared extension/anchor definitions at the top, before their aliases,
+  and YAML merge keys (`<<`) first within their mappings. Preserve any other
+  ordering required by YAML parsing, the consuming application, or established
+  configuration semantics.
+- Do not alphabetize sequences blindly. Preserve order-sensitive lists, such as
+  Access policies, Traefik middleware chains, commands, workflow steps, and
+  ordered rules. Sort only lists whose order is known to be immaterial.
+- In Compose environment mappings, use double-quoted string values, including
+  booleans, numbers, empty strings, paths, URLs, and variable substitutions
+  (for example, `"true"`, `"8080"`, `""`, and `"${VARIABLE:-default}"`).
+  Escape embedded quotes and backslashes as necessary without changing the
+  effective value. Preserve intentional null/pass-through entries or other
+  syntax with different semantics. Do not quote typed non-environment YAML
+  values merely for consistency.
+- Keep comments with the settings they explain. Use consistent two-space
+  indentation, readable spacing, and the repository's configured formatter.
+  Avoid redundant comments, unnecessary blank lines, and unrelated changes.
+- Apply these conventions to new and edited mappings; do not reformat entire
+  unrelated files unless explicitly requested. For a formatting-only change,
+  verify that values, anchors, references, and order-sensitive sequences retain
+  their meaning.
+
 **Run local checks before committing or opening a PR whenever tooling is
 available.** Repeatedly using a slow Super-Linter CI job as an iterative
 formatter is avoidable. Prefer running the configured Black, Ruff, Pylint,
