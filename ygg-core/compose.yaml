@@ -43,6 +43,8 @@ secrets:
     file: yggflare_komodo_api_secret.txt
   yggflare_kuma_api_key:
     file: yggflare_kuma_api_key.txt
+  yggflare_unifi_api_key:
+    file: yggflare_unifi_api_key.txt
   postgres-passwd:
     file: postgres-passwd.txt
   postgres-user:
@@ -558,6 +560,7 @@ services:
       YGGFLARE_UNIFI_COLLECT_ENABLED: "true"
       YGGFLARE_UNIFI_API_URL: "https://10.4.20.1"
       YGGFLARE_UNIFI_TLS_NAME: "ucg.ebi.nu"
+      YGGFLARE_UNIFI_API_KEY_FILE: "/run/secrets/unifi_api_key"
       YGGFLARE_WATCH_COMPOSE: "true"
       YGGFLARE_WATCH_COOLDOWN_SECONDS: "60"
       YGGFLARE_WATCH_DEBOUNCE_SECONDS: "20"
@@ -590,6 +593,8 @@ services:
         target: komodo_api_secret
       - source: yggflare_kuma_api_key
         target: kuma_api_key
+      - source: yggflare_unifi_api_key
+        target: unifi_api_key
     configs:
       - source: yggflare_probes
         target: /yggflare-probes.json
