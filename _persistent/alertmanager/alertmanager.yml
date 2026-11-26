@@ -13,16 +13,41 @@ route:
       group_interval: 1m
       repeat_interval: 5m
 
+    - receiver: ygg-nas-forecast-discord
+      matchers:
+        - alertname="YggNASVolume1SpaceForecast"
+      group_interval: 24h
+      repeat_interval: 24h
+
 receivers:
   - name: ygg-infrastructure-discord
     discord_configs:
       - webhook_url_file: /run/secrets/alertmanager-discord-webhook
         send_resolved: true
-        title: "{{ .Status | toUpper }} · {{ .CommonLabels.alertname }} · {{ .CommonLabels.severity }}"
-        message: |-
-          {{- range .Alerts }}
-          • **{{ .Status | toUpper }}** {{ .Annotations.summary }}
+        title: &discord_title >-
+          {{- if eq .Status "resolved" -}}{{ "✅ Resolved · " -}}
+          {{- else if eq .CommonLabels.severity "critical" -}}{{ "🔴 " -}}
+          {{- else -}}{{ "⚠️ " -}}{{- end -}}
+          {{- $name := .CommonLabels.alertname -}}
+          {{- if eq $name "YggNASVolume1SpaceForecast" -}}NAS space forecast
+          {{- else if eq $name "YggNASVolume1SpaceCritical" -}}NAS space critically low
+          {{- else if eq $name "YggNASVolume1TelemetryMissing" -}}NAS space data missing
+          {{- else if eq $name "YggNFSTimeoutObserved" -}}NFS timeout
+          {{- else if eq $name "YggScrapeTargetDown" -}}Monitoring target down
+          {{- else if eq $name "YggScrapeTelemetryMissing" -}}Monitoring data missing
+          {{- else if eq $name "YggPrometheusRuleEvaluationFailing" -}}Prometheus rule failures
+          {{- else -}}{{ $name }}{{- end }}
+        message: &discord_message |-
+          {{- range $index, $alert := .Alerts -}}
+          {{ if $index }}{{ "\n" }}{{ end }}• {{ if and (eq $.Status "firing") (eq $alert.Status "resolved") }}**Cleared:** {{ end }}{{ or $alert.Annotations.summary $alert.Labels.alertname }}
           {{- end }}
+
+  - name: ygg-nas-forecast-discord
+    discord_configs:
+      - webhook_url_file: /run/secrets/alertmanager-discord-webhook
+        send_resolved: false
+        title: *discord_title
+        message: *discord_message
 
   - name: ygg-offsite-heartbeat
     webhook_configs:
