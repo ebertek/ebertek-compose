@@ -10,7 +10,6 @@ readonly HOST_RANGE4="10.4.20.0/23"
 
 readonly DOCKER_RANGE4="10.4.21.0/25"
 readonly HOST_ADDR4="10.4.21.1/32"
-readonly DNS_ADDR4="10.4.21.34"
 
 readonly DOCKER_RANGE6="fd0e:be00:da00:20:421::/80"
 readonly HOST_ADDR6="fd0e:be00:da00:20:421::1/128"
@@ -72,12 +71,6 @@ ip -4 route del default dev "$HOST_IFACE" 2>/dev/null || true
 ip -4 route del "$HOST_RANGE4" dev "$HOST_IFACE" 2>/dev/null || true
 ip -4 route del "$GW_ADDR4" dev "$HOST_IFACE" 2>/dev/null || true
 ip -4 route del "${HOST_ADDR4%/*}/32" dev "$PARENT" 2>/dev/null || true
-
-ip -4 route del "${DNS_ADDR4}/32" dev "$PARENT" 2>/dev/null || true
-ip -4 route replace \
-	"${DNS_ADDR4}/32" \
-	dev "$HOST_IFACE" \
-	src "${HOST_ADDR4%/*}"
 
 ip -4 route replace \
 	"$DOCKER_RANGE4" \
