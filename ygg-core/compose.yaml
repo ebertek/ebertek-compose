@@ -9,9 +9,6 @@ networks:
     external: true
 
 x-common: &common
-  dns:
-    - 10.4.21.34
-    - 1.1.1.1
   dns_search:
     - ygg.nu
   logging:
@@ -147,51 +144,6 @@ services:
         hard: 70000
     volumes:
       - *tz
-
-  dns:
-    <<: *common
-    container_name: dns
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: "1024M"
-        reservations:
-          cpus: "0.05"
-          memory: "256M"
-    environment:
-      <<: *env
-      DNS_SERVER_DOMAIN: "dns"
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 10s
-      test:
-        [
-          "CMD-SHELL",
-          'grep -i "$(printf ''%08x:%04x'' 0 53)" /proc/net/udp >/dev/null 2>&1 || exit 1',
-        ]
-      timeout: 5s
-    hostname: dns
-    image: "docker.io/technitium/dns-server:15.6.2"
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.dns.entrypoints: "websecure"
-      traefik.http.routers.dns.rule: "Host(`dns.ebi.nu`)"
-      traefik.http.routers.dns.tls: "true"
-      traefik.http.services.dns.loadbalancer.server.port: "5380"
-      cf.access: "true"
-      cf.access.policies: '["2-Home","3-Whitelist","5-Keycloak","Block"]'
-    mac_address: "0e:be:00:da:00:34"
-    networks:
-      macvlan1:
-        ipv4_address: 10.4.21.34
-        ipv6_address: fd0e:be00:da00:20:421::34
-    sysctls:
-      net.ipv4.ip_local_port_range: "1024 65000"
-    volumes:
-      - *tz
-      - "/volume2/docker/dns:/etc/dns"
 
   keycloak:
     <<: *common

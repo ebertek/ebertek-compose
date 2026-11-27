@@ -13,9 +13,6 @@ volumes:
   alertmanager-data: {}
 
 x-common: &common
-  dns:
-    - 10.4.21.34
-    - 1.1.1.1
   dns_search:
     - ygg.nu
   logging:

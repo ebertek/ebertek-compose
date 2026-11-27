@@ -11,7 +11,7 @@ Main areas:
 - Home automation (Home Assistant, ESPHome, Zigbee2MQTT, Matter)
 - Media management and streaming (\*arr stack, Plex, Immich)
 - Monitoring (Grafana, Loki, Prometheus, Alloy)
-- Identity and networking (Keycloak, Traefik, Cloudflare Tunnel, Technitium DNS)
+- Identity and networking (Keycloak, Traefik, Cloudflare Tunnel)
 - GitOps and container management (Komodo, Renovate)
 - Remote web hosting (WordPress, MariaDB, nginx)
 - Utility services, backups, and host startup/maintenance scripts
@@ -54,7 +54,6 @@ Main areas:
 - **[autoheal](https://hub.docker.com/r/willfarrell/autoheal)**: Monitor and restart unhealthy docker containers.
 - **[cloudflare-ddns](https://hub.docker.com/r/favonia/cloudflare-ddns)**: A small, feature-rich, and robust Cloudflare DDNS updater.
 - **[cloudflared](https://hub.docker.com/r/cloudflare/cloudflared)**: Client for Cloudflare Tunnel.
-- **[dns](https://hub.docker.com/r/technitium/dns-server)**: Technitium DNS Server.
 - **[keycloak](https://github.com/keycloak/keycloak)**: Open Source Identity and Access Management.
 - **[nginx](https://hub.docker.com/_/nginx)**: Web server for public websites.
 - **[oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)**: A reverse proxy that provides authentication with OpenID Connect.
@@ -209,7 +208,7 @@ Main areas:
 
 1. Update the following elements in `compose.yaml` to work with your environment:
 
-- `dns`
+- `dns` (only when overriding the Docker host's DNS configuration, for example Gluetun)
 - `dns_search`
 - `environment`
 - `extra_hosts`
