@@ -19,6 +19,16 @@ route:
       group_interval: 24h
       repeat_interval: 24h
 
+# A critical resource alert supersedes the warning for the same host/container.
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+      - alertname=~"YggHost(MemoryAvailableLow|MemoryPressureSome|MemoryPressureFull|CPUHigh|CPUPressure|IOPressure)|YggContainerMemoryHigh"
+    target_matchers:
+      - severity="warning"
+      - alertname=~"YggHost(MemoryAvailableLow|MemoryPressureSome|MemoryPressureFull|CPUHigh|CPUPressure|IOPressure)|YggContainerMemoryHigh"
+    equal: [alertname, instance, namespace, service_name, name]
+
 receivers:
   - name: ygg-infrastructure-discord
     discord_configs:
