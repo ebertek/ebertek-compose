@@ -5,39 +5,40 @@ rule_files:
 evaluation_interval: 30s
 
 tests:
+  # Allow a full five-minute rate window plus the longest 15-minute hold.
   # critical conditions; unlimited containers must never alert.
   - interval: 30s
     input_series:
       - series: 'node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'node_memory_MemAvailable_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "40+0x40"
+        values: "40+0x48"
       - series: 'node_pressure_memory_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+1.8x40"
+        values: "0+1.8x48"
       - series: 'node_pressure_memory_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0.9x40"
+        values: "0+0.9x48"
       - series: 'node_pressure_cpu_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+9x40"
+        values: "0+9x48"
       - series: 'node_pressure_io_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+6x40"
+        values: "0+6x48"
       - series: 'node_cpu_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080",cpu="0",mode="idle"}'
-        values: "0+0.9x40"
+        values: "0+0.9x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "100+0x40"
+        values: "100+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "96+0x40"
+        values: "96+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "9223372036854772000+0x40"
+        values: "9223372036854772000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "999+0x40"
+        values: "999+0x48"
     alert_rule_test:
       - eval_time: 4m
         alertname: YggHostMemoryAvailableLow
@@ -60,7 +61,7 @@ tests:
       - eval_time: 4m
         alertname: YggContainerMemoryHigh
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryAvailableLow
         exp_alerts:
           - exp_labels:
@@ -77,7 +78,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "Available RAM < 5% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureSome
         exp_alerts:
           - exp_labels:
@@ -94,7 +95,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "Memory PSI some > 5% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureFull
         exp_alerts:
           - exp_labels:
@@ -111,7 +112,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "Memory PSI full > 2% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUHigh
         exp_alerts:
           - exp_labels:
@@ -126,7 +127,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "Non-idle CPU > 95% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUPressure
         exp_alerts:
           - exp_labels:
@@ -143,7 +144,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "CPU PSI some > 25% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostIOPressure
         exp_alerts:
           - exp_labels:
@@ -160,7 +161,7 @@ tests:
               severity: critical
             exp_annotations:
               summary: "I/O PSI full > 15% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggContainerMemoryHigh
         exp_alerts:
           - exp_labels:
@@ -184,37 +185,37 @@ tests:
   - interval: 30s
     input_series:
       - series: 'node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'node_memory_MemAvailable_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "100+0x40"
+        values: "100+0x48"
       - series: 'node_pressure_memory_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0.9x40"
+        values: "0+0.9x48"
       - series: 'node_pressure_memory_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0.3x40"
+        values: "0+0.3x48"
       - series: 'node_pressure_cpu_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+4.5x40"
+        values: "0+4.5x48"
       - series: 'node_pressure_io_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+3x40"
+        values: "0+3x48"
       - series: 'node_cpu_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080",cpu="0",mode="idle"}'
-        values: "0+3x40"
+        values: "0+3x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "100+0x40"
+        values: "100+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "90+0x40"
+        values: "90+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "9223372036854772000+0x40"
+        values: "9223372036854772000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "999+0x40"
+        values: "999+0x48"
     alert_rule_test:
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryAvailableLow
         exp_alerts:
           - exp_labels:
@@ -224,7 +225,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "Available RAM < 15% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureSome
         exp_alerts:
           - exp_labels:
@@ -234,7 +235,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "Memory PSI some > 1% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureFull
         exp_alerts:
           - exp_labels:
@@ -244,7 +245,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "Memory PSI full > 0.5% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUHigh
         exp_alerts:
           - exp_labels:
@@ -253,7 +254,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "Non-idle CPU > 80% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUPressure
         exp_alerts:
           - exp_labels:
@@ -263,7 +264,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "CPU PSI some > 10% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostIOPressure
         exp_alerts:
           - exp_labels:
@@ -273,7 +274,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: "I/O PSI full > 5% on pleiades:38080"
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggContainerMemoryHigh
         exp_alerts:
           - exp_labels:
@@ -289,62 +290,62 @@ tests:
   - interval: 30s
     input_series:
       - series: 'node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'node_memory_MemAvailable_bytes{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "300+0x40"
+        values: "300+0x48"
       - series: 'node_pressure_memory_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'node_pressure_memory_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'node_pressure_cpu_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'node_pressure_io_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'node_cpu_seconds_total{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080",cpu="0",mode="idle"}'
-        values: "0+27x40"
+        values: "0+27x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "100+0x40"
+        values: "100+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="limited",instance="pleiades:38080",name="limited",image="example",id="/docker/limited"}'
-        values: "60+0x40"
+        values: "60+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "1000+0x40"
+        values: "1000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="unlimited",instance="pleiades:38080",name="unlimited",image="example",id="/docker/unlimited"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "0+0x40"
+        values: "0+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="zero",instance="pleiades:38080",name="zero",image="example",id="/docker/zero"}'
-        values: "999+0x40"
+        values: "999+0x48"
       - series: 'container_spec_memory_limit_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "9223372036854772000+0x40"
+        values: "9223372036854772000+0x48"
       - series: 'container_memory_working_set_bytes{job="integrations/docker",namespace="test",service_name="huge",instance="pleiades:38080",name="huge",image="example",id="/docker/huge"}'
-        values: "999+0x40"
+        values: "999+0x48"
     alert_rule_test:
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryAvailableLow
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureSome
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostMemoryPressureFull
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUHigh
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostCPUPressure
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggHostIOPressure
         exp_alerts: []
-      - eval_time: 16m
+      - eval_time: 20m
         alertname: YggContainerMemoryHigh
         exp_alerts: []
 
   - interval: 30s
     input_series:
       - series: 'node_vmstat_oom_kill{job="integrations/node_exporter",namespace="pleiades",instance="pleiades:38080"}'
-        values: "0 1+0x40"
+        values: "0 1+0x48"
     alert_rule_test:
       - eval_time: 0s
         alertname: YggHostOOMKill
