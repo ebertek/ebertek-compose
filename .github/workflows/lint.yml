@@ -71,6 +71,27 @@ jobs:
               docker compose -f "$file" config --quiet
             done
 
+  prometheus-rules:
+    name: Prometheus alert rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate and test Prometheus rules
+        working-directory: _persistent/prometheus
+        run: |
+          image="docker.io/prom/prometheus:v3.16.0"
+          docker run --rm --entrypoint /bin/promtool \
+            -v "$PWD:/rules:ro" -w /rules "$image" \
+            check rules rules_alerts.yml rules_compat.yml
+          docker run --rm --entrypoint /bin/promtool \
+            -v "$PWD:/rules:ro" -w /rules "$image" \
+            test rules rules_*.test.yml
+
   renovate-config:
     name: Renovate configuration
     runs-on: ubuntu-latest

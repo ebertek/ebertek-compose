@@ -103,6 +103,157 @@ groups:
           summary: "Yggdrasil volume1 free-space telemetry has been unavailable for 15 minutes"
           description: "Check the Pleiades NFS mount and its node exporter."
 
+  - name: ygg_pleiades_resources
+    rules:
+      # Scope host alerts to Pleiades; PSI counters measure time spent stalled.
+      # Five-minute rates smooth scrape noise before the alert's for duration.
+      - alert: YggHostMemoryAvailableLow
+        expr: >-
+          100 * node_memory_MemAvailable_bytes{job="integrations/node_exporter",namespace="pleiades"} / node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades"} < 15
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Available RAM < 15% on {{ $labels.instance }}"
+
+      - alert: YggHostMemoryAvailableLow
+        expr: >-
+          100 * node_memory_MemAvailable_bytes{job="integrations/node_exporter",namespace="pleiades"} / node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades"} < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Available RAM < 5% on {{ $labels.instance }}"
+
+      - alert: YggHostMemoryPressureSome
+        expr: >-
+          100 * rate(node_pressure_memory_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory PSI some > 1% on {{ $labels.instance }}"
+
+      - alert: YggHostMemoryPressureSome
+        expr: >-
+          100 * rate(node_pressure_memory_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Memory PSI some > 5% on {{ $labels.instance }}"
+
+      - alert: YggHostMemoryPressureFull
+        expr: >-
+          100 * rate(node_pressure_memory_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory PSI full > 0.5% on {{ $labels.instance }}"
+
+      - alert: YggHostMemoryPressureFull
+        expr: >-
+          100 * rate(node_pressure_memory_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 2
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Memory PSI full > 2% on {{ $labels.instance }}"
+
+      - alert: YggHostCPUHigh
+        expr: >-
+          100 * (1 - avg by (instance, namespace) (rate(node_cpu_seconds_total{job="integrations/node_exporter",namespace="pleiades",mode="idle"}[5m]))) > 80
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Non-idle CPU > 80% on {{ $labels.instance }}"
+
+      - alert: YggHostCPUHigh
+        expr: >-
+          100 * (1 - avg by (instance, namespace) (rate(node_cpu_seconds_total{job="integrations/node_exporter",namespace="pleiades",mode="idle"}[5m]))) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Non-idle CPU > 95% on {{ $labels.instance }}"
+
+      - alert: YggHostCPUPressure
+        expr: >-
+          100 * rate(node_pressure_cpu_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 10
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU PSI some > 10% on {{ $labels.instance }}"
+
+      - alert: YggHostCPUPressure
+        expr: >-
+          100 * rate(node_pressure_cpu_waiting_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 25
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU PSI some > 25% on {{ $labels.instance }}"
+
+      - alert: YggHostIOPressure
+        expr: >-
+          100 * rate(node_pressure_io_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "I/O PSI full > 5% on {{ $labels.instance }}"
+
+      - alert: YggHostIOPressure
+        expr: >-
+          100 * rate(node_pressure_io_stalled_seconds_total{job="integrations/node_exporter",namespace="pleiades"}[5m]) > 15
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "I/O PSI full > 15% on {{ $labels.instance }}"
+
+      # Ignore zero/unlimited limits and cAdvisor's host-sized fallback.
+      # This uses working set, not RSS, and strips volatile container IDs.
+      - alert: YggContainerMemoryHigh
+        expr: >-
+          max by (instance, namespace, service_name, name) (
+            (100 * container_memory_working_set_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""} / container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""})
+            and (container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""} > 0)
+            and (container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""}
+              < on (instance) group_left node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades"})
+          ) > 85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container memory working set > 85% for {{ $labels.name }} on {{ $labels.instance }}"
+
+      - alert: YggContainerMemoryHigh
+        expr: >-
+          max by (instance, namespace, service_name, name) (
+            (100 * container_memory_working_set_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""} / container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""})
+            and (container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""} > 0)
+            and (container_spec_memory_limit_bytes{job="integrations/docker",instance="pleiades:38080",name!="",image!=""}
+              < on (instance) group_left node_memory_MemTotal_bytes{job="integrations/node_exporter",namespace="pleiades"})
+          ) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container memory working set > 95% for {{ $labels.name }} on {{ $labels.instance }}"
+
+      # Linux vmstat counts OOM kills, including memory-cgroup OOM kills.
+      - alert: YggHostOOMKill
+        expr: >-
+          increase(node_vmstat_oom_kill{job="integrations/node_exporter",namespace="pleiades"}[10m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Linux recorded an OOM kill on {{ $labels.instance }}"
+
   - name: ygg_monitoring_heartbeat
     rules:
       - alert: YggMonitoringHeartbeat
