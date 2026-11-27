@@ -569,6 +569,8 @@ services:
       YGGFLARE_WEB_BIND: "0.0.0.0"
       YGGFLARE_WEB_ENABLED: "true"
       YGGFLARE_WEB_PORT: "8787"
+    group_add:
+      - "112" # Pleiades _lldpd socket group
     hostname: yggflare
     labels:
       traefik.enable: "true"
