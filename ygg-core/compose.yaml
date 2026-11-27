@@ -496,7 +496,7 @@ services:
       CLOUDFLARE_API_TOKEN_FILE: "/run/secrets/cloudflare_api_token"
       CLOUDFLARE_DOCKER_DNS_SYNC: "true"
       CLOUDFLARE_EXTERNAL_ZONE_ID: ""
-      CLOUDFLARE_INTERNAL_ZONE_ID: ""
+      # Leave CLOUDFLARE_INTERNAL_ZONE_ID unset to preserve the UniFi ownership target.
       CLOUDFLARE_STATIC_DNS_REQUIRED: "true"
       CLOUDFLARE_STATIC_DNS_SYNC: "true"
       CLOUDFLARE_TUNNEL_ID: ""
